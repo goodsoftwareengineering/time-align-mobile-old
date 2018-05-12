@@ -1,0 +1,31 @@
+version: "3"
+services:
+
+  clj:
+    network_mode: "host"
+    image: clojure
+    user: "${UID}:0"
+    depends_on:
+      - node
+    ports:
+      - 3449:3449
+      - 7000:7000
+    volumes:
+      - .:/usr/app/time-align-mobile
+      - ./.lein:/.lein
+    working_dir: /usr/app/time-align-mobile
+    command: ["lein", "figwheel"]
+
+  node:
+    network_mode: "host"
+    build:
+      context: .
+      dockerfile: node.dev.dockerfile
+    user: "${UID}:0"
+    volumes:
+      - .:/usr/app/time-align-mobile
+    working_dir: /usr/app/time-align-mobile
+    ports:
+      - 19000:19000
+      - 19001:19001
+    command: ["yarn", "install"]
