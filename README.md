@@ -7,7 +7,7 @@ docker-compose up
 ```
 Then stop the containers with `Ctrl-c`  
 
-Make sure the device and dev env host are on same wifi  
+Make sure the device and dev env host are on same network  
 Run the next two commands in separate shells (they are both interactive)  
 You will need an expo login to start the node container
 ```
