@@ -113,17 +113,6 @@
                  #(gen/fmap
                    (fn [hex-str] (string/join (cons "#" hex-str)))
                    (s/gen ::hex-str))))
-;; (defn generate-task [{:keys [color moment]}]
-;;   (let [color (gen/generate (s/gen ::color))
-;;         moment (gen/generate (s/gen ::moment))
-;;         ])
-;;   {:id (random-uuid)
-;;    :description ""
-;;    :created moment
-;;    :last-edited moment
-;;    :data {}
-;;    :color color
-;;    :periods })
 (def task-spec
   (st/create-spec {:spec
                    (ds/spec {:spec {:id          uuid?
@@ -132,61 +121,62 @@
                                     :last-edited ::moment
                                     :data        map?
                                     :color       ::color
-                                    :periods     [period-spec]}
+                                    :periods     (ds/maybe [period-spec])}
                              :name ::task-spec})}))
 
-;; (def app-db-data-spec
-;;   {(ds/req :view) [{:page-id uuid?
-;;                     :forms   {:regular-form map?}
-;;                     :range   {:start ::moment
-;;                               :stop  ::moment}
-;;                     :filters [(st/create-spec {:spec (s/or :some-filters simple-keyword?
-;;                                                            :no-filters nil?)
-;;                                                :gen  #(gen/return nil)})]}]
+;; template
+(def template-spec
+  (st/create-spec {:spec (s/and
+                          (ds/spec {:spec {:id          uuid?
+                                           :task-id     uuid?
+                                           :description string?
+                                           :created     ::moment
+                                           :last-edited ::moment
+                                           :data        map?
+                                           :planned     boolean?
+                                           :start       (ds/maybe ::moment)
+                                           :stop        (ds/maybe ::moment)
+                                           :duration    (ds/maybe integer?)}
+                                    :name ::period-spec})
+                          start-before-stop)}))
 
-;;    (ds/req :navigation) {(ds/req :current-page) (s/spec #{:period
-;;                                                           :task
-;;                                                           :queue
-;;                                                           :templates
-;;                                                           :list-tasks
-;;                                                           :list-periods
-;;                                                           :home
-;;                                                           :report
-;;                                                           :calendar})}
+(s/def ::pages #{:period
+                 :task
+                 :queue
+                 :templates
+                 :list-tasks
+                 :list-periods
+                 :home
+                 :report
+                 :calendar})
 
-;;    ;; (ds/maybe :tasks) [{(ds/req :id)       uuid?
-;;    ;;                     (ds/req :color)    ::color
-;;    ;;                     (ds/req :complete) boolean?
-;;    ;;                     (ds/req :label)    string?
+(def app-db-spec
+  (ds/spec {:spec {:view (ds/maybe [{:page    ::pages
+                                     :form    (ds/maybe map?)
+                                     :range   (ds/maybe {:start ::moment
+                                                         :stop  ::moment})
+                                     :filters (ds/maybe [simple-keyword?])}])
 
-;;    ;;                     (ds/maybe :description) string?
+                   :navigation {:current-page ::pages}
 
-;;    ;;                     (ds/opt :user-data) {(ds/req :created)  ::moment
-;;    ;;                                          (ds/req :modified) ::moment}
+                   :tasks     [task-spec]
+                   :templates (ds/maybe [template-spec])
+                   :config    {:auto-log-time-align boolean?}}
+            :name ::app-db-spec}))
 
-;;    ;;                     (ds/opt :periods) [{(ds/req :id)      uuid?
-;;    ;;                                         (ds/req :planned) boolean?
+(def app-db-test
+  {:view       nil
+   :navigation {:current-page :home}
+   :tasks      [{:id          (random-uuid)
+                 :description "Using Time Align"
+                 :created     (new js/Date 2018 4 28 15 57)
+                 :last-edited (new js/Date 2018 4 28 15 57)
+                 :data        {:category :default}
+                 :color       "#2222aa"
+                 :periods     nil}]
+   :templates nil
+   :config {:auto-log-time-align true}})
 
-;;    ;;                                         (ds/maybe :start)       ::moment
-;;    ;;                                         (ds/maybe :stop)        ::moment
-;;    ;;                                         (ds/maybe :description) string?
-
-;;    ;;                                         (ds/opt :data) {(ds/req :created)
-;;    ;;                                                         ::moment
-;;    ;;                                                         (ds/req :modified)
-;;    ;;                                                         ::moment}}]}]
-
-;;    ;; (ds/maybe :templates) [{(ds/req :id)      uuid?
-;;    ;;                         (ds/req :planned) boolean?
-
-;;    ;;                         (ds/maybe :description) string?
-
-;;    ;;                         (ds/opt :relative-start) ::moment
-;;    ;;                         (ds/opt :relative-stop)  ::moment
-;;    ;;                         (ds/opt :duration)       integer?
-
-;;    ;;                         (ds/opt :data) {(ds/req :created)  ::moment
-;;    ;;                                         (ds/req :modified) ::moment}}]
-;;    })
-;; initial state of app-db
+;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
+;; old initial state of app-db
 (def app-db {:greeting "Hello Clojurescript in Expo!"})
