@@ -2,7 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [spec-tools.data-spec :as ds]
             [clojure.string :as string]
-            [clojure.test.check.generators :as gen]))
+            [clojure.test.check.generators :as gen]
+            [time-align-mobile.navigation :as nav]))
 
 ;; generated old stuff
 (s/def ::greeting string?)
@@ -87,7 +88,7 @@
 (def period-spec
   (st/create-spec {:spec (s/and
                           (ds/spec {:spec {:id          uuid?
-                                           :description string?
+                                           :label       string?
                                            :created     ::moment
                                            :last-edited ::moment
                                            :data        map?
@@ -116,7 +117,7 @@
 (def task-spec
   (st/create-spec {:spec
                    (ds/spec {:spec {:id          uuid?
-                                    :description string?
+                                    :label       string?
                                     :created     ::moment
                                     :last-edited ::moment
                                     :data        map?
@@ -129,26 +130,20 @@
   (st/create-spec {:spec (s/and
                           (ds/spec {:spec {:id          uuid?
                                            :task-id     uuid?
-                                           :description string?
+                                           :label       string?
                                            :created     ::moment
                                            :last-edited ::moment
                                            :data        map?
                                            :planned     boolean?
-                                           :start       (ds/maybe ::moment)
-                                           :stop        (ds/maybe ::moment)
+                                           :start       (ds/maybe {:hour   integer?
+                                                                   :minute integer?})
+                                           :stop        (ds/maybe {:hour   integer?
+                                                                   :minute integer?})
                                            :duration    (ds/maybe integer?)}
                                     :name ::period-spec})
                           start-before-stop)}))
 
-(s/def ::pages #{:period
-                 :task
-                 :queue
-                 :templates
-                 :list-tasks
-                 :list-periods
-                 :home
-                 :report
-                 :calendar})
+(s/def ::screens (set (keys nav/screens-map)))
 
 (def app-db-spec
   (ds/spec {:spec {:view (ds/maybe [{:page    ::pages
@@ -157,7 +152,7 @@
                                                          :stop  ::moment})
                                      :filters (ds/maybe [simple-keyword?])}])
 
-                   :navigation {:current-page ::pages}
+                   :navigation {:current-screen ::screens}
 
                    :tasks     [task-spec]
                    :templates (ds/maybe [template-spec])
@@ -166,7 +161,7 @@
 
 (def app-db-test
   {:view       nil
-   :navigation {:current-page :home}
+   :navigation {:current-screen :day}
    :tasks      [{:id          (random-uuid)
                  :description "Using Time Align"
                  :created     (new js/Date 2018 4 28 15 57)

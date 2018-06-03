@@ -21,15 +21,16 @@
   (.alert Alert title))
 
 (defn app-root []
-  (let [greeting (subscribe [:get-greeting])]
+  (let [greeting (subscribe [:get-greeting])
+        screen   (subscribe [:current-screen])]
     (fn []
       [view {:style {:flex-direction "column" :margin 40 :align-items "center"}}
        [image {:source (js/require "./assets/images/cljs.png")
-               :style {:width 200
-                       :height 200}}]
+               :style  {:width  200
+                        :height 200}}]
        [text {:style {:font-size 30 :font-weight "100" :margin-bottom 20 :text-align "center"}} @greeting]
        [ic {:name "ios-arrow-down" :size 60 :color "green"}]
-       [touchable-highlight {:style {:background-color "#999" :padding 10 :border-radius 5}
+       [touchable-highlight {:style    {:background-color "#999" :padding 10 :border-radius 5}
                              :on-press #(alert "HELLO!")}
         [text {:style {:color "white" :text-align "center" :font-weight "bold"}} "press me"]]])))
 
