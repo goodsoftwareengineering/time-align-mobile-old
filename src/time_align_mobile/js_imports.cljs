@@ -1,4 +1,5 @@
-(ns time-align-mobile.js-imports)
+(ns time-align-mobile.js-imports
+  (:require [reagent.core :as r :refer [atom]]))
 
 (def ReactNative (js/require "react-native"))
 (def expo (js/require "expo"))

@@ -21,8 +21,7 @@
   (.alert Alert title))
 
 (defn app-root []
-  (let [greeting (subscribe [:get-greeting])
-        screen   (subscribe [:current-screen])]
+  (let [greeting (subscribe [:get-greeting])]
     (fn []
       [view {:style {:flex-direction "column" :margin 40 :align-items "center"}}
        [image {:source (js/require "./assets/images/cljs.png")

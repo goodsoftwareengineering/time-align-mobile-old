@@ -1,6 +1,7 @@
 (ns time-align-mobile.db
   (:require [clojure.spec.alpha :as s]
             [spec-tools.data-spec :as ds]
+            [spec-tools.core :as st]
             [clojure.string :as string]
             [clojure.test.check.generators :as gen]
             [time-align-mobile.navigation :as nav]))
@@ -146,7 +147,7 @@
 (s/def ::screens (set (keys nav/screens-map)))
 
 (def app-db-spec
-  (ds/spec {:spec {:view (ds/maybe [{:page    ::pages
+  (ds/spec {:spec {:view (ds/maybe [{:screen  ::screens
                                      :form    (ds/maybe map?)
                                      :range   (ds/maybe {:start ::moment
                                                          :stop  ::moment})
