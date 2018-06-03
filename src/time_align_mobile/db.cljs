@@ -143,11 +143,13 @@
 (s/def ::screens (set (keys nav/screens-map)))
 
 (def app-db-spec
-  (ds/spec {:spec {:view (ds/maybe [{:screen  ::screens
-                                     :form    (ds/maybe map?)
-                                     :range   (ds/maybe {:start ::moment
-                                                         :stop  ::moment})
-                                     :filters (ds/maybe [simple-keyword?])}])
+  (ds/spec {:spec {:view {:screens (ds/maybe
+                                    [{:screen  ::screens
+                                      :form    (ds/maybe map?)
+                                      :range   (ds/maybe {:start ::moment
+                                                          :stop  ::moment})
+                                      :filters (ds/maybe [simple-keyword?])}])
+                          :drawer  boolean?}
 
                    :navigation {:current-screen ::screens}
 
@@ -157,7 +159,8 @@
             :name ::app-db}))
 
 (def app-db
-  {:view       nil
+  {:view       {:drawer false
+                :screens nil}
    :navigation {:current-screen :day}
    :tasks      [{:id          (random-uuid)
                  :label       "Using Time Align"

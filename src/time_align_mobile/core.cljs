@@ -20,27 +20,23 @@
 (def Alert (.-Alert ReactNative))
 
 (def subheader (r/adapt-react-class (.-Subheader ReactNativeMaterialUI)))
+(def drawer (r/adapt-react-class (.-Drawer ReactNativeMaterialUI)))
+(def drawer-section (r/adapt-react-class (.-Section (.-Drawer ReactNativeMaterialUI))))
 (def theme-provider (r/adapt-react-class (.-ThemeProvider ReactNativeMaterialUI)))
 
 (defn alert [title]
   (.alert Alert title))
 
 (defn app-root []
-  (let [current-screen (subscribe [:get-current-screen])]
+  (let [current-screen (subscribe [:get-current-screen])
+        drawer-state (subscribe [:get-drawer-state])]
     (fn []
       [theme-provider {:ui-theme {}}
-       [view {:style {:flex-direction "column" :margin 40 :align-items "center"}}
-        [subheader {:text "material ui"}]
-        [image {:source (js/require "./assets/images/cljs.png")
-                :style  {:width  200
-                         :height 200}}]
-        [text {:style {:font-size 30 :font-weight "100" :margin-bottom 20 :text-align "center"}} (str @current-screen)]
-        [ic {:name "ios-arrow-down" :size 60 :color "green"}]
-        [touchable-highlight {:style    {:background-color "#999" :padding 10 :border-radius 5}
-                              :on-press #(alert "HELLO!")}
-         [text {:style {:color "white" :text-align "center" :font-weight "bold"}} "press me"]]]
-       ]
-      )))
+       [view {:style {:flex 1}}
+        [drawer
+         [drawer-section
+          {:items [{:icon "bookmark-border" :value "Notifications"}]
+           :divider true}]]]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])
