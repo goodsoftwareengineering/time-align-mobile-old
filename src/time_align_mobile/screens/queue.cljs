@@ -2,5 +2,4 @@
   (:require [time-align-mobile.js-imports :refer [view text]] ))
 
 (defn root []
-  [view [text "queue"]])
-
+  (fn [ ] [view [text "calendar"]]))

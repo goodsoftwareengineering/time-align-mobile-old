@@ -6,10 +6,6 @@
             [clojure.test.check.generators :as gen]
             [time-align-mobile.navigation :as nav]))
 
-;; generated old stuff
-(s/def ::greeting string?)
-(s/def ::app-db
-  (s/keys :req-un [::greeting]))
 ;; end of old stuff
 
 ;; moment stuff
@@ -96,7 +92,7 @@
                                            :planned     boolean?
                                            :start       (ds/maybe ::moment)
                                            :stop        (ds/maybe ::moment)}
-                                    :name ::period-spec})
+                                    :name ::period})
                           start-before-stop)
                    :gen  #(gen/fmap generate-period
                                     (s/gen ::moment))}))
@@ -124,7 +120,7 @@
                                     :data        map?
                                     :color       ::color
                                     :periods     (ds/maybe [period-spec])}
-                             :name ::task-spec})}))
+                             :name ::task})}))
 
 ;; template
 (def template-spec
@@ -141,7 +137,7 @@
                                            :stop        (ds/maybe {:hour   integer?
                                                                    :minute integer?})
                                            :duration    (ds/maybe integer?)}
-                                    :name ::period-spec})
+                                    :name ::template})
                           start-before-stop)}))
 
 (s/def ::screens (set (keys nav/screens-map)))
@@ -158,13 +154,13 @@
                    :tasks     [task-spec]
                    :templates (ds/maybe [template-spec])
                    :config    {:auto-log-time-align boolean?}}
-            :name ::app-db-spec}))
+            :name ::app-db}))
 
-(def app-db-test
+(def app-db
   {:view       nil
    :navigation {:current-screen :day}
    :tasks      [{:id          (random-uuid)
-                 :description "Using Time Align"
+                 :label       "Using Time Align"
                  :created     (new js/Date 2018 4 28 15 57)
                  :last-edited (new js/Date 2018 4 28 15 57)
                  :data        {:category :default}
@@ -175,4 +171,3 @@
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
 ;; old initial state of app-db
-(def app-db {:greeting "Hello Clojurescript in Expo!"})

@@ -2,7 +2,7 @@
   (:require
     [re-frame.core :refer [reg-event-db ->interceptor]]
     [clojure.spec.alpha :as s]
-    [time-align-mobile.db :as db :refer [app-db]]))
+    [time-align-mobile.db :as db :refer [app-db app-db-spec]]))
 
 ;; -- Interceptors ----------------------------------------------------------
 ;;
@@ -21,7 +21,7 @@
         :id :validate-spec
         :after (fn [context]
                  (let [db (-> context :effects :db)]
-                   (check-and-throw ::db/app-db db)
+                   (check-and-throw app-db-spec db)
                    context)))
     ->interceptor))
 
@@ -33,8 +33,4 @@
   (fn [_ _]
     app-db))
 
-(reg-event-db
-  :set-greeting
-  [validate-spec]
-  (fn [db [_ value]]
-    (assoc db :greeting value)))
+
