@@ -16,3 +16,8 @@ docker-compose run --service-ports node exp start --lan
 ```
 Don't use the generated link to connect device use the ip address of the host machine
 Should be able to send a link to an email using the prompts as a guide, then change the ip address in that link to match the dev host
+
+## Add library
+```
+docker-compose run --service-ports node yarn add {library}
+```
