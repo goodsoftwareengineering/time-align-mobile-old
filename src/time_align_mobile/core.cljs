@@ -6,7 +6,6 @@
               [time-align-mobile.subs]))
 
 (def ReactNative (js/require "react-native"))
-(def ReactNativeMaterialUI (js/require "react-native-material-ui"))
 
 (def expo (js/require "expo"))
 (def AtExpo (js/require "@expo/vector-icons"))
@@ -19,10 +18,9 @@
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
 (def Alert (.-Alert ReactNative))
 
-(def subheader (r/adapt-react-class (.-Subheader ReactNativeMaterialUI)))
-(def drawer (r/adapt-react-class (.-Drawer ReactNativeMaterialUI)))
-(def drawer-section (r/adapt-react-class (.-Section (.-Drawer ReactNativeMaterialUI))))
-(def theme-provider (r/adapt-react-class (.-ThemeProvider ReactNativeMaterialUI)))
+(def gesture-handler (.-GestureHandler expo))
+(def drawer-layout (r/adapt-react-class (.-DrawerLayout gesture-handler)))
+(def position-right (.-Right (.-positions (.-DrawerLayout gesture-handler))))
 
 (defn alert [title]
   (.alert Alert title))
@@ -31,12 +29,21 @@
   (let [current-screen (subscribe [:get-current-screen])
         drawer-state (subscribe [:get-drawer-state])]
     (fn []
-      [theme-provider {:ui-theme {}}
-       [view {:style {:flex 1}}
-        [drawer
-         [drawer-section
-          {:items [{:icon "bookmark-border" :value "Notifications"}]
-           :divider true}]]]])))
+      [view {:style {:flex 1}}
+       [drawer-layout
+        {:drawer-width 200
+         :drawer-position "left"
+         :drawer-type "front"
+         :drawer-background-color "#ddd"
+         :render-navigation-view (fn [] (r/as-element [view
+                                                       {:style
+                                                        {:flex 1
+                                                         :justify-content "center"
+                                                         :align-items "center"}}
+                                                       [text "in drawer"]]))}
+
+        [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+         [text "screen"]]]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])

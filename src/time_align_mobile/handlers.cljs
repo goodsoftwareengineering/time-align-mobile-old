@@ -27,10 +27,12 @@
 
 ;; -- Handlers --------------------------------------------------------------
 
-(reg-event-db
-  :initialize-db
-  [validate-spec]
-  (fn [_ _]
-    app-db))
+(reg-event-db :initialize-db [validate-spec]
+              (fn [_ _]
+                app-db))
 
+(defn set-drawer-state [db [_ drawer-state]]
+  (assoc-in db [:view :drawer] drawer-state))
 
+(reg-event-db :set-drawer-state [validate-spec]
+              set-drawer-state)
