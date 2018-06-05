@@ -140,7 +140,8 @@
                                     :name ::template})
                           start-before-stop)}))
 
-(s/def ::screens (set (keys nav/screens-map)))
+(s/def ::screens (set (->> nav/screens-map
+                           (map (fn [{:keys [id]}] id)))))
 
 (def app-db-spec
   (ds/spec {:spec {:view {:screens (ds/maybe
@@ -148,8 +149,7 @@
                                       :form    (ds/maybe map?)
                                       :range   (ds/maybe {:start ::moment
                                                           :stop  ::moment})
-                                      :filters (ds/maybe [simple-keyword?])}])
-                          :drawer  boolean?}
+                                      :filters (ds/maybe [simple-keyword?])}])}
 
                    :navigation {:current-screen ::screens}
 
@@ -159,8 +159,7 @@
             :name ::app-db}))
 
 (def app-db
-  {:view       {:drawer false
-                :screens nil}
+  {:view       {:screens nil}
    :navigation {:current-screen :day}
    :tasks      [{:id          (random-uuid)
                  :label       "Using Time Align"

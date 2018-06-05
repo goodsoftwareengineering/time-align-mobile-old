@@ -10,13 +10,44 @@
             [time-align-mobile.screens.template-form :as template-form-screen]
             [time-align-mobile.screens.template-list :as template-list-screen]))
 
-(def screens-map {:calendar  calendar-screen/root
-                  :day       day-screen/root
-                  :period    period-form-screen/root
-                  :periods   period-list-screen/root
-                  :queue     queue-screen/root
-                  :report    report-screen/root
-                  :task      task-form-screen/root
-                  :tasks     task-list-screen/root
-                  :templates template-list-screen/root
-                  :template  template-form-screen/root})
+;; https://expo.github.io/vector-icons/
+(def screens-map [{:id             :calendar
+                   :screen          calendar-screen/root
+                   :in-drawer       true
+                   :position-drawer 0
+                   :icon            {:family "Entypo"
+                                     :name   "calendar"}}
+
+                  {:id             :day
+                   :screen          day-screen/root
+                   :in-drawer       true
+                   :position-drawer 1
+                   :icon            {:family "FontAwesome"
+                                     :name   "columns"}}
+
+                  {:id             :period
+                   :screen          period-form-screen/root
+                   :in-drawer       false
+                   :position-drawer nil
+                   :icon            nil}
+
+                  {:id             :periods
+                   :screen          period-list-screen/root
+                   :in-drawer       true
+                   :position-drawer 2
+                   :icon            {:family "Entypo"
+                                     :name   "time-slot"}}
+
+                  {:id             :queue
+                   :screen          queue-screen/root
+                   :in-drawer       true
+                   :position-drawer 3
+                   :icon            {:family "MaterialIcons"
+                                     :name   "queue"}}
+                  ])
+
+;; {:report    report-screen/root
+;;  :task      task-form-screen/root
+;;  :tasks     task-list-screen/root
+;;  :templates template-list-screen/root
+;;  :template  template-form-screen/root}
