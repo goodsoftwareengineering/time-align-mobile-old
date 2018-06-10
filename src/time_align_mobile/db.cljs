@@ -140,18 +140,21 @@
                                     :name ::template})
                           start-before-stop)}))
 
-(s/def ::screens (set (->> nav/screens-map
-                           (map (fn [{:keys [id]}] id)))))
+(def screen-id-set (set (->> nav/screens-map
+                          (map (fn [{:keys [id]}] id)))))
+
+(s/def ::screen screen-id-set)
 
 (def app-db-spec
   (ds/spec {:spec {:view {:screens (ds/maybe
-                                    [{:screen  ::screens
+                                    [{:screen  ::screen
                                       :form    (ds/maybe map?)
                                       :range   (ds/maybe {:start ::moment
                                                           :stop  ::moment})
                                       :filters (ds/maybe [simple-keyword?])}])}
 
-                   :navigation {:current-screen ::screens}
+                   :navigation {:current-screen ::screen
+                                :params (ds/maybe map?)}
 
                    :tasks     [task-spec]
                    :templates (ds/maybe [template-spec])
@@ -160,7 +163,8 @@
 
 (def app-db
   {:view       {:screens nil}
-   :navigation {:current-screen :day}
+   :navigation {:current-screen :day
+                :params         nil}
    :tasks      [{:id          (random-uuid)
                  :label       "Using Time Align"
                  :created     (new js/Date 2018 4 28 15 57)
@@ -168,8 +172,8 @@
                  :data        {:category :default}
                  :color       "#2222aa"
                  :periods     nil}]
-   :templates nil
-   :config {:auto-log-time-align true}})
+   :templates  nil
+   :config     {:auto-log-time-align true}})
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
 ;; old initial state of app-db

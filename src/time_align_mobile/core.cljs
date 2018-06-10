@@ -17,6 +17,7 @@
                                                     view
                                                     image
                                                     Alert
+                                                    touchable-highlight
                                                     gesture-handler
                                                     drawer-layout]] ))
 
@@ -28,17 +29,24 @@
    (->> nav/screens-map
         (filter #(:in-drawer %))
         (sort-by #(:position-drawer %))
-        (map (fn [{:keys [icon]}]
+        (map (fn [{:keys [icon label id]}]
                (let [{:keys [family name]} icon
-                     params {:name name
-                             :key (str "icon-" name)
-                             :size 32}]
-                 (case family
-                   "EvilIcons"     [ei params]
-                   "FontAwesome"   [fa params]
-                   "IonIcons"      [ic params]
-                   "Entypo"        [en params]
-                   "MaterialIcons" [mi params])))))])
+                     params                {:name name
+                                            :size 32}
+                     label-element         [text label]
+                     icon-element          (case family
+                                             "EvilIcons"     [ei params]
+                                             "FontAwesome"   [fa params]
+                                             "IonIcons"      [ic params]
+                                             "Entypo"        [en params]
+                                             "MaterialIcons" [mi params])]
+
+                 [touchable-highlight {:key  (str "icon-" name)
+                                       :on-press #(dispatch [:navigate-to {:screen-id id
+                                                                           :params nil}])}
+                  [view
+                   icon-element
+                   label-element]]))))])
 
 (defn app-root []
   (let [current-screen (subscribe [:get-current-screen])
@@ -53,8 +61,7 @@
          :render-navigation-view (fn [] (r/as-element (drawer-list)))}
 
         [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
-         [text "screen"]]]
-       ])))
+         [text (str @current-screen)]]]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])

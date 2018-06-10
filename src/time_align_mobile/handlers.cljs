@@ -31,8 +31,9 @@
               (fn [_ _]
                 app-db))
 
-(defn set-drawer-state [db [_ drawer-state]]
-  (assoc-in db [:view :drawer] drawer-state))
+(defn navigate-to [db [_ {:keys [screen-id params]}]]
+  (assoc-in db [:navigation] {:current-screen screen-id
+                              :params         params}))
 
-(reg-event-db :set-drawer-state [validate-spec]
-              set-drawer-state)
+(reg-event-db :navigate-to [validate-spec]
+              navigate-to)
