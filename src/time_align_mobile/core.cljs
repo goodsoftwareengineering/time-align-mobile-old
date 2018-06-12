@@ -52,7 +52,7 @@
                    label-element]]))))])
 
 (defn app-root []
-  (let [{:keys [current-screen params]} @(subscribe [:get-navigation])]
+  (let [navigation (subscribe [:get-navigation])]
     (fn []
       [view {:style {:flex 1}}
        [drawer-layout
@@ -62,10 +62,10 @@
          :drawer-background-color "#ddd"
          :render-navigation-view (fn [] (r/as-element (drawer-list)))}
 
-        (if-let [screen-comp (some #(if (= (:id %) current-screen)
+        (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
                                       (:screen %))
                                    nav/screens-map)]
-          (screen-comp params)
+          (screen-comp (:params @navigation))
           [view [text "nope"]])]])))
 
 (defn init []
