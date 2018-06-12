@@ -42,15 +42,17 @@
                                              "MaterialIcons" [mi params])]
 
                  [touchable-highlight {:key  (str "icon-" name)
-                                       :on-press #(dispatch [:navigate-to {:screen-id id
-                                                                           :params nil}])}
+                                       :on-press (fn [_]
+                                                   (println {:current-screen id
+                                                             :params nil})
+                                                   (dispatch [:navigate-to {:current-screen id
+                                                                            :params nil}]))}
                   [view
                    icon-element
                    label-element]]))))])
 
 (defn app-root []
-  (let [current-screen (subscribe [:get-current-screen])
-        drawer-state (subscribe [:get-drawer-state])]
+  (let [{:keys [current-screen params]} @(subscribe [:get-navigation])]
     (fn []
       [view {:style {:flex 1}}
        [drawer-layout
@@ -60,8 +62,11 @@
          :drawer-background-color "#ddd"
          :render-navigation-view (fn [] (r/as-element (drawer-list)))}
 
-        [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
-         [text (str @current-screen)]]]])))
+        (if-let [screen-comp (some #(if (= (:id %) current-screen)
+                                      (:screen %))
+                                   nav/screens-map)]
+          (screen-comp params)
+          [view [text "nope"]])]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])

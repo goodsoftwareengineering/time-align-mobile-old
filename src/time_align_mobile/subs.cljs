@@ -1,16 +1,10 @@
 (ns time-align-mobile.subs
   (:require [re-frame.core :refer [reg-sub]]))
 
-(defn get-current-screen [db _]
-  (get-in db [:navigation :current-screen]))
+(defn get-navigation [db _]
+  (get-in db [:navigation]))
 
-(reg-sub :get-current-screen get-current-screen)
-
-(defn get-drawer-state [db _]
-  (get-in db [:view :drawer]))
-
-(reg-sub :get-drawer-state get-drawer-state)
-
+(reg-sub :get-navigation get-navigation)
 
 
 

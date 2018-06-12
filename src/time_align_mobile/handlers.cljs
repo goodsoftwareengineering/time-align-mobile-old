@@ -31,8 +31,8 @@
               (fn [_ _]
                 app-db))
 
-(defn navigate-to [db [_ {:keys [screen-id params]}]]
-  (assoc-in db [:navigation] {:current-screen screen-id
+(defn navigate-to [db [_ {:keys [current-screen params]}]]
+  (assoc-in db [:navigation] {:current-screen current-screen
                               :params         params}))
 
 (reg-event-db :navigate-to [validate-spec]

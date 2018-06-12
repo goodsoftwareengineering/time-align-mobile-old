@@ -14,14 +14,24 @@ UID=$UID docker-compose up
 
 Make sure the device and dev env host are on same network.  
 Run the next two commands in separate shells (they are both interactive).  
-You will need an expo login to start the node container.
+You will need an expo login to start the node container.  
+
+Yarn install the first time before compiling with figwheel
+```
+docker-compose exec node /bin/bash
+yarn install
+exit
+```
+
+Compile with Figwheel
 ```
 docker-compose exec clj /bin/bash
 lein figwheel
 ```
 
+Start expo
 ```
-docker-compose exec node
+docker-compose exec node /bin/bash
 exp start --lan
 ```
 
