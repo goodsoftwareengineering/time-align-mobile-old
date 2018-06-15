@@ -66,7 +66,7 @@
                                       (:screen %))
                                    nav/screens-map)]
           (screen-comp (:params @navigation))
-          [view [text "nope"]])]])))
+          [view [text "That screen doesn't exist"]])]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])
