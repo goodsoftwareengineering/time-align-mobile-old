@@ -26,3 +26,9 @@
 (def gesture-handler (.-GestureHandler expo))
 (def drawer-layout (r/adapt-react-class (.-DrawerLayout gesture-handler)))
 ;; (def position-left (.-Left (.-positions (.-DrawerLayout gesture-handler)))) ;; just using the string "left" because that is all this resolves to
+
+(def text-input (r/adapt-react-class (.-TextInput ReactNative)))
+
+;; (def date-library (js/require "react-native-modal-datetime-picker"))
+;; (def date-picker-raw-react (.-DateTimePicker date-library))
+;; (def date-time-picker (r/adapt-react-class date-picker-raw-react))
