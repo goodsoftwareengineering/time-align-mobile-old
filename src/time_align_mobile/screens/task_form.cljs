@@ -1,12 +1,62 @@
 (ns time-align-mobile.screens.task-form
-  (:require [time-align-mobile.js-imports :refer [view text text-input]] ))
+  (:require [time-align-mobile.js-imports :refer [view
+                                                  text
+                                                  text-input
+                                                  touchable-highlight]]
+            [clojure.walk :refer [walk]]))
+
+(defn structured-data [current-path data]
+  ;; breadcrumbs
+
+  (walk (fn [[k v]]
+          (let [value-element
+                (cond
+                  (map? v) [touchable-highlight
+                            {:key      (str "structured-data-field-" k "-" v)
+                             :on-press (fn [_]
+                                         (println v))}
+                            [view
+                             [text "button here to go to the nested map"]]]
+
+                  (coll? v) [touchable-highlight
+                             {:key      (str "structured-data-field-" k "-" v)
+                              :on-press (fn [_]
+                                          (println v))}
+                             [view
+                              [text "button here to go to the collection"]]]
+
+                  (number? v) [text-input
+                               {:default-value  v
+                                :style          {:height 40
+                                                 :width  200}
+                                :spell-check    true
+                                :on-change-text (fn [text] (println text))}]
+
+                  (string? v) [text-input
+                               {:default-value  v
+                                :style          {:height 40
+                                                 :width  200}
+                                :spell-check    true
+                                :on-change-text (fn [text] (println text))}]
+
+                  :else [text "not a supported element"])]
+
+           [view
+            [text {:style {:color         "grey"
+                           :padding-right 5}}
+             k]
+            value-element]))
+
+        identity
+
+        (into [] (get-in current-path data data))))
 
 (defn root [{:keys [task]}]
   (let [task {:id          (random-uuid)
               :label       "Using Time Align"
               :created     (new js/Date 2018 4 28 15 57)
               :last-edited (new js/Date 2018 4 28 15 57)
-              :data        {:category :default}
+              :data        {:category "default"}
               :color       "#2222aa"
               :periods     nil}]
 
@@ -34,12 +84,13 @@
 
      ;; :data        map?
      ;; https://clojuredocs.org/clojure.walk/walk
-     ;;c
+     [view {:style {:flex 1
+                    :flex-direction "row"
+                    :align-items "center"}}
+      [text {:style {:color "grey"
+                     :padding-right 5}} ":data"]
+      (structured-data [] (:data task))]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone
-     ]
-
-
-    )
-  )
+     ]))
