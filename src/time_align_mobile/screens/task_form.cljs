@@ -18,17 +18,26 @@
                      :padding-right 5}} ":id"]
       [text (str (:id task))]]
 
-     [view {:style {:flex 1 :flex-direction "row"}}
+     [view {:style {:flex 1
+                    :flex-direction "row"
+                    :align-items "center"}}
       [text {:style {:color "grey"
                      :padding-right 5}} ":label"]
-      [text-input {:value (:label task)
-                   :editable true}]]
-     ;; :label       string? ;; regular spell checking string
-     ;; :created     ::moment ;; can't edit display date in their time zone
-     ;; :last-edited ::moment ;; can't edit display date in their time zone
-     ;; :data        map?
+      [text-input {:placeholder (:label task)
+                   :style {:height 40
+                           :width 200}
+                   :spell-check true
+                   :on-change-text (fn [text] (println text))}]]
+
      ;; :color       ::color
      ;; :periods     (ds/maybe [period-spec])}
+
+     ;; :data        map?
+     ;; https://clojuredocs.org/clojure.walk/walk
+     ;;c
+
+     ;; :created     ::moment ;; can't edit display date in their time zone
+     ;; :last-edited ::moment ;; can't edit display date in their time zone
      ]
 
 
