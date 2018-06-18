@@ -26,7 +26,7 @@
                               [text "button here to go to the collection"]]]
 
                   (number? v) [text-input
-                               {:default-value  v
+                               {:default-value  (str v)
                                 :style          {:height 40
                                                  :width  200}
                                 :spell-check    true
@@ -39,15 +39,17 @@
                                 :spell-check    true
                                 :on-change-text (fn [text] (println text))}]
 
+                  (boolean? v) [text "need a checkbox for booleans"]
+
                   :else [text "not a supported element"])]
 
-           [view
-            [text {:style {:color         "grey"
-                           :padding-right 5}}
-             k]
-            value-element]))
+            [view {:style {:flex 1 :flex-direction "row" :align-items "center"}}
+             [text {:style {:color         "grey"
+                            :padding-right 5}}
+              k]
+             value-element]))
 
-        identity
+        (fn [elements] (into [view {:style {:flex 1}}] elements))
 
         (into [] (get-in current-path data data))))
 
@@ -56,7 +58,13 @@
               :label       "Using Time Align"
               :created     (new js/Date 2018 4 28 15 57)
               :last-edited (new js/Date 2018 4 28 15 57)
-              :data        {:category "default"}
+              :data        {:string "default"
+                            :boolean  true
+                            :number 1.2
+                            :another-number 555
+                            :map-of-stuff {:key-key :key-val}
+                            :vector [1 2 3 "string"]
+                            :list   '(1 2 3 4)}
               :color       "#2222aa"
               :periods     nil}]
 
