@@ -32,6 +32,7 @@
         (map (fn [{:keys [icon label id]}]
                (let [{:keys [family name]} icon
                      params                {:name name
+                                            :style {:margin-right 25}
                                             :size 32}
                      label-element         [text label]
                      icon-element          (case family
@@ -47,7 +48,11 @@
                                                              :params nil})
                                                    (dispatch [:navigate-to {:current-screen id
                                                                             :params nil}]))}
-                  [view
+                  [view {:flex-direction "row"
+                         :justify-content "flex-start"
+                         :align-items "center"
+                         :padding-left 20
+                         :width 200}
                    icon-element
                    label-element]]))))])
 
