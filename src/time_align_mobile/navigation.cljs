@@ -61,9 +61,10 @@
                   {:id              :task
                    :label           "task"
                    :screen          task-form-screen/root
-                   :in-drawer       false
-                   :position-drawer nil
-                   :icon            nil}
+                   :in-drawer       true
+                   :position-drawer 999
+                   :icon            {:family "Entypo"
+                                     :name "credit"}}
 
                   {:id              :tasks
                    :label           "tasks"
