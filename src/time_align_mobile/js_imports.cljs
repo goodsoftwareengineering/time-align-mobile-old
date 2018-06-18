@@ -22,6 +22,7 @@
 (def image (r/adapt-react-class (.-Image ReactNative)))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
 (def Alert (.-Alert ReactNative))
+(def switch (r/adapt-react-class (.-Switch ReactNative)))
 
 (def gesture-handler (.-GestureHandler expo))
 (def drawer-layout (r/adapt-react-class (.-DrawerLayout gesture-handler)))
