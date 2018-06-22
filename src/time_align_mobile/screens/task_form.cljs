@@ -11,7 +11,7 @@
   [touchable-highlight
    {:key      (str "structured-data-field-" k "-" v)
     :on-press (fn [_]
-                (println (let [new-path (into [k] current-path)]
+                (println (let [new-path (into current-path [k])]
                            {:new-path new-path})))}
    [view
     [text "button here to go to the nested map"]]])
@@ -53,7 +53,7 @@
   [switch {:on-value-change (fn [new-v] (println new-v))
            :value v}])
 
-(defn value-element-picker [v data current-path]
+(defn value-element-picker [v k data current-path]
   (cond
     (map? v)     (map-button current-path k v)
     (coll? v)    (coll-button current-path k v)
@@ -62,9 +62,22 @@
     (boolean? v) (boolean-input data current-path k v)
     :else        [text "not a supported element"]))
 
-(defn map-input [current-path data subset]
+(defn breadcrumb-keys-buttons [current-path]
+  (map-indexed
+   (fn [i k]
+     [touchable-highlight
+      {:on-press (fn [_]
+                   (println (str "pressed "
+                                 (take (+ 1 i) current-path)
+                                 " in collection current path")))}
+      [text {:style {:color         "grey"
+                     :padding-right 5}} (str k)]])
+   current-path))
+
+(defn map-element [current-path data subset]
+  (breadcrumb-keys-buttons current-path)
   (walk (fn [[k v]]
-          (let [value-element (value-element-picker v data current-path)]
+          (let [value-element (value-element-picker v k data current-path)]
 
             [view {:style {:flex 1 :flex-direction "row" :align-items "center"}}
              [text {:style {:color         "grey"
@@ -76,8 +89,14 @@
 
         (into [] subset)))
 
-(defn collection-input [current-path data subset]
-  [view (map (fn [v] (value-element-picker v data current-path)) subset)])
+(defn collection-element [current-path data subset]
+  [view
+
+   (breadcrumb-keys-buttons current-path)
+
+   (map
+    (fn [v] (value-element-picker v (last current-path) data current-path))
+    subset)])
 
 (defn structured-data [current-path data]
   ;; TODO breadcrumbs
@@ -85,9 +104,9 @@
   (let [subset (get-in data current-path data)]
 
     (cond
-      (map? subset) (map-input current-path data subset)
+      (map? subset) (map-element current-path data subset)
 
-      (coll? subset) (collection-input current-path data subset)
+      (coll? subset) (collection-element current-path data subset)
 
       :else [view [text "subset isn't a map or collection"]])))
 
@@ -100,7 +119,9 @@
                             :boolean        true
                             :number         1.2
                             :another-number 555
-                            :map-of-stuff   {:key-key :key-val}
+                            :map            {:string-in-map "key-val"
+                                             :vec-in-map    [1 2 3 4 5]
+                                             :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
                             :vector         [1 2 3 "string"]
                             :list           '(1 2 3 4)}
               :color       "#2222aa"
@@ -137,9 +158,10 @@
      [view {:style {:flex           1
                     :flex-direction "row"
                     :align-items    "flex-start"}}
-      [text {:style {:color         "grey"
-                     :padding-right 5}} ":data"]
-      (structured-data [:map-of-stuff] (:data task))]
+      [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
+       [text {:style {:color         "grey"
+                      :padding-right 5}} ":data"]]
+      (structured-data [:map :map-in-map] (:data task))]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone
