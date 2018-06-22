@@ -32,7 +32,7 @@
                      :width  200}
     :spell-check    true
     :on-change-text (fn [new-v]
-                      (println (let [new-path (into [k] current-path)
+                      (println (let [new-path (into current-path [k] )
                                      new-data (assoc-in data new-path (js/parseFloat new-v))]
                                  {:new-path new-path
                                   :new-data new-data})))}])
@@ -44,7 +44,7 @@
                      :width  200}
     :spell-check    true
     :on-change-text (fn [new-v]
-                      (println (let [new-path (into [k] current-path)
+                      (println (let [new-path (into current-path [k])
                                      new-data (assoc-in data new-path new-v)]
                                  {:new-path new-path
                                   :new-data new-data})))}])
@@ -53,6 +53,19 @@
   [switch {:on-value-change (fn [new-v] (println new-v))
            :value v}])
 
+(defn key-input [data current-path k v]
+  [text-input
+   {:default-value  (str v)
+    :style          {:height 40
+                     :width  200}
+    :spell-check    true
+    :on-change-text (fn [new-v] ;; TODO this errors on all the inputs
+                      (println (let [new-path (into  current-path [k])
+                                     new-data (assoc-in data new-path
+                                                        (keyword new-v))]
+                                 {:new-path new-path
+                                  :new-data new-data})))}])
+
 (defn value-element-picker [v k data current-path]
   (cond
     (map? v)     (map-button current-path k v)
@@ -60,6 +73,7 @@
     (number? v)  (number-input data current-path k v)
     (string? v)  (string-input data current-path k v)
     (boolean? v) (boolean-input data current-path k v)
+    (keyword? v) (key-input data current-path k v)
     :else        [text "not a supported element"]))
 
 (defn breadcrumb-keys-buttons [current-path]
@@ -116,15 +130,16 @@
               :label       "Using Time Align"
               :created     (new js/Date 2018 4 28 15 57)
               :last-edited (new js/Date 2018 4 28 15 57)
-              :data        {:string         "default"
-                            :boolean        true
-                            :number         1.2
-                            :another-number 555
-                            :map            {:string-in-map "key-val"
-                                             :vec-in-map    [1 2 3 4 5]
-                                             :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
-                            :vector         [1 2 3 "string"]
-                            :list           '(1 2 3 4)}
+              :data        {:string           "default"
+                            :boolean          true
+                            :number           1.2
+                            :another-number   555
+                            :map              {:string-in-map "key-val"
+                                               :vec-in-map    [1 2 3 4 5]
+                                               :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
+                            :vector           [1 2 3 "string"]
+                            :vector-with-keys [:a :b "c"]
+                            :list             '(1 2 3 4)}
               :color       "#2222aa"
               :periods     nil}
         ;; current-path (subscribe [:get-task-form-structured-data-current-path])
@@ -162,7 +177,7 @@
       [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":data"]]
-      (structured-data [:map :map-in-map] (:data task))]
+      (structured-data [:vector-with-keys] (:data task))]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone
