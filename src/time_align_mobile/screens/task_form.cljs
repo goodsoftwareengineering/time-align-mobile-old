@@ -20,7 +20,7 @@
   [touchable-highlight
    {:key      (str "structured-data-field-" k "-" v)
     :on-press (fn [_]
-                (println (let [new-path (into [k] current-path)]
+                (println (let [new-path (into current-path [k])]
                            {:new-path new-path})))}
    [view
     [text "button here to go to the collection"]]])
@@ -75,19 +75,20 @@
    current-path))
 
 (defn map-element [current-path data subset]
-  (breadcrumb-keys-buttons current-path)
-  (walk (fn [[k v]]
-          (let [value-element (value-element-picker v k data current-path)]
+  [view
+   (breadcrumb-keys-buttons current-path)
+   (walk (fn [[k v]]
+           (let [value-element (value-element-picker v k data current-path)]
 
-            [view {:style {:flex 1 :flex-direction "row" :align-items "center"}}
-             [text {:style {:color         "grey"
-                            :padding-right 5}}
-              k]
-             value-element]))
+             [view {:style {:flex 1 :flex-direction "row" :align-items "center"}}
+              [text {:style {:color         "grey"
+                             :padding-right 5}}
+               k]
+              value-element]))
 
-        (fn [elements] (into [view {:style {:flex 1}}] elements))
+         (fn [elements] (into [view {:style {:flex 1}}] elements))
 
-        (into [] subset)))
+         (into [] subset))])
 
 (defn collection-element [current-path data subset]
   [view
