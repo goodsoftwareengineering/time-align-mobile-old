@@ -2,128 +2,9 @@
   (:require [time-align-mobile.js-imports :refer [view
                                                   text
                                                   text-input
-                                                  touchable-highlight
-                                                  switch]]
-            [re-frame.core :refer [subscribe dispatch]]
-            [clojure.walk :refer [walk]]))
-
-(defn map-button [current-path k v]
-  [touchable-highlight
-   {:key      (str "structured-data-field-" k "-" v)
-    :on-press (fn [_]
-                (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))}
-   [view
-    [text "button here to go to the nested map"]]])
-
-(defn coll-button [current-path k v]
-  [touchable-highlight
-   {:key      (str "structured-data-field-" k "-" v)
-    :on-press (fn [_]
-                (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))}
-   [view
-    [text "button here to go to the collection"]]])
-
-(defn number-input [data current-path k v]
-  [text-input
-   {:default-value  (str v)
-    :style          {:height 40
-                     :width  200}
-    :spell-check    true
-    :on-change-text (fn [new-v]
-                      (println (let [new-path (into current-path [k] )
-                                     new-data (assoc-in data new-path (js/parseFloat new-v))]
-                                 {:new-path new-path
-                                  :new-data new-data})))}])
-
-(defn string-input [data current-path k v]
-  [text-input
-   {:default-value  v
-    :style          {:height 40
-                     :width  200}
-    :spell-check    true
-    :on-change-text (fn [new-v]
-                      (println (let [new-path (into current-path [k])
-                                     new-data (assoc-in data new-path new-v)]
-                                 {:new-path new-path
-                                  :new-data new-data})))}])
-
-(defn boolean-input [data current-path k v]
-  [switch {:on-value-change (fn [new-v] (println new-v))
-           :value v}])
-
-(defn key-input [data current-path k v]
-  [text-input
-   {:default-value  (str v)
-    :style          {:height 40
-                     :width  200}
-    :spell-check    true
-    :on-change-text (fn [new-v] ;; TODO this errors on all the inputs
-                      (println (let [new-path (into  current-path [k])
-                                     new-data (assoc-in data new-path
-                                                        (keyword new-v))]
-                                 {:new-path new-path
-                                  :new-data new-data})))}])
-
-(defn value-element-picker [v k data current-path]
-  (cond
-    (map? v)     (map-button current-path k v)
-    (coll? v)    (coll-button current-path k v)
-    (number? v)  (number-input data current-path k v)
-    (string? v)  (string-input data current-path k v)
-    (boolean? v) (boolean-input data current-path k v)
-    (keyword? v) (key-input data current-path k v)
-    :else        [text "not a supported element"]))
-
-(defn breadcrumb-keys-buttons [current-path]
-  (map-indexed
-   (fn [i k]
-     [touchable-highlight
-      {:on-press (fn [_]
-                   (println (str "pressed "
-                                 (take (+ 1 i) current-path)
-                                 " in collection current path")))}
-      [text {:style {:color         "grey"
-                     :padding-right 5}} (str k)]])
-   current-path))
-
-(defn map-element [current-path data subset]
-  [view
-   (breadcrumb-keys-buttons current-path)
-   (walk (fn [[k v]]
-           (let [value-element (value-element-picker v k data current-path)]
-
-             [view {:style {:flex 1 :flex-direction "row" :align-items "center"}}
-              [text {:style {:color         "grey"
-                             :padding-right 5}}
-               k]
-              value-element]))
-
-         (fn [elements] (into [view {:style {:flex 1}}] elements))
-
-         (into [] subset))])
-
-(defn collection-element [current-path data subset]
-  [view
-
-   (breadcrumb-keys-buttons current-path)
-
-   (map-indexed
-    (fn [i v] (value-element-picker v i data current-path))
-    subset)])
-
-(defn structured-data [current-path data]
-  ;; TODO breadcrumbs
-
-  (let [subset (get-in data current-path data)]
-
-    (cond
-      (map? subset) (map-element current-path data subset)
-
-      (coll? subset) (collection-element current-path data subset)
-
-      :else [view [text "subset isn't a map or collection"]])))
+                                                  touchable-highlight]]
+            [time-align-mobile.components.structured-data :refer [structured-data]]
+            [re-frame.core :refer [subscribe dispatch]]))
 
 (defn root [{:keys [task]}]
   (let [task {:id          (random-uuid)
@@ -134,6 +15,7 @@
                             :boolean          true
                             :number           1.2
                             :another-number   555
+                            :keyword-as-value :keyword-value
                             :map              {:string-in-map "key-val"
                                                :vec-in-map    [1 2 3 4 5]
                                                :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
@@ -177,8 +59,13 @@
       [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":data"]]
-      (structured-data [:vector-with-keys] (:data task))]
+      (structured-data {:current-path [:map :map-in-map :list-in-map-in-map]
+                        :data (:data task)
+                        :update (fn [updated-stuff]
+                                  ;; TODO spec this as a function that needs an argument with a structure
+                                  (println updated-stuff))})]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone
+
      ]))
