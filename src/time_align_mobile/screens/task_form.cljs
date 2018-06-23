@@ -109,8 +109,8 @@
 
    (breadcrumb-keys-buttons current-path)
 
-   (map
-    (fn [v] (value-element-picker v (last current-path) data current-path))
+   (map-indexed
+    (fn [i v] (value-element-picker v i data current-path))
     subset)])
 
 (defn structured-data [current-path data]
