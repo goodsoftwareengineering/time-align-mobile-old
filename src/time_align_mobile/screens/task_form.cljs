@@ -59,13 +59,18 @@
       [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":data"]]
-      (structured-data {:current-path [:map :map-in-map]
-                        :data (:data task)
-                        :update (fn [x]
-                                  ;; TODO spec this as a function that needs an argument with a structure
-                                  (println x))
-                        :navigate (fn [x]
-                                    (println x))})]
+      (structured-data {:current-path [:map]
+                        :data         (:data task)
+                        :update       (fn [x]
+                                        ;; TODO spec this as a function that needs an argument with a structure
+                                        (println "updating ...")
+                                        (println x))
+                        :navigate     (fn [x]
+                                        (println "navigating ...")
+                                        (println x))
+                        :remove       (fn [x]
+                                        (println "removing ...")
+                                        (println x))})]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone

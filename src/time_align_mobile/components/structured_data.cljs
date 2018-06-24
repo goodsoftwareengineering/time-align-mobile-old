@@ -3,7 +3,8 @@
                                                   text
                                                   text-input
                                                   touchable-highlight
-                                                  switch]]
+                                                  switch
+                                                  alert]]
             [re-frame.core :refer [subscribe dispatch]]
             [clojure.walk :refer [walk]]))
 
@@ -83,44 +84,84 @@
   (map-indexed
    (fn [i k]
      [touchable-highlight
-      {:on-press #(navigate (into [] (take (+ 1 i) current-path)))}
+      {:on-press #(navigate (into [] (take (+ 1 i) current-path)))
+       :key (str (into current-path [i k]) "-breadcrumb")}
       [text {:style {:color         "grey"
                      :padding-right 5}} (str k)]])
    current-path))
 
-(defn map-element [{:keys [current-path data subset update navigate]}]
+(defn map-element [{:keys [current-path data subset update navigate remove]}]
   [view
    (breadcrumb-keys-buttons current-path navigate)
    (walk (fn [[k v]]
-           (let [value-element (value-element-picker {:v v
-                                                      :k k
-                                                      :data data
+           (let [value-element (value-element-picker {:v            v
+                                                      :k            k
+                                                      :data         data
                                                       :current-path current-path
-                                                      :update update})]
+                                                      :update       update})]
 
-             [view {
-                    :style {:flex 1 :flex-direction "row" :align-items "center"}}
-              [text {:style {:color         "grey"
-                             :padding-right 5}}
-               k]
+             [view {:style {:flex-direction "row" :align-items "center"}
+                    :key   (str (reduce str (into current-path [k v]))
+                                "map-key-value")}
+              [touchable-highlight {:on-long-press
+                                    (fn [_]
+                                      (alert
+                                       "Do you want to delete this?"
+                                       (str "key: " k " value: " v)
+                                       (clj->js
+                                        [{:text    "Cancel"
+                                          :onPress #(println "canceled delete")
+                                          :style   "cancel"}
+                                         {:text    "Delete"
+                                          :onPress #(remove
+                                                     {:path (into
+                                                             current-path
+                                                             [k])})}])))}
+               
+               [text {:style {:color         "grey"
+                              :padding-right 5}}
+                k]]
               value-element]))
 
          (fn [elements] (into [view {:style {:flex 1}}] elements))
 
          (into [] subset))])
 
-(defn collection-element [{:keys [current-path data subset update navigate]}]
+(defn collection-element [{:keys [current-path
+                                  data subset
+                                  update navigate
+                                  remove]}]
   [view
    (breadcrumb-keys-buttons current-path navigate)
    (map-indexed
-    (fn [i v] (value-element-picker {:v v
-                                     :k i
-                                     :data data
-                                     :current-path current-path
-                                     :update update}))
+    (fn [i v] [view {:style {:flex-direction "row" :align-items "center"}
+                     :key (str (reduce str (into current-path [v]))
+                               "collection-value-input")}
+               [touchable-highlight {:on-long-press
+                                     (fn [_]
+                                       (alert
+                                        "Do you want to delete this?"
+                                        (str "value: " v)
+                                        (clj->js
+                                         [{:text "Cancel"
+                                           :onPress #(println "canceled delete")
+                                           :style "cancel"}
+                                          {:text "Delete"
+                                           :onPress #(remove
+                                                      {:path (into
+                                                              current-path
+                                                              [i])})}])))}
+                [text {:style {:color         "grey"
+                               :padding-right 5}}
+                 (str "[ " i " ]")]]
+               (value-element-picker {:v            v
+                                      :k            i
+                                      :data         data
+                                      :current-path current-path
+                                      :update       update})])
     subset)])
 
-(defn structured-data [{:keys [current-path data update navigate]}]
+(defn structured-data [{:keys [current-path data update navigate remove]}]
   ;; TODO spec this and all component entry points
   (let [current-path (if (and (some? current-path) (some? (first current-path)))
                        current-path
@@ -130,7 +171,8 @@
                       :data         data
                       :subset       subset
                       :update       update
-                      :navigate     navigate}]
+                      :navigate     navigate
+                      :remove       remove}]
     (cond
       (map? subset)  (map-element element-arg)
       (coll? subset) (collection-element element-arg)
