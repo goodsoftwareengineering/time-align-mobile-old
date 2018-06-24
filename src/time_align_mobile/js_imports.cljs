@@ -28,6 +28,7 @@
   ([title subtitle]
    (.alert Alert title subtitle))
   ([title subtitle options]
+   ;; TODO wrap options in a clj->js and camel->kebab thread
    (.alert Alert title subtitle options)))
 (def switch (r/adapt-react-class (.-Switch ReactNative)))
 
