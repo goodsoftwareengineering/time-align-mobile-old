@@ -79,19 +79,18 @@
                                     "-fallback-input")}
                     "not a supported element"])))
 
-(defn breadcrumb-keys-buttons [current-path]
+(defn breadcrumb-keys-buttons [current-path navigate]
   (map-indexed
    (fn [i k]
      [touchable-highlight
-      {:on-press (fn [_]
-                   (println {:new-path (into [] (take (+ 1 i) current-path))}))}
+      {:on-press #(navigate (into [] (take (+ 1 i) current-path)))}
       [text {:style {:color         "grey"
                      :padding-right 5}} (str k)]])
    current-path))
 
-(defn map-element [{:keys [current-path data subset update]}]
+(defn map-element [{:keys [current-path data subset update navigate]}]
   [view
-   (breadcrumb-keys-buttons current-path)
+   (breadcrumb-keys-buttons current-path navigate)
    (walk (fn [[k v]]
            (let [value-element (value-element-picker {:v v
                                                       :k k
@@ -110,9 +109,9 @@
 
          (into [] subset))])
 
-(defn collection-element [{:keys [current-path data subset update]}]
+(defn collection-element [{:keys [current-path data subset update navigate]}]
   [view
-   (breadcrumb-keys-buttons current-path)
+   (breadcrumb-keys-buttons current-path navigate)
    (map-indexed
     (fn [i v] (value-element-picker {:v v
                                      :k i
@@ -121,18 +120,30 @@
                                      :update update}))
     subset)])
 
-(defn structured-data [{:keys [current-path data update]}]
+(defn structured-data [{:keys [current-path data update navigate]}]
   ;; TODO spec this and all component entry points
   (let [current-path (if (and (some? current-path) (some? (first current-path)))
                        current-path
                        [])
-        subset (get-in data current-path data)
-        element-arg {:current-path current-path
-                     :data data
-                     :subset subset
-                     :update update}]
+        subset       (get-in data current-path data)
+        element-arg  {:current-path current-path
+                      :data         data
+                      :subset       subset
+                      :update       update
+                      :navigate     navigate}]
     (cond
-      (map? subset) (map-element element-arg)
+      (map? subset)  (map-element element-arg)
       (coll? subset) (collection-element element-arg)
-      :else [view [text "subset isn't a map or collection"]])))
+      :else          [view [text "subset isn't a map or collection"]])))
 
+;; TODO add navigate fn in style of update
+;; - map/coll button
+;; - breadcrumbs
+
+;; TODO add addition fn in style of update
+;; TODO add remove fn in style of update
+;; TODO add buttons for new elements
+;; - map-element
+;;   - new key/val set
+;; - coll-element
+;;   - new val
