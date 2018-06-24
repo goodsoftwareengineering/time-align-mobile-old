@@ -146,7 +146,20 @@
 (s/def ::screen screen-id-set)
 
 (def app-db-spec
-  (ds/spec {:spec {:view {:task-form {:structured-data-current-path [keyword?]}}
+  (ds/spec {:spec {:view {:task-form {:structured-data-current-path [keyword?]
+                                      :new-map-item {:key (ds/maybe keyword?)
+                                                     :type (ds/maybe (s/spec
+                                                                      #{:map
+                                                                        :boolean
+                                                                        :string
+                                                                        :number
+                                                                        :coll}))}
+                                      :new-coll-item {:type (ds/maybe (s/spec
+                                                                       #{:map
+                                                                         :boolean
+                                                                         :string
+                                                                         :number
+                                                                         :coll}))}}}
 
                    :navigation {:current-screen ::screen
                                 :params (ds/maybe map?)}
@@ -157,7 +170,10 @@
             :name ::app-db}))
 
 (def app-db
-  {:view       {:task-form {:structured-data-current-path []}}
+  {:view       {:task-form {:structured-data-current-path []
+                            :new-map-item {:key nil
+                                           :type nil}
+                            :new-coll-item {:type nil}}}
    :navigation {:current-screen :day
                 :params         nil}
    :tasks      [{:id          (random-uuid)

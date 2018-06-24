@@ -70,7 +70,20 @@
                                         (println x))
                         :remove       (fn [x]
                                         (println "removing ...")
-                                        (println x))})]
+                                        (println x))
+                        :new-map-item-key :new-item-key
+                        :new-map-item-type :string
+                        :update-new-map-item-key (fn [x]
+                                                   (println
+                                                    "updating new map item key")
+                                                   (println x))
+                        :update-new-map-item-type (fn [x]
+                                                    (println
+                                                     "updating new map item type")
+                                                    (println x))
+
+                        :add-new-map-item (fn [_]
+                                            (println "adding new map item"))})]
 
      ;; :created     ::moment ;; can't edit display date in their time zone
      ;; :last-edited ::moment ;; can't edit display date in their time zone

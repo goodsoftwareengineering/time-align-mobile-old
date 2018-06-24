@@ -90,7 +90,17 @@
                      :padding-right 5}} (str k)]])
    current-path))
 
-(defn map-element [{:keys [current-path data subset update navigate remove]}]
+(defn map-element [{:keys [current-path
+                           data
+                           subset
+                           update
+                           navigate
+                           remove
+                           new-map-item-key
+                           new-map-item-type
+                           update-new-map-item-key
+                           update-new-map-item-type
+                           add-new-map-item]}]
   [view
    (breadcrumb-keys-buttons current-path navigate)
    (walk (fn [[k v]]
@@ -110,7 +120,7 @@
                                        (str "key: " k " value: " v)
                                        (clj->js
                                         [{:text    "Cancel"
-                                          :onPress #(println "canceled delete")
+                                          :onPress #(println "canceled delete") ;; TODO find a camel to kebab thing to wrap this or do it in js_imports
                                           :style   "cancel"}
                                          {:text    "Delete"
                                           :onPress #(remove
@@ -125,7 +135,29 @@
 
          (fn [elements] (into [view {:style {:flex 1}}] elements))
 
-         (into [] subset))])
+         (into [] subset))
+
+   [view {:style {:flex-direction "row" :align-items "center"}}
+    [text-input {:style {:color "purple" :margin-right 25}
+                 :default-value new-map-item-key
+                 :on-change-text update-new-map-item-key}]
+    [view {:style {}}
+     [touchable-highlight {:on-press #(update-new-map-item-type :string)}
+      [text "string"]]
+     [touchable-highlight {:on-press #(update-new-map-item-type :map)}
+      [text "map"]]
+     [touchable-highlight {:on-press #(update-new-map-item-type :coll)}
+      [text "coll"]]
+     [touchable-highlight {:on-press #(update-new-map-item-type :number)}
+      [text "number"]]
+     [touchable-highlight {:on-press #(update-new-map-item-type :boolean)}
+      [text "boolean"]]
+     [touchable-highlight {:on-press #(update-new-map-item-type :keyword)}
+      [text "keyword"]]
+     ]
+    ]
+   [touchable-highlight {:on-press add-new-map-item} [text "add new item"]]
+   ])
 
 (defn collection-element [{:keys [current-path
                                   data subset
@@ -161,8 +193,17 @@
                                       :update       update})])
     subset)])
 
-(defn structured-data [{:keys [current-path data update navigate remove]}]
-  ;; TODO spec this and all component entry points
+(defn structured-data [{:keys [current-path
+                               data
+                               update
+                               new-map-item-key
+                               new-map-item-type
+                               update-new-map-item-key
+                               update-new-map-item-type
+                               add-new-map-item
+                               navigate
+                               remove]}]
+  ;; TODO spec this and all component entry points to get rid of what is below
   (let [current-path (if (and (some? current-path) (some? (first current-path)))
                        current-path
                        [])
@@ -172,20 +213,14 @@
                       :subset       subset
                       :update       update
                       :navigate     navigate
-                      :remove       remove}]
+                      :remove       remove
+                      :new-map-item-key new-map-item-key
+                      :new-map-item-type new-map-item-type
+                      :update-new-map-item-key update-new-map-item-key
+                      :update-new-map-item-type update-new-map-item-type
+                      :add-new-map-item add-new-map-item}]
     (cond
       (map? subset)  (map-element element-arg)
       (coll? subset) (collection-element element-arg)
       :else          [view [text "subset isn't a map or collection"]])))
 
-;; TODO add navigate fn in style of update
-;; - map/coll button
-;; - breadcrumbs
-
-;; TODO add addition fn in style of update
-;; TODO add remove fn in style of update
-;; TODO add buttons for new elements
-;; - map-element
-;;   - new key/val set
-;; - coll-element
-;;   - new val
