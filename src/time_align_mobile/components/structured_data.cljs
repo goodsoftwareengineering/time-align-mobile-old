@@ -38,13 +38,13 @@
 
 (defn string-input [{:keys [v k data current-path update]}]
   [text-input
-   {:key (str (reduce str (into current-path [v])) "string-input")
+   {:key            (str (reduce str (into current-path [v])) "string-input")
     :default-value  v
     :style          {:height 40
                      :width  200}
     :spell-check    true
-    :on-change-text #(update {:path (into  current-path [k])
-                             :value %})}])
+    :on-change-text #(update {:path  (into  current-path [k])
+                              :value %})}])
 
 (defn boolean-input [{:keys [v k data current-path update]}]
   [switch {:key (str (reduce str (into current-path [v])) "boolean-input")

@@ -1,7 +1,9 @@
 (ns time-align-mobile.screens.task-form
   (:require [time-align-mobile.js-imports :refer [view
+                                                  keyboard-aware-scroll-view
                                                   text
                                                   text-input
+                                                  platform
                                                   touchable-highlight]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
             [re-frame.core :refer [subscribe dispatch]]))
@@ -21,71 +23,87 @@
                                                :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
                             :vector           [1 2 3 "string"]
                             :vector-with-keys [:a :b "c"]
-                            :list             '(1 2 3 4)}
+                            :list             '(1 2 3 4)
+                            :other "stuff"
+                            :to "fill"
+                            :up "the"
+                            :view "to"
+                            :test "the"
+                            :keyboard "aware"
+                            :scroll "view"
+                            :i "guess"
+                            :there "needs"
+                            :so "much"
+                            :stuff "that"
+                            :enough "to"}
               :color       "#2222aa"
               :periods     nil}
         ;; current-path (subscribe [:get-task-form-structured-data-current-path])
         ]
 
-    [view {:style {:flex            1
-                   :flex-direction  "column"
-                   :justify-content "flex-start"
-                   :align-items     "flex-start"
-                   :padding-top     50
-                   :padding-left    10}}
-     [view {:style {:flex-direction "row"}}
-      [text {:style {:color         "grey"
-                     :padding-right 5}} ":id"]
-      [text (str (:id task))]]
-
-     [view {:style {:flex-direction "row"
-                    :align-items    "center"}}
-      [text {:style {:color         "grey"
-                     :padding-right 5}} ":label"]
-      [text-input {:default-value  (:label task)
-                   :style          {:height 40
-                                    :width  200}
-                   :spell-check    true
-                   :on-change-text (fn [text] (println text))}]]
-
-     ;; :color       ::color
-     ;; :periods     (ds/maybe [period-spec])}
-
-     ;; :data        map?
-     ;; https://clojuredocs.org/clojure.walk/walk
-     [view {:style {:flex           1
-                    :flex-direction "row"
-                    :align-items    "flex-start"}}
-      [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
+    [keyboard-aware-scroll-view
+     ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
+     {:enable-on-android true
+      :enable-auto-automatic-scroll (= (.-OS platform) "ios")}
+     [view {:style {:flex            1
+                    :flex-direction  "column"
+                    :justify-content "flex-start"
+                    :align-items     "flex-start"
+                    :padding-top     50
+                    :padding-left    10}}
+      [view {:style {:flex-direction "row"}}
        [text {:style {:color         "grey"
-                      :padding-right 5}} ":data"]]
-      (structured-data {:current-path [:map]
-                        :data         (:data task)
-                        :update       (fn [x]
-                                        ;; TODO spec this as a function that needs an argument with a structure
-                                        (println "updating ...")
-                                        (println x))
-                        :navigate     (fn [x]
-                                        (println "navigating ...")
-                                        (println x))
-                        :remove       (fn [x]
-                                        (println "removing ...")
-                                        (println x))
-                        :new-map-item-key :new-item-key
-                        :new-map-item-type :string
-                        :update-new-map-item-key (fn [x]
-                                                   (println
-                                                    "updating new map item key")
-                                                   (println x))
-                        :update-new-map-item-type (fn [x]
+                      :padding-right 5}} ":id"]
+       [text (str (:id task))]]
+
+      [view {:style {:flex-direction "row"
+                     :align-items    "center"}}
+       [text {:style {:color         "grey"
+                      :padding-right 5}} ":label"]
+       [text-input {:default-value  (:label task)
+                    :style          {:height 40
+                                     :width  200}
+                    :spell-check    true
+                    :on-change-text (fn [text] (println text))}]]
+
+      ;; :color       ::color
+      ;; :periods     (ds/maybe [period-spec])}
+
+      ;; :data        map?
+      ;; https://clojuredocs.org/clojure.walk/walk
+      [view {:style {:flex           1
+                     :flex-direction "row"
+                     :align-items    "flex-start"}}
+       [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
+        [text {:style {:color         "grey"
+                       :padding-right 5}} ":data"]]
+       (structured-data {:current-path []
+                         :data         (:data task)
+                         :update       (fn [x]
+                                         ;; TODO spec this as a function that needs an argument with a structure
+                                         (println "updating ...")
+                                         (println x))
+                         :navigate     (fn [x]
+                                         (println "navigating ...")
+                                         (println x))
+                         :remove       (fn [x]
+                                         (println "removing ...")
+                                         (println x))
+                         :new-map-item-key :new-item-key
+                         :new-map-item-type :string
+                         :update-new-map-item-key (fn [x]
                                                     (println
-                                                     "updating new map item type")
+                                                     "updating new map item key")
                                                     (println x))
+                         :update-new-map-item-type (fn [x]
+                                                     (println
+                                                      "updating new map item type")
+                                                     (println x))
 
-                        :add-new-map-item (fn [_]
-                                            (println "adding new map item"))})]
+                         :add-new-map-item (fn [_]
+                                             (println "adding new map item"))})]
 
-     ;; :created     ::moment ;; can't edit display date in their time zone
-     ;; :last-edited ::moment ;; can't edit display date in their time zone
+      ;; :created     ::moment ;; can't edit display date in their time zone
+      ;; :last-edited ::moment ;; can't edit display date in their time zone
 
-     ]))
+      ]]))
