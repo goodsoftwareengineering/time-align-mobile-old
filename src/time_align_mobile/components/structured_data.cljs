@@ -137,7 +137,8 @@
 
          (into [] subset))
 
-   [view {:style {:flex-direction "row" :align-items "center"}}
+   [view {:style {:flex-direction "row" :align-items "center"
+                  :margin-top 60}}
     [text-input {:style {:color "purple" :margin-right 25}
                  :default-value new-map-item-key
                  :on-change-text update-new-map-item-key}]
@@ -153,11 +154,9 @@
      [touchable-highlight {:on-press #(update-new-map-item-type :boolean)}
       [text "boolean"]]
      [touchable-highlight {:on-press #(update-new-map-item-type :keyword)}
-      [text "keyword"]]
-     ]
-    ]
-   [touchable-highlight {:on-press add-new-map-item} [text "add new item"]]
-   ])
+      [text "keyword"]]]
+    [touchable-highlight {:on-press add-new-map-item
+                          :style {:padding-left 30}} [text "add new item"]]]])
 
 (defn collection-element [{:keys [current-path
                                   data subset
