@@ -23,19 +23,20 @@
                                                :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
                             :vector           [1 2 3 "string"]
                             :vector-with-keys [:a :b "c"]
-                            :list             '(1 2 3 4)
-                            :other "stuff"
-                            :to "fill"
-                            :up "the"
-                            :view "to"
-                            :test "the"
-                            :keyboard "aware"
-                            :scroll "view"
-                            :i "guess"
-                            :there "needs"
-                            :so "much"
-                            :stuff "that"
-                            :enough "to"}
+                            :map-to-test-keyboard-aware-auto-scroll {:a "a"
+                                                                     :b "b"
+                                                                     :c "c"
+                                                                     :d "d"
+                                                                     :e "e"
+                                                                     :f "f"
+                                                                     :g 6
+                                                                     :h "7"
+                                                                     :i "i"
+                                                                     :j {:letter "j"
+                                                                         :index 9}
+                                                                     :k "k"
+                                                                     :l ["m" "n" "o" "p"]}
+                            }
               :color       "#2222aa"
               :periods     nil}
         ;; current-path (subscribe [:get-task-form-structured-data-current-path])
