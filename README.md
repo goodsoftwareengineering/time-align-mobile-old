@@ -45,3 +45,5 @@ When containers are running
 export UID
 docker-compose exec node yarn add {library} 
 ```
+## Errors that should have messages
+- calling a function by a symbol that doesn't resolve
