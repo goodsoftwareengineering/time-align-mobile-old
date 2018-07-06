@@ -47,3 +47,4 @@ docker-compose exec node yarn add {library}
 ```
 ## Errors that should have messages
 - calling a function by a symbol that doesn't resolve
+- styles taking wrong type (string instead of number for padding and margins)
