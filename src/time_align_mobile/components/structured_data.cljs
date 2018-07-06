@@ -10,21 +10,25 @@
 
 (defn map-button [current-path k v]
   [touchable-highlight
-   {:key  (str (reduce str (into current-path [v])) "map-button")    
+   {:key      (str (reduce str (into current-path [v])) "map-button")    
     :on-press (fn [_]
                 (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))}
-   [view
-    [text "button here to go to the nested map"]]])
+                           {:new-path new-path})))
+    :style    {:padding          4
+               :background-color "teal"
+               :border-radius    4}}
+   [view [text "go to map"]]])
 
 (defn coll-button [current-path k v]
   [touchable-highlight
    {:key      (str (reduce str (into current-path [v])) "coll-button")
     :on-press (fn [_]
                 (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))}
-   [view
-    [text "button here to go to the collection"]]])
+                           {:new-path new-path})))
+    :style    {:padding          4
+               :background-color "teal"
+               :border-radius    4}}
+   [view [text "go to coll"]]])
 
 (defn number-input [{:keys [v k data current-path update]}]
   [text-input
@@ -101,62 +105,87 @@
                            update-new-map-item-key
                            update-new-map-item-type
                            add-new-map-item]}]
-  [view
-   (breadcrumb-keys-buttons current-path navigate)
-   (walk (fn [[k v]]
-           (let [value-element (value-element-picker {:v            v
-                                                      :k            k
-                                                      :data         data
-                                                      :current-path current-path
-                                                      :update       update})]
+  ;; TODO subscribe to map item type
+  (let [type :number]
+    [view
+     (breadcrumb-keys-buttons current-path navigate)
+     (walk (fn [[k v]]
+             (let [value-element (value-element-picker {:v            v
+                                                        :k            k
+                                                        :data         data
+                                                        :current-path current-path
+                                                        :update       update})]
 
-             [view {:style {:flex-direction "row" :align-items "center"}
-                    :key   (str (reduce str (into current-path [k v]))
-                                "map-key-value")}
-              [touchable-highlight {:on-long-press
-                                    (fn [_]
-                                      (alert
-                                       "Do you want to delete this?"
-                                       (str "key: " k " value: " v)
-                                       (clj->js
-                                        [{:text    "Cancel"
-                                          :onPress #(println "canceled delete") ;; TODO find a camel to kebab thing to wrap this or do it in js_imports
-                                          :style   "cancel"}
-                                         {:text    "Delete"
-                                          :onPress #(remove
-                                                     {:path (into
-                                                             current-path
-                                                             [k])})}])))}
-               
-               [text {:style {:color         "grey"
-                              :padding-right 5}}
-                k]]
-              value-element]))
+               [view {:style {:flex-direction "row" :align-items "center"}
+                      :key   (str (reduce str (into current-path [k v]))
+                                  "map-key-value")}
+                [touchable-highlight {:on-long-press
+                                      (fn [_]
+                                        (alert
+                                         "Do you want to delete this?"
+                                         (str "key: " k " value: " v)
+                                         (clj->js
+                                          [{:text    "Cancel"
+                                            :onPress #(println "canceled delete")
+                                            ;; TODO find a camel to kebab thing to
+                                            ;; wrap this or do it in js_imports
+                                            :style   "cancel"}
+                                           {:text    "Delete"
+                                            :onPress #(remove
+                                                       {:path (into
+                                                               current-path
+                                                               [k])})}])))}
+                 [text {:style {:color         "grey"
+                                :padding-right 5}}
+                  k]]
+                value-element]))
 
-         (fn [elements] (into [view {:style {:flex 1}}] elements))
+           (fn [elements] (into [view {:style {:flex 1}}] elements))
 
-         (into [] subset))
+           (into [] subset))
 
-   [view {:style {:flex-direction "row" :align-items "center"
-                  :margin-top 60}}
-    [text-input {:style {:color "purple" :margin-right 25}
-                 :default-value new-map-item-key
-                 :on-change-text update-new-map-item-key}]
-    [view {:style {}}
-     [touchable-highlight {:on-press #(update-new-map-item-type :string)}
-      [text "string"]]
-     [touchable-highlight {:on-press #(update-new-map-item-type :map)}
-      [text "map"]]
-     [touchable-highlight {:on-press #(update-new-map-item-type :coll)}
-      [text "coll"]]
-     [touchable-highlight {:on-press #(update-new-map-item-type :number)}
-      [text "number"]]
-     [touchable-highlight {:on-press #(update-new-map-item-type :boolean)}
-      [text "boolean"]]
-     [touchable-highlight {:on-press #(update-new-map-item-type :keyword)}
-      [text "keyword"]]]
-    [touchable-highlight {:on-press add-new-map-item
-                          :style {:padding-left 30}} [text "add new item"]]]])
+     [view {:style {:flex-direction "row" :align-items "center"
+                    :margin-top     60}}
+      [text-input {:style          {:color "purple" :margin-right 25}
+                   :default-value  new-map-item-key
+                   :on-change-text update-new-map-item-key}]
+      [view {:style {}}
+       [touchable-highlight {:on-press #(update-new-map-item-type :string)
+                             :style    {:background-color (if (= :string type)
+                                                            "purple"
+                                                            "white")}}
+        [text "string"]]
+       [touchable-highlight {:on-press #(update-new-map-item-type :map)
+                             :style    {:background-color (if (= :map type)
+                                                            "purple"
+                                                            "white")}}
+        [text "map"]]
+       [touchable-highlight {:on-press #(update-new-map-item-type :coll)
+                             :style    {:background-color (if (= :coll type)
+                                                            "purple"
+                                                            "white")}}
+        [text "coll"]]
+       [touchable-highlight {:on-press #(update-new-map-item-type :number)
+                             :style    {:background-color (if (= :number type)
+                                                            "purple"
+                                                            "white")}}
+        [text "number"]]
+       [touchable-highlight {:on-press #(update-new-map-item-type :boolean)
+                             :style    {:background-color (if (= :boolean type)
+                                                            "purple"
+                                                            "white")}}
+        [text "boolean"]]
+       [touchable-highlight {:on-press #(update-new-map-item-type :keyword)
+                             :style    {:background-color (if (= :keyword type)
+                                                            "purple"
+                                                            "white")}}
+        [text "keyword"]]]
+      [touchable-highlight {:on-press add-new-map-item
+                            :style    {:margin-left      30
+                                       :padding          4
+                                       :background-color "teal"
+                                       :border-radius    4}}
+       [text "add new item"]]]]))
 
 (defn collection-element [{:keys [current-path
                                   data subset
