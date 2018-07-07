@@ -37,3 +37,9 @@
 
 (reg-event-db :navigate-to [validate-spec]
               navigate-to)
+
+(defn update-task-form-structured-data-current-path [db [_ new-path]]
+  (assoc-in db [:view :task-form :structured-data-current-path] new-path))
+
+(reg-event-db :update-task-form-structured-data-current-path [validate-spec]
+              update-task-form-structured-data-current-path)

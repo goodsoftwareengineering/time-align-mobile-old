@@ -8,27 +8,23 @@
             [re-frame.core :refer [subscribe dispatch]]
             [clojure.walk :refer [walk]]))
 
-(defn map-button [current-path k v]
+(defn map-button [current-path k v navigate]
   [touchable-highlight
    {:key      (str (reduce str (into current-path [v])) "map-button")
-    :on-press (fn [_]
-                (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))
+    :on-press #(navigate {:new-path (into current-path [k])})
     :style    {:padding          4
                :background-color "teal"
                :border-radius    4}}
-   [view [text "go to map"]]])
+   [view [text "->map"]]])
 
-(defn coll-button [current-path k v]
+(defn coll-button [current-path k v navigate]
   [touchable-highlight
    {:key      (str (reduce str (into current-path [v])) "coll-button")
-    :on-press (fn [_]
-                (println (let [new-path (into current-path [k])]
-                           {:new-path new-path})))
+    :on-press #(navigate {:new-path (into current-path [k])})
     :style    {:padding          4
                :background-color "teal"
                :border-radius    4}}
-   [view [text "go to coll"]]])
+   [view [text "->coll"]]])
 
 (defn number-input [{:keys [v k data current-path update]}]
   [text-input
@@ -67,15 +63,15 @@
     :on-change-text #(update {:path (into  current-path [k])
                               :value %})}])
 
-(defn value-element-picker [{:keys [v k data current-path update]}]
+(defn value-element-picker [{:keys [v k data current-path update navigate]}]
   (let [input-args {:data data
                     :current-path current-path
                     :k k
                     :v v
                     :update update}]
     (cond
-      (map? v)     (map-button current-path k v)
-      (coll? v)    (coll-button current-path k v)
+      (map? v)     (map-button current-path k v navigate)
+      (coll? v)    (coll-button current-path k v navigate)
       (number? v)  (number-input input-args)
       (string? v)  (string-input input-args)
       (boolean? v) (boolean-input input-args)
@@ -88,7 +84,7 @@
   (map-indexed
    (fn [i k]
      [touchable-highlight
-      {:on-press #(navigate (into [] (take (+ 1 i) current-path)))
+      {:on-press #(navigate {:new-path (into [] (take (+ 1 i) current-path))})
        :key (str (into current-path [i k]) "-breadcrumb")}
       [text {:style {:color         "grey"
                      :padding-right 5}} (str k)]])
@@ -146,6 +142,7 @@
              (let [value-element (value-element-picker {:v            v
                                                         :k            k
                                                         :data         data
+                                                        :navigate     navigate
                                                         :current-path current-path
                                                         :update       update})]
 
@@ -202,18 +199,18 @@
    (breadcrumb-keys-buttons current-path navigate)
    (map-indexed
     (fn [i v] [view {:style {:flex-direction "row" :align-items "center"}
-                     :key (str (reduce str (into current-path [v]))
-                               "collection-value-input")}
+                     :key   (str (reduce str (into current-path [v]))
+                                 "collection-value-input")}
                [touchable-highlight {:on-long-press
                                      (fn [_]
                                        (alert
                                         "Do you want to delete this?"
                                         (str "value: " v)
                                         (clj->js
-                                         [{:text "Cancel"
+                                         [{:text    "Cancel"
                                            :onPress #(println "canceled delete")
-                                           :style "cancel"}
-                                          {:text "Delete"
+                                           :style   "cancel"}
+                                          {:text    "Delete"
                                            :onPress #(remove
                                                       {:path (into
                                                               current-path
@@ -224,6 +221,7 @@
                (value-element-picker {:v            v
                                       :k            i
                                       :data         data
+                                      :navigate     navigate
                                       :current-path current-path
                                       :update       update})])
     subset)

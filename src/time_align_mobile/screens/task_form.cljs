@@ -14,9 +14,10 @@
   (println "updating ...")
   (println x))
 
-(defn navigate-sd [x]
-  (println "navigating ...")
-  (println x))
+(defn navigate-sd [{:keys [new-path]}]
+  (println "dispatching new path ...")
+  (println new-path)
+  (dispatch [:update-task-form-structured-data-current-path new-path]))
 
 (defn remove-sd [x]
   (println "removing ...")
@@ -83,8 +84,7 @@
                             }
               :color       "#2222aa"
               :periods     nil}
-        ;; current-path (subscribe [:get-task-form-structured-data-current-path])
-        ]
+        current-path (subscribe [:get-task-form-structured-data-current-path])]
 
     [keyboard-aware-scroll-view
      ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
@@ -119,10 +119,10 @@
       [view {:style {:flex           1
                      :flex-direction "row"
                      :align-items    "flex-start"}}
-       [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
+       [touchable-highlight {:on-press #(navigate-sd {:new-path []})}
         [text {:style {:color         "grey"
                        :padding-right 5}} ":data"]]
-       (structured-data {:current-path              [:vector]
+       (structured-data {:current-path              @current-path
                          :data                      (:data task)
                          :update                    update-sd
                          :navigate                  navigate-sd
