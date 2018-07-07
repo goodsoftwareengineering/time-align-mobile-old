@@ -8,21 +8,50 @@
             [time-align-mobile.components.structured-data :refer [structured-data]]
             [re-frame.core :refer [subscribe dispatch]]))
 
+(defn update-sd
+  [x]
+  ;; TODO spec this as a function that needs an argument with a structure
+  (println "updating ...")
+  (println x))
+
+(defn navigate-sd [x]
+  (println "navigating ...")
+  (println x))
+
+(defn remove-sd [x]
+  (println "removing ...")
+  (println x))
+
+(defn update-new-map-item-key-sd
+  [x]
+  (println
+   "updating new map item key")
+  (println x))
+
+(defn update-new-map-item-type-sd
+  [x]
+  (println
+   "updating new map item type")
+  (println x))
+
+(defn add-new-map-item-sd [_]
+  (println "adding new map item"))
+
 (defn root [{:keys [task]}]
   (let [task {:id          (random-uuid)
               :label       "Using Time Align"
               :created     (new js/Date 2018 4 28 15 57)
               :last-edited (new js/Date 2018 4 28 15 57)
-              :data        {:string           "default"
-                            :boolean          true
-                            :number           1.2
-                            :another-number   555
-                            :keyword-as-value :keyword-value
-                            :map              {:string-in-map "key-val"
-                                               :vec-in-map    [1 2 3 4 5]
-                                               :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
-                            :vector           [1 2 3 "string"]
-                            :vector-with-keys [:a :b "c"]
+              :data        {:string                                 "default"
+                            :boolean                                true
+                            :number                                 1.2
+                            :another-number                         555
+                            :keyword-as-value                       :keyword-value
+                            :map                                    {:string-in-map "key-val"
+                                                                     :vec-in-map    [1 2 3 4 5]
+                                                                     :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
+                            :vector                                 [1 2 3 "string"]
+                            :vector-with-keys                       [:a :b "c"]
                             :map-to-test-keyboard-aware-auto-scroll {:a "a"
                                                                      :b "b"
                                                                      :c "c"
@@ -33,7 +62,7 @@
                                                                      :h "7"
                                                                      :i "i"
                                                                      :j {:letter "j"
-                                                                         :index 9}
+                                                                         :index  9}
                                                                      :k "k"
                                                                      :l ["m" "n" "o" "p"]}
                             }
@@ -44,7 +73,7 @@
 
     [keyboard-aware-scroll-view
      ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
-     {:enable-on-android true
+     {:enable-on-android            true
       :enable-auto-automatic-scroll (= (.-OS platform) "ios")}
      [view {:style {:flex            1
                     :flex-direction  "column"
@@ -78,31 +107,16 @@
        [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
         [text {:style {:color         "grey"
                        :padding-right 5}} ":data"]]
-       (structured-data {:current-path []
-                         :data         (:data task)
-                         :update       (fn [x]
-                                         ;; TODO spec this as a function that needs an argument with a structure
-                                         (println "updating ...")
-                                         (println x))
-                         :navigate     (fn [x]
-                                         (println "navigating ...")
-                                         (println x))
-                         :remove       (fn [x]
-                                         (println "removing ...")
-                                         (println x))
-                         :new-map-item-key :new-item-key
-                         :new-map-item-type :string
-                         :update-new-map-item-key (fn [x]
-                                                    (println
-                                                     "updating new map item key")
-                                                    (println x))
-                         :update-new-map-item-type (fn [x]
-                                                     (println
-                                                      "updating new map item type")
-                                                     (println x))
-
-                         :add-new-map-item (fn [_]
-                                             (println "adding new map item"))})]
+       (structured-data {:current-path             []
+                         :data                     (:data task)
+                         :update                   update-sd
+                         :navigate                 navigate-sd
+                         :remove                   remove-sd
+                         :new-map-item-key         :new-item-key
+                         :new-map-item-type        :string
+                         :update-new-map-item-key  update-new-map-item-key-sd
+                         :update-new-map-item-type update-new-map-item-type-sd
+                         :add-new-map-item         add-new-map-item-sd})]
 
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone

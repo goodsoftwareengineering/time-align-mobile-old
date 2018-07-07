@@ -10,7 +10,7 @@
 
 (defn map-button [current-path k v]
   [touchable-highlight
-   {:key      (str (reduce str (into current-path [v])) "map-button")    
+   {:key      (str (reduce str (into current-path [v])) "map-button")
     :on-press (fn [_]
                 (println (let [new-path (into current-path [k])]
                            {:new-path new-path})))
