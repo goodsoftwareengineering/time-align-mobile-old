@@ -94,6 +94,39 @@
                      :padding-right 5}} (str k)]])
    current-path))
 
+(defn new-item-value [update-new-item-type type]
+  [view {:style {}}
+   [touchable-highlight {:on-press #(update-new-item-type :string)
+                         :style    {:background-color (if (= :string type)
+                                                        "purple"
+                                                        "white")}}
+    [text "string"]]
+   [touchable-highlight {:on-press #(update-new-item-type :map)
+                         :style    {:background-color (if (= :map type)
+                                                        "purple"
+                                                        "white")}}
+    [text "map"]]
+   [touchable-highlight {:on-press #(update-new-item-type :coll)
+                         :style    {:background-color (if (= :coll type)
+                                                        "purple"
+                                                        "white")}}
+    [text "coll"]]
+   [touchable-highlight {:on-press #(update-new-item-type :number)
+                         :style    {:background-color (if (= :number type)
+                                                        "purple"
+                                                        "white")}}
+    [text "number"]]
+   [touchable-highlight {:on-press #(update-new-item-type :boolean)
+                         :style    {:background-color (if (= :boolean type)
+                                                        "purple"
+                                                        "white")}}
+    [text "boolean"]]
+   [touchable-highlight {:on-press #(update-new-item-type :keyword)
+                         :style    {:background-color (if (= :keyword type)
+                                                        "purple"
+                                                        "white")}}
+    [text "keyword"]]])
+
 (defn map-element [{:keys [current-path
                            data
                            subset
@@ -149,37 +182,7 @@
       [text-input {:style          {:color "purple" :margin-right 25}
                    :default-value  new-map-item-key
                    :on-change-text update-new-map-item-key}]
-      [view {:style {}}
-       [touchable-highlight {:on-press #(update-new-map-item-type :string)
-                             :style    {:background-color (if (= :string type)
-                                                            "purple"
-                                                            "white")}}
-        [text "string"]]
-       [touchable-highlight {:on-press #(update-new-map-item-type :map)
-                             :style    {:background-color (if (= :map type)
-                                                            "purple"
-                                                            "white")}}
-        [text "map"]]
-       [touchable-highlight {:on-press #(update-new-map-item-type :coll)
-                             :style    {:background-color (if (= :coll type)
-                                                            "purple"
-                                                            "white")}}
-        [text "coll"]]
-       [touchable-highlight {:on-press #(update-new-map-item-type :number)
-                             :style    {:background-color (if (= :number type)
-                                                            "purple"
-                                                            "white")}}
-        [text "number"]]
-       [touchable-highlight {:on-press #(update-new-map-item-type :boolean)
-                             :style    {:background-color (if (= :boolean type)
-                                                            "purple"
-                                                            "white")}}
-        [text "boolean"]]
-       [touchable-highlight {:on-press #(update-new-map-item-type :keyword)
-                             :style    {:background-color (if (= :keyword type)
-                                                            "purple"
-                                                            "white")}}
-        [text "keyword"]]]
+      (new-item-value update-new-map-item-type type)
       [touchable-highlight {:on-press add-new-map-item
                             :style    {:margin-left      30
                                        :padding          4
@@ -188,9 +191,13 @@
        [text "add new item"]]]]))
 
 (defn collection-element [{:keys [current-path
-                                  data subset
-                                  update navigate
-                                  remove]}]
+                                  data
+                                  subset
+                                  update
+                                  navigate
+                                  remove
+                                  update-new-coll-item-type
+                                  add-new-coll-item]}]
   [view
    (breadcrumb-keys-buttons current-path navigate)
    (map-indexed
@@ -219,7 +226,17 @@
                                       :data         data
                                       :current-path current-path
                                       :update       update})])
-    subset)])
+    subset)
+
+   [view {:style {:flex-direction "row" :align-items "center"
+                  :margin-top     60}}
+    (new-item-value update-new-coll-item-type type)
+    [touchable-highlight {:on-press add-new-coll-item
+                          :style    {:margin-left      30
+                                     :padding          4
+                                     :background-color "teal"
+                                     :border-radius    4}}
+     [text "add new item"]]]])
 
 (defn structured-data [{:keys [current-path
                                data
@@ -229,6 +246,8 @@
                                update-new-map-item-key
                                update-new-map-item-type
                                add-new-map-item
+                               update-new-coll-item-type
+                               add-new-coll-item
                                navigate
                                remove]}]
   ;; TODO spec this and all component entry points to get rid of what is below
@@ -246,6 +265,8 @@
                       :new-map-item-type new-map-item-type
                       :update-new-map-item-key update-new-map-item-key
                       :update-new-map-item-type update-new-map-item-type
+                      :update-new-coll-item-type update-new-coll-item-type
+                      :add-new-coll-item add-new-coll-item
                       :add-new-map-item add-new-map-item}]
     (cond
       (map? subset)  (map-element element-arg)

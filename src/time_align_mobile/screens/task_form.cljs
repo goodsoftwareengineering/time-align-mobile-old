@@ -37,6 +37,21 @@
 (defn add-new-map-item-sd [_]
   (println "adding new map item"))
 
+(defn update-new-coll-item-key-sd
+  [x]
+  (println
+   "updating new coll item key")
+  (println x))
+
+(defn update-new-coll-item-type-sd
+  [x]
+  (println
+   "updating new coll item type")
+  (println x))
+
+(defn add-new-coll-item-sd [_]
+  (println "adding new coll item"))
+
 (defn root [{:keys [task]}]
   (let [task {:id          (random-uuid)
               :label       "Using Time Align"
@@ -107,16 +122,18 @@
        [touchable-highlight {:on-press (fn [_] (println "set current-path nil"))}
         [text {:style {:color         "grey"
                        :padding-right 5}} ":data"]]
-       (structured-data {:current-path             []
-                         :data                     (:data task)
-                         :update                   update-sd
-                         :navigate                 navigate-sd
-                         :remove                   remove-sd
-                         :new-map-item-key         :new-item-key
-                         :new-map-item-type        :string
-                         :update-new-map-item-key  update-new-map-item-key-sd
-                         :update-new-map-item-type update-new-map-item-type-sd
-                         :add-new-map-item         add-new-map-item-sd})]
+       (structured-data {:current-path              [:vector]
+                         :data                      (:data task)
+                         :update                    update-sd
+                         :navigate                  navigate-sd
+                         :remove                    remove-sd
+                         :new-map-item-key          :new-item-key
+                         :new-map-item-type         :string
+                         :update-new-map-item-key   update-new-map-item-key-sd
+                         :update-new-map-item-type  update-new-map-item-type-sd
+                         :add-new-map-item          add-new-map-item-sd
+                         :update-new-coll-item-type update-new-coll-item-type-sd
+                         :add-new-coll-item         add-new-coll-item-sd})]
 
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone
