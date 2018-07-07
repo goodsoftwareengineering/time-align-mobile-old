@@ -146,7 +146,8 @@
 (s/def ::screen screen-id-set)
 
 (def app-db-spec
-  (ds/spec {:spec {:view {:task-form {:structured-data-current-path [keyword?]
+  (ds/spec {:spec {:view {:task-form {:id (ds/maybe uuid?)
+                                      :structured-data-current-path [keyword?]
                                       :new-map-item {:key (ds/maybe keyword?)
                                                      :type (ds/maybe (s/spec
                                                                       #{:map
@@ -170,19 +171,51 @@
             :name ::app-db}))
 
 (def app-db
-  {:view       {:task-form {:structured-data-current-path []
+  {:view       {:task-form {:id (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
+                            :structured-data-current-path []
                             :new-map-item {:key nil
                                            :type nil}
                             :new-coll-item {:type nil}}}
    :navigation {:current-screen :day
                 :params         nil}
-   :tasks      [{:id          (random-uuid)
+   :tasks      [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
                  :label       "Using Time Align"
                  :created     (new js/Date 2018 4 28 15 57)
                  :last-edited (new js/Date 2018 4 28 15 57)
                  :data        {:category :default}
                  :color       "#2222aa"
-                 :periods     nil}]
+                 :periods     nil}
+
+                {:id          (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
+                 :label       "Using Time Align"
+                 :created     (new js/Date 2018 4 28 15 57)
+                 :last-edited (new js/Date 2018 4 28 15 57)
+                 :data        {:string                                 "default"
+                               :boolean                                true
+                               :number                                 1.2
+                               :another-number                         555
+                               :keyword-as-value                       :keyword-value
+                               :map                                    {:string-in-map "key-val"
+                                                                        :vec-in-map    [1 2 3 4 5]
+                                                                        :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
+                               :vector                                 [1 2 3 "string"]
+                               :vector-with-keys                       [:a :b "c"]
+                               :map-to-test-keyboard-aware-auto-scroll {:a "a"
+                                                                        :b "b"
+                                                                        :c "c"
+                                                                        :d "d"
+                                                                        :e "e"
+                                                                        :f "f"
+                                                                        :g 6
+                                                                        :h "7"
+                                                                        :i "i"
+                                                                        :j {:letter "j"
+                                                                            :index  9}
+                                                                        :k "k"
+                                                                        :l ["m" "n" "o" "p"]}}
+                 :color       "#2222aa"
+                 :periods     nil}
+                ]
    :templates  nil
    :config     {:auto-log-time-align true}})
 

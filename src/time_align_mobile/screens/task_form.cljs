@@ -54,36 +54,7 @@
   (println "adding new coll item"))
 
 (defn root [{:keys [task]}]
-  (let [task {:id          (random-uuid)
-              :label       "Using Time Align"
-              :created     (new js/Date 2018 4 28 15 57)
-              :last-edited (new js/Date 2018 4 28 15 57)
-              :data        {:string                                 "default"
-                            :boolean                                true
-                            :number                                 1.2
-                            :another-number                         555
-                            :keyword-as-value                       :keyword-value
-                            :map                                    {:string-in-map "key-val"
-                                                                     :vec-in-map    [1 2 3 4 5]
-                                                                     :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
-                            :vector                                 [1 2 3 "string"]
-                            :vector-with-keys                       [:a :b "c"]
-                            :map-to-test-keyboard-aware-auto-scroll {:a "a"
-                                                                     :b "b"
-                                                                     :c "c"
-                                                                     :d "d"
-                                                                     :e "e"
-                                                                     :f "f"
-                                                                     :g 6
-                                                                     :h "7"
-                                                                     :i "i"
-                                                                     :j {:letter "j"
-                                                                         :index  9}
-                                                                     :k "k"
-                                                                     :l ["m" "n" "o" "p"]}
-                            }
-              :color       "#2222aa"
-              :periods     nil}
+  (let [task         (subscribe [:get-task-in-form])
         current-path (subscribe [:get-task-form-structured-data-current-path])]
 
     [keyboard-aware-scroll-view
@@ -99,13 +70,13 @@
       [view {:style {:flex-direction "row"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":id"]
-       [text (str (:id task))]]
+       [text (str (:id @task))]]
 
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":label"]
-       [text-input {:default-value  (:label task)
+       [text-input {:default-value  (:label @task)
                     :style          {:height 40
                                      :width  200}
                     :spell-check    true
@@ -116,6 +87,7 @@
 
       ;; :data        map?
       ;; https://clojuredocs.org/clojure.walk/walk
+
       [view {:style {:flex           1
                      :flex-direction "row"
                      :align-items    "flex-start"}}
@@ -123,7 +95,7 @@
         [text {:style {:color         "grey"
                        :padding-right 5}} ":data"]]
        (structured-data {:current-path              @current-path
-                         :data                      (:data task)
+                         :data                      (:data @task)
                          :update                    update-sd
                          :navigate                  navigate-sd
                          :remove                    remove-sd
