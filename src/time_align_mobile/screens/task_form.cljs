@@ -15,13 +15,10 @@
   (println x))
 
 (defn navigate-sd [{:keys [new-path]}]
-  (println "dispatching new path ...")
-  (println new-path)
   (dispatch [:update-task-form-structured-data-current-path new-path]))
 
-(defn remove-sd [x]
-  (println "removing ...")
-  (println x))
+(defn remove-sd [{:keys [path]}]
+  (dispatch [:remove-task-form-structured-data-item path]))
 
 (defn update-new-map-item-key-sd
   [x]
