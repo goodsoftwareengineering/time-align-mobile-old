@@ -9,10 +9,8 @@
             [re-frame.core :refer [subscribe dispatch]]))
 
 (defn update-sd
-  [x]
-  ;; TODO spec this as a function that needs an argument with a structure
-  (println "updating ...")
-  (println x))
+  [{:keys [path value]}]
+  (dispatch [:update-task-form-structured-data {:path path :value value}]))
 
 (defn navigate-sd [{:keys [new-path]}]
   (dispatch [:update-task-form-structured-data-current-path new-path]))

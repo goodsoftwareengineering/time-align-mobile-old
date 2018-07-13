@@ -146,7 +146,7 @@
 (s/def ::screen screen-id-set)
 
 (def app-db-spec
-  (ds/spec {:spec {:view {:task-form {:id (ds/maybe uuid?)
+  (ds/spec {:spec {:view {:task-form {:id (ds/maybe uuid?) ;; TODO relying on this for updates could open up a race condition?
                                       :structured-data-current-path [keyword?]
                                       :new-map-item {:key (ds/maybe keyword?)
                                                      :type (ds/maybe (s/spec
