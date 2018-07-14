@@ -199,20 +199,7 @@
                                                                         :vec-in-map    [1 2 3 4 5]
                                                                         :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
                                :vector                                 [1 2 3 "string"]
-                               :vector-with-keys                       [:a :b "c"]
-                               :map-to-test-keyboard-aware-auto-scroll {:a "a"
-                                                                        :b "b"
-                                                                        :c "c"
-                                                                        :d "d"
-                                                                        :e "e"
-                                                                        :f "f"
-                                                                        :g 6
-                                                                        :h "7"
-                                                                        :i "i"
-                                                                        :j {:letter "j"
-                                                                            :index  9}
-                                                                        :k "k"
-                                                                        :l ["m" "n" "o" "p"]}}
+                               :vector-with-keys                       [:a :b "c"]}
                  :color       "#2222aa"
                  :periods     nil}
                 ]

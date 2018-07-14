@@ -3,14 +3,7 @@
 
 (defn get-navigation [db _]
   (get-in db [:navigation]))
-
 (reg-sub :get-navigation get-navigation)
-
-(defn get-task-form-structured-data-current-path [db _]
-  (get-in db [:view :task-form :structured-data-current-path]))
-
-(reg-sub :get-task-form-structured-data-current-path
-         get-task-form-structured-data-current-path)
 
 (defn get-task-in-form [db _]
   (let [task-id (get-in db [:view :task-form :id])
@@ -25,7 +18,6 @@
        :data        {}
        :color       "#2222aa"
        :periods     nil})))
-
 (reg-sub :get-task-in-form get-task-in-form)
 
 

@@ -8,49 +8,10 @@
             [time-align-mobile.components.structured-data :refer [structured-data]]
             [re-frame.core :refer [subscribe dispatch]]))
 
-(defn update-sd
-  [{:keys [path value]}]
-  (dispatch [:update-task-form-structured-data {:path path :value value}]))
-
-(defn navigate-sd [{:keys [new-path]}]
-  (dispatch [:update-task-form-structured-data-current-path new-path]))
-
-(defn remove-sd [{:keys [path]}]
-  (dispatch [:remove-task-form-structured-data-item path]))
-
-(defn update-new-map-item-key-sd
-  [x]
-  (println
-   "updating new map item key")
-  (println x))
-
-(defn update-new-map-item-type-sd
-  [x]
-  (println
-   "updating new map item type")
-  (println x))
-
-(defn add-new-map-item-sd [_]
-  (println "adding new map item"))
-
-(defn update-new-coll-item-key-sd
-  [x]
-  (println
-   "updating new coll item key")
-  (println x))
-
-(defn update-new-coll-item-type-sd
-  [x]
-  (println
-   "updating new coll item type")
-  (println x))
-
-(defn add-new-coll-item-sd [_]
-  (println "adding new coll item"))
-
 (defn root [{:keys [task]}]
-  (let [task         (subscribe [:get-task-in-form])
-        current-path (subscribe [:get-task-form-structured-data-current-path])]
+  (let [task (subscribe [:get-task-in-form])
+        task-id (:id @task)
+        data (:data @task)]
 
     [keyboard-aware-scroll-view
      ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
@@ -86,21 +47,15 @@
       [view {:style {:flex           1
                      :flex-direction "row"
                      :align-items    "flex-start"}}
-       [touchable-highlight {:on-press #(navigate-sd {:new-path []})}
+       [touchable-highlight {:on-press #(dispatch [:update-task-form-structured-data {:task-id task-id
+                                                                                      :new-data {:new "data"}}])}
         [text {:style {:color         "grey"
                        :padding-right 5}} ":data"]]
-       (structured-data {:current-path              @current-path
-                         :data                      (:data @task)
-                         :update                    update-sd
-                         :navigate                  navigate-sd
-                         :remove                    remove-sd
-                         :new-map-item-key          :new-item-key
-                         :new-map-item-type         :string
-                         :update-new-map-item-key   update-new-map-item-key-sd
-                         :update-new-map-item-type  update-new-map-item-type-sd
-                         :add-new-map-item          add-new-map-item-sd
-                         :update-new-coll-item-type update-new-coll-item-type-sd
-                         :add-new-coll-item         add-new-coll-item-sd})]
+       [structured-data {:data   data
+                         :update (fn [d]
+                                   (dispatch [:update-task-form-structured-data {:task-id task-id
+                                                                                 :new-data d}]))}]]
+
 
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone

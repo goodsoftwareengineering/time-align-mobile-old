@@ -38,29 +38,11 @@
 (reg-event-db :navigate-to [validate-spec]
               navigate-to)
 
-(defn update-task-form-structured-data-current-path [db [_ new-path]]
-  (assoc-in db [:view :task-form :structured-data-current-path] new-path))
-(reg-event-db :update-task-form-structured-data-current-path [validate-spec]
-              update-task-form-structured-data-current-path)
-
-(defn remove-task-form-structured-data-item [db [_ path]]
-  (let [task-id (get-in db [:view :task-form :id])
-        specter-path (into [:tasks
-                            sp/ALL
-                            #(= (:id %) task-id)
-                            :data]
-                           path)]
-    (setval specter-path sp/NONE db)))
-(reg-event-db :remove-task-form-structured-data-item [validate-spec]
-              remove-task-form-structured-data-item)
-
-(defn update-task-form-structured-data [db [_ {:keys [path value]}]]
-  (let [task-id (get-in db [:view :task-form :id])
-        specter-path (into [:tasks
-                            sp/ALL
-                            #(= (:id %) task-id)
-                            :data]
-                           path)]
-    (setval specter-path value db)))
+(defn update-task-form-structured-data [db [_ {:keys [task-id new-data]}]]
+  (let [specter-path [:tasks
+                      sp/ALL
+                      #(= (:id %) task-id)
+                      :data]]
+    (setval specter-path new-data db)))
 (reg-event-db :update-task-form-structured-data [validate-spec]
               update-task-form-structured-data)
