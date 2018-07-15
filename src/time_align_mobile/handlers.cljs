@@ -1,6 +1,6 @@
 (ns time-align-mobile.handlers
   (:require
-    [re-frame.core :refer [reg-event-db ->interceptor]]
+    [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx]]
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec]]
     [com.rpl.specter :as sp :refer-macros [select setval transform]]))
@@ -28,21 +28,31 @@
 
 ;; -- Handlers --------------------------------------------------------------
 
-(reg-event-db :initialize-db [validate-spec]
-              (fn [_ _]
-                app-db))
+(reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 
-(defn navigate-to [db [_ {:keys [current-screen params]}]]
-  (assoc-in db [:navigation] {:current-screen current-screen
-                              :params         params}))
-(reg-event-db :navigate-to [validate-spec]
-              navigate-to)
+(defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
+  (merge {:db (assoc-in db [:navigation] {:current-screen current-screen
+                                          :params         params})}
+         (when (= current-screen :task)
+           {:dispatch [:load-task-form (:task-id params)]})))
+(reg-event-fx :navigate-to [validate-spec] navigate-to)
 
-(defn update-task-form-structured-data [db [_ {:keys [task-id new-data]}]]
-  (let [specter-path [:tasks
-                      sp/ALL
-                      #(= (:id %) task-id)
-                      :data]]
-    (setval specter-path new-data db)))
-(reg-event-db :update-task-form-structured-data [validate-spec]
-              update-task-form-structured-data)
+(defn load-task-form [db [_ task-id]]
+  ;; TODO is there a more idiomatic way than first of the select?
+  ;; Without that the app silently failed with no spec errors thrown
+  (let [task (first (select [:tasks sp/ALL #(= (:id %) task-id)] db))]
+    (assoc-in db [:view :task-form] task)))
+(reg-event-db :load-task-form [validate-spec] load-task-form)
+
+(defn update-task-form [db [_ task-form]]
+  (transform [:view :task-form] #(merge % task-form) db))
+(reg-event-db :update-task-form [validate-spec] update-task-form)
+
+(defn save-task-form [db _]
+  (let [task-form (get-in db [:view :task-form])]
+    (if (some? (:id task-form))
+      ;; TODO error message on else
+      (transform [:tasks sp/ALL #(= (:id %) (:id task-form))]
+                 (fn [task] (merge task task-form))
+                 db))))
+(reg-event-db :save-task-form [validate-spec] save-task-form)

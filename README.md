@@ -50,3 +50,4 @@ docker-compose exec node yarn add {library}
 - styles taking wrong type (string instead of number for padding and margins)
 - forgetting to deref subscription in component
 - when destructured args don't match and those functions are called
+- when I didn't first a select from specter and the type didn't match the spec in a validated handler the app silently failed

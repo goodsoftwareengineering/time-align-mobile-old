@@ -8,10 +8,15 @@
             [time-align-mobile.components.structured-data :refer [structured-data]]
             [re-frame.core :refer [subscribe dispatch]]))
 
-(defn root [{:keys [task]}]
-  (let [task (subscribe [:get-task-in-form])
-        task-id (:id @task)
-        data (:data @task)]
+(defn root [params]
+  (let [task-form-buffer @(subscribe [:get-task-form])
+        task-form (if (some? task-form-buffer)
+                    task-form-buffer
+                    {:id "loading"
+                     :label "loading"
+                     :data {:loading "true"}})
+        update-structured-data (fn [new-data] (dispatch [:update-task-form {:data new-data}]))
+        ]
 
     [keyboard-aware-scroll-view
      ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
@@ -26,17 +31,17 @@
       [view {:style {:flex-direction "row"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":id"]
-       [text (str (:id @task))]]
+       [text (str (:id task-form))]]
 
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":label"]
-       [text-input {:default-value  (:label @task)
+       [text-input {:default-value  (:label task-form)
                     :style          {:height 40
                                      :width  200}
                     :spell-check    true
-                    :on-change-text (fn [text] (println text))}]]
+                    :on-change-text (fn [text] (dispatch [:update-task-form {:label text}]))}]]
 
       ;; :color       ::color
       ;; :periods     (ds/maybe [period-spec])}
@@ -47,14 +52,10 @@
       [view {:style {:flex           1
                      :flex-direction "row"
                      :align-items    "flex-start"}}
-       [touchable-highlight {:on-press #(dispatch [:update-task-form-structured-data {:task-id task-id
-                                                                                      :new-data {:new "data"}}])}
-        [text {:style {:color         "grey"
-                       :padding-right 5}} ":data"]]
-       [structured-data {:data   data
-                         :update (fn [d]
-                                   (dispatch [:update-task-form-structured-data {:task-id task-id
-                                                                                 :new-data d}]))}]]
+       [text {:style {:color         "grey"
+                      :padding-right 5}} ":data"]
+       [structured-data {:data   (:data task-form)
+                         :update update-structured-data}]]
 
 
       ;; :created     ::moment ;; can't edit display date in their time zone

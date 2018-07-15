@@ -58,6 +58,7 @@
                    :icon            {:family "Entypo"
                                      :name   "bar-graph"}}
 
+                  ;; TODO remove this when done testing task form
                   {:id              :task
                    :label           "task"
                    :screen          task-form-screen/root

@@ -111,15 +111,17 @@
                  #(gen/fmap
                    (fn [hex-str] (string/join (cons "#" hex-str)))
                    (s/gen ::hex-str))))
+
+(def task-data-spec {:id          uuid?
+                     :label       string?
+                     :created     ::moment
+                     :last-edited ::moment
+                     :data        map?
+                     :color       ::color
+                     :periods     (ds/maybe [period-spec])})
 (def task-spec
   (st/create-spec {:spec
-                   (ds/spec {:spec {:id          uuid?
-                                    :label       string?
-                                    :created     ::moment
-                                    :last-edited ::moment
-                                    :data        map?
-                                    :color       ::color
-                                    :periods     (ds/maybe [period-spec])}
+                   (ds/spec {:spec task-data-spec
                              :name ::task})}))
 
 ;; template
@@ -146,22 +148,7 @@
 (s/def ::screen screen-id-set)
 
 (def app-db-spec
-  (ds/spec {:spec {:view {:task-form {:id (ds/maybe uuid?) ;; TODO relying on this for updates could open up a race condition?
-                                      :structured-data-current-path [keyword?]
-                                      :new-map-item {:key (ds/maybe keyword?)
-                                                     :type (ds/maybe (s/spec
-                                                                      #{:map
-                                                                        :boolean
-                                                                        :string
-                                                                        :number
-                                                                        :coll}))}
-                                      :new-coll-item {:type (ds/maybe (s/spec
-                                                                       #{:map
-                                                                         :boolean
-                                                                         :string
-                                                                         :number
-                                                                         :coll}))}}}
-
+  (ds/spec {:spec {:view {:task-form (ds/maybe (merge task-data-spec {:data string?}))}
                    :navigation {:current-screen ::screen
                                 :params (ds/maybe map?)}
 
@@ -171,11 +158,7 @@
             :name ::app-db}))
 
 (def app-db
-  {:view       {:task-form {:id (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
-                            :structured-data-current-path []
-                            :new-map-item {:key nil
-                                           :type nil}
-                            :new-coll-item {:type nil}}}
+  {:view       {:task-form nil}
    :navigation {:current-screen :day
                 :params         nil}
    :tasks      [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
