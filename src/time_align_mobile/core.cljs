@@ -73,7 +73,7 @@
         (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
                                       (:screen %))
                                    nav/screens-map)]
-          (screen-comp (:params @navigation))
+          [screen-comp (:params @navigation)]
           [view [text "That screen doesn't exist"]])]])))
 
 (defn init []

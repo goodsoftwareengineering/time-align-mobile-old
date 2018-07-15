@@ -14,18 +14,6 @@
    [text-input {:style {:width 300
                         :padding-bottom 10}
                 :multiline true
-                :value 
+                :value data
                 :editable true
                 :on-change-text update}]])
-;; TODO going to need this soon
-;; (try
-;;   (let [new-data (js->clj
-;;                   (.parse js/JSON new-val)
-;;                   :keywordize-keys true)]
-;;     (update new-data))
-;;   (catch js/Error e
-;;     ;; TODO alert here
-;;     (println "would alert here")))
-;; task-form (merge task {:data (.stringify js/JSON
-;;                                          (clj->js (:data task))
-;;                                          nil 2)})

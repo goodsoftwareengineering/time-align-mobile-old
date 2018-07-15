@@ -15,11 +15,10 @@
                     {:id "loading"
                      :label "loading"
                      :data {:loading "true"}})
-        update-structured-data (fn [new-data] (dispatch [:update-task-form {:data new-data}]))
-        ]
+        update-structured-data (fn [new-data] (dispatch [:update-task-form {:data new-data}]))]
 
     [keyboard-aware-scroll-view
-     ;; check this for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
+     ;; check link for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
      {:enable-on-android            true
       :enable-auto-automatic-scroll (= (.-OS platform) "ios")}
      [view {:style {:flex            1
