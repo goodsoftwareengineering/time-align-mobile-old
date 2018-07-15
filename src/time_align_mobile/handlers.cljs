@@ -27,23 +27,27 @@
                    context)))
     ->interceptor))
 
-(def alert
+(def alert-message
   (->interceptor
    :id :alert
    :after (fn [context]
             (let [alert-message (-> context :effects :alert)]
-              (alert alert-message)))))
+              ;; message is ussually in the following format
+              ;; "Failed data json validation SyntaxError: JSON Parse error: Expected '}'"
+              ;; The user only cares about the Expected bit and the alert has limited space
+              (when (some? alert-message) (alert
+                                           "JSON validation Failed"
+                                           (last (.split (str alert-message)
+                                                         ":"))))
+              (setval [:effects :alert] sp/NONE context)))))
 
 ;; -- Handlers --------------------------------------------------------------
-
-(reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
   (merge {:db (assoc-in db [:navigation] {:current-screen current-screen
                                           :params         params})}
          (when (= current-screen :task)
            {:dispatch [:load-task-form (:task-id params)]})))
-(reg-event-fx :navigate-to [validate-spec] navigate-to)
 
 (defn load-task-form [db [_ task-id]]
   ;; TODO is there a more idiomatic way than first of the select?
@@ -53,28 +57,33 @@
                                                  (clj->js (:data task))
                                                  nil 2)})]
     (assoc-in db [:view :task-form] task-form)))
-(reg-event-db :load-task-form [validate-spec] load-task-form)
 
 (defn update-task-form [db [_ task-form]]
   (transform [:view :task-form] #(merge % task-form) db))
-(reg-event-db :update-task-form [validate-spec] update-task-form)
 
-(defn save-task-form [{:keys db} _]
+(defn save-task-form [{:keys [db]} _]
   (let [task-form (get-in db [:view :task-form])]
     (try
+      ;; TODO need to take into account keywords with spaces
+      ;; it seems to work for going in and out of clj but I have a feeling
+      ;; it won't when doing filtering
       (let [new-data (js->clj
                       (.parse js/JSON (:data task-form))
                       :keywordize-keys true)
             new-task (merge task-form {:data new-data})
-            new-db (setval [:tasks sp/ALL #(= (:id %) (:task-id new-task))]
-                           new-task)]
-        {:db new-db})
+            new-db (setval [:tasks sp/ALL #(= (:id %) (:id new-task))]
+                           new-task
+                           db)]
+        {:db new-db
+         ;; load task form so that the data string gets re-formatted prettier
+         :dispatch [:load-task-form (:id new-task)]})
       (catch js/Error e
         {:db db
-         :alert (str "Failed data json validation " e)}))
+         :alert (str "Failed data json validation " e)}))))
 
-    (if (some? (:id task-form))
-      (transform [:tasks sp/ALL #(= (:id %) (:id task-form))]
-                 (fn [task] (merge task task-form))
-                 db))))
-(reg-event-fx :save-task-form [validate-spec] save-task-form)
+(reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
+(reg-event-fx :navigate-to [validate-spec] navigate-to)
+(reg-event-db :load-task-form [validate-spec] load-task-form)
+(reg-event-db :update-task-form [validate-spec] update-task-form)
+(reg-event-fx :save-task-form [alert-message validate-spec] save-task-form)
+

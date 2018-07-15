@@ -9,12 +9,7 @@
             [re-frame.core :refer [subscribe dispatch]]))
 
 (defn root [params]
-  (let [task-form-buffer @(subscribe [:get-task-form])
-        task-form (if (some? task-form-buffer)
-                    task-form-buffer
-                    {:id "loading"
-                     :label "loading"
-                     :data {:loading "true"}})
+  (let [task-form              (subscribe [:get-task-form])
         update-structured-data (fn [new-data] (dispatch [:update-task-form {:data new-data}]))]
 
     [keyboard-aware-scroll-view
@@ -30,13 +25,13 @@
       [view {:style {:flex-direction "row"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":id"]
-       [text (str (:id task-form))]]
+       [text (str (:id @task-form))]]
 
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":label"]
-       [text-input {:default-value  (:label task-form)
+       [text-input {:default-value  (:label @task-form)
                     :style          {:height 40
                                      :width  200}
                     :spell-check    true
@@ -53,10 +48,12 @@
                      :align-items    "flex-start"}}
        [text {:style {:color         "grey"
                       :padding-right 5}} ":data"]
-       [structured-data {:data   (:data task-form)
+       [structured-data {:data   (:data @task-form)
                          :update update-structured-data}]]
 
 
+      [touchable-highlight {:on-press #(dispatch [:save-task-form])}
+       [text "save"]]
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone
 

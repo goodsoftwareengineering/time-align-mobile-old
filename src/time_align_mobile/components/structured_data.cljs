@@ -14,6 +14,6 @@
    [text-input {:style {:width 300
                         :padding-bottom 10}
                 :multiline true
-                :value data
+                :default-value data
                 :editable true
                 :on-change-text update}]])
