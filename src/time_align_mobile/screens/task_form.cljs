@@ -28,6 +28,10 @@
                       :padding-right 5}} ":id"]
        [text (str (:id @task-form))]]
 
+
+      ;; :created     ::moment ;; can't edit display date in their time zone
+      ;; :last-edited ::moment ;; can't edit display date in their time zone
+
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         (if (contains? @changes :label)
@@ -41,10 +45,10 @@
                     :on-change-text (fn [text] (dispatch [:update-task-form {:label text}]))}]]
 
       ;; :color       ::color
-      ;; :periods     (ds/maybe [period-spec])}
+      ;; put this https://github.com/instea/react-native-color-picker
+      ;; in this https://facebook.github.io/react-native/docs/modal.html
 
-      ;; :data        map?
-      ;; https://clojuredocs.org/clojure.walk/walk
+      ;; :periods     (ds/maybe [period-spec])}
 
       [view {:style {:flex           1
                      :flex-direction "row"
@@ -65,12 +69,5 @@
                              :style    {:padding      5
                                         :margin-right 10}}
         [text "save"]]
-       [touchable-highlight {:on-press #(dispatch [:load-task-form (:id @task-form)])
-                             :style (if (< 0 (count (keys @changes)))
-                                      {:background-color "grey"}
-                                      {})}
-        [text "cancel"]]]
-      ;; :created     ::moment ;; can't edit display date in their time zone
-      ;; :last-edited ::moment ;; can't edit display date in their time zone
-
-      ]]))
+       [touchable-highlight {:on-press #(dispatch [:load-task-form (:id @task-form)])}
+        [text "cancel"]]]]]))
