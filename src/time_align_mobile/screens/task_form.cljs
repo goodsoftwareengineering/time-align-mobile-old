@@ -52,8 +52,16 @@
                          :update update-structured-data}]]
 
 
-      [touchable-highlight {:on-press #(dispatch [:save-task-form])}
-       [text "save"]]
+      [view {:style {:flex 1
+                     :flex-direction "row"
+                     :align-items "center"
+                     :justify-content "center"}}
+       [touchable-highlight {:on-press #(dispatch [:save-task-form])
+                             :style {:padding 5
+                                     :margin-right 10}}
+        [text "save"]]
+       [touchable-highlight {:on-press #(dispatch [:load-task-form (:id @task-form)])}
+        [text "cancel"]]]
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone
 
