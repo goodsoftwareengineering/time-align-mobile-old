@@ -1,5 +1,6 @@
 (ns time-align-mobile.subs
   (:require [re-frame.core :refer [reg-sub]]
+            [zprint.core :refer [zprint]]
             [com.rpl.specter :as sp :refer-macros [select setval transform]]))
 
 (defn get-navigation [db _]
@@ -20,9 +21,10 @@
                   (select [:tasks sp/ALL #(= (:id %) (:id task-form))]
                           db))
             ;; data needs to be coerced to compare to form
-            new-data (.stringify js/JSON
-                                 (clj->js (:data task))
-                                 nil 2)
+            new-data (with-out-str (zprint (:data task) {:map {:force-nl? true}}))
+            ;; (.stringify js/JSON
+            ;;                      (clj->js (:data task))
+            ;;                      nil 2)
             altered-task (merge task {:data new-data})
             different-keys (->> (clojure.data/diff task-form altered-task)
                                 (first))]

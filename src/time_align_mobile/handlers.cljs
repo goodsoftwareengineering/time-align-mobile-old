@@ -1,6 +1,8 @@
 (ns time-align-mobile.handlers
   (:require
     [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx]]
+    [zprint.core :refer [zprint]]
+    [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec]]
     [time-align-mobile.js-imports :refer [alert]]
@@ -36,7 +38,7 @@
               ;; "Failed data json validation SyntaxError: JSON Parse error: Expected '}'"
               ;; The user only cares about the Expected bit and the alert has limited space
               (when (some? alert-message) (alert
-                                           "JSON validation Failed"
+                                           "Validation failed"
                                            (last (.split (str alert-message)
                                                          ":"))))
               (setval [:effects :alert] sp/NONE context)))))
@@ -53,9 +55,11 @@
   ;; TODO is there a more idiomatic way than first of the select?
   ;; Without that the app silently failed with no spec errors thrown
   (let [task (first (select [:tasks sp/ALL #(= (:id %) task-id)] db))
-        task-form (merge task {:data (.stringify js/JSON
-                                                 (clj->js (:data task))
-                                                 nil 2)})]
+        task-form (merge task {:data (with-out-str (zprint (:data task) {:map {:force-nl? true}}))
+                               ;; (.stringify js/JSON
+                               ;;                   (clj->js (:data task))
+                               ;;                   nil 2)
+                               })]
     (assoc-in db [:view :task-form] task-form)))
 
 (defn update-task-form [db [_ task-form]]
@@ -67,9 +71,10 @@
       ;; TODO need to take into account keywords with spaces
       ;; it seems to work for going in and out of clj but I have a feeling
       ;; it won't when doing filtering
-      (let [new-data (js->clj
-                      (.parse js/JSON (:data task-form))
-                      :keywordize-keys true)
+      (let [new-data (read-string (:data task-form))
+            ;; (js->clj
+            ;;           (.parse js/JSON (:data task-form))
+            ;;           :keywordize-keys true)
             new-task (merge task-form {:data new-data})
             new-db (setval [:tasks sp/ALL #(= (:id %) (:id new-task))]
                            new-task
