@@ -8,7 +8,10 @@
                                                   platform
                                                   touchable-highlight]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
+            [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
+
+(def modal-visible (r/atom false))
 
 (defn root [params]
   (let [task-form              (subscribe [:get-task-form])
@@ -34,6 +37,13 @@
       ;; :created     ::moment ;; can't edit display date in their time zone
       ;; :last-edited ::moment ;; can't edit display date in their time zone
 
+      [modal {:animation-type "slide"
+              :transparent false
+              :visible @modal-visible}
+       [view
+        [text "color picker here"]
+        [touchable-highlight {:on-press #(reset! modal-visible false) }
+         [text "save?"]]]]
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         (if (contains? @changes :label)
@@ -52,7 +62,7 @@
                                        "blue"
                                        "grey")
                       :padding-right 5}} ":color"]
-       [touchable-highlight {:on-press #(println "bring up the modal!") }
+       [touchable-highlight {:on-press #(reset! modal-visible true) }
         [text "color picker"]]]
 
       ;; put this https://github.com/instea/react-native-color-picker
