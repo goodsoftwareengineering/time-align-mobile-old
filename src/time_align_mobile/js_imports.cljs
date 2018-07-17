@@ -21,6 +21,7 @@
 (def view (r/adapt-react-class (.-View ReactNative)))
 (def image (r/adapt-react-class (.-Image ReactNative)))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
+(def modal (r/adapt-react-class (.-Modal ReactNative)))
 (def Alert (.-Alert ReactNative))
 (defn alert
   ([title]
@@ -45,3 +46,8 @@
 (def kasv (js/require "react-native-keyboard-aware-scroll-view"))
 (def keyboard-aware-scroll-view (r/adapt-react-class (.-KeyboardAwareScrollView kasv)))
 (def platform (.-Platform ReactNative))
+
+(def react-native-color-picker (js/require "react-native-color-picker"))
+(def ColorPicker (.-ColorPicker react-native-color-picker))
+(def color-picker (r/adapt-react-class ColorPicker))
+

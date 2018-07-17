@@ -3,6 +3,8 @@
                                                   keyboard-aware-scroll-view
                                                   text
                                                   text-input
+                                                  color-picker
+                                                  modal
                                                   platform
                                                   touchable-highlight]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
@@ -44,7 +46,15 @@
                     :spell-check    true
                     :on-change-text (fn [text] (dispatch [:update-task-form {:label text}]))}]]
 
-      ;; :color       ::color
+      [view {:style {:flex-direction "row"
+                     :align-items    "center"}}
+       [text {:style {:color         (if (contains? @changes :color)
+                                       "blue"
+                                       "grey")
+                      :padding-right 5}} ":color"]
+       [touchable-highlight {:on-press #(println "bring up the modal!") }
+        [text "color picker"]]]
+
       ;; put this https://github.com/instea/react-native-color-picker
       ;; in this https://facebook.github.io/react-native/docs/modal.html
 
