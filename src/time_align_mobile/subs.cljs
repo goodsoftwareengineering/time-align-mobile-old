@@ -12,6 +12,7 @@
       task-form
       {:id "nothing"
        :label "here yet"
+       :color "#323232"
        :data {:please "wait"}})))
 
 (defn get-task-form-changes [db _]

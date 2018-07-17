@@ -40,10 +40,12 @@
       [modal {:animation-type "slide"
               :transparent false
               :visible @modal-visible}
-       [view
-        [text "color picker here"]
-        [touchable-highlight {:on-press #(reset! modal-visible false) }
-         [text "save?"]]]]
+       [view {:style {:flex 1}}
+        [color-picker {:on-color-selected (fn [color]
+                                            (dispatch [:update-task-form {:color color}])
+                                            (reset! modal-visible false))
+                       :old-color (:color @task-form)
+                       :style {:flex 1}}]]]
       [view {:style {:flex-direction "row"
                      :align-items    "center"}}
        [text {:style {:color         (if (contains? @changes :label)
@@ -62,8 +64,10 @@
                                        "blue"
                                        "grey")
                       :padding-right 5}} ":color"]
-       [touchable-highlight {:on-press #(reset! modal-visible true) }
-        [text "color picker"]]]
+       [touchable-highlight {:on-press #(reset! modal-visible true)}
+        [view {:style {:height 25
+                       :width 100
+                       :background-color (:color @task-form)}}]]]
 
       ;; put this https://github.com/instea/react-native-color-picker
       ;; in this https://facebook.github.io/react-native/docs/modal.html
