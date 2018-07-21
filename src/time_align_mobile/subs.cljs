@@ -10,11 +10,12 @@
   (let [task-form (get-in db [:view :task-form])]
     (if (some? (:id task-form))
       task-form
-      {:id "nothing"
-       :created (new js/Date 2018 4 28 15 57)
-       :label "here yet"
-       :color "#323232"
-       :data {:please "wait"}})))
+      {:id          "nothing"
+       :created     (new js/Date 2018 4 28 15 57)
+       :last-edited (new js/Date 2018 4 28 15 57)
+       :label       "here yet"
+       :color       "#323232"
+       :data        {:please "wait"}})))
 
 (defn get-task-form-changes [db _]
   (let [task-form (get-in db [:view :task-form])]

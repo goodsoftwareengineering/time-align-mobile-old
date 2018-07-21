@@ -67,7 +67,7 @@
 (defn update-task-form [db [_ task-form]]
   (transform [:view :task-form] #(merge % task-form) db))
 
-(defn save-task-form [{:keys [db]} _]
+(defn save-task-form [{:keys [db]} [_ date-time]]
   (let [task-form (get-in db [:view :task-form])]
     (try
       ;; TODO need to take into account keywords with spaces
@@ -77,7 +77,8 @@
             ;; (js->clj
             ;;           (.parse js/JSON (:data task-form))
             ;;           :keywordize-keys true)
-            new-task (merge task-form {:data new-data})
+            new-task (merge task-form {:data new-data
+                                       :last-edited date-time})
             new-db (setval [:tasks sp/ALL #(= (:id %) (:id new-task))]
                            new-task
                            db)]

@@ -16,9 +16,73 @@
 (def color-modal-visible (r/atom false))
 (def created-modal-visible (r/atom false))
 
+(def field-label-style {:color         "grey"
+                        :padding-right 5
+                        :width 75})
+
+(defn field-label-changeable-style [changes field]
+  {:color         (if (contains? @changes field)
+                    "blue"
+                    "grey")
+   :width 45
+   :padding-right 5})
+
+(defn id-comp [task-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style field-label-style} ":id"]
+   [text (str (:id @task-form))]])
+
+(defn created-comp [task-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style field-label-style} ":created"]
+   [text (format-date (:created @task-form))]])
+
+(defn last-edited-comp [task-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style field-label-style} ":last-edited"]
+   [text (format-date (:last-edited @task-form))]])
+
+(defn periods-comp [task-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style field-label-style} ":periods"]
+   [touchable-highlight
+    {:on-press #(println "navigate to periods list with filter")}
+    [text (str (count (:periods @task-form)))]]])
+
+(defn label-comp [task-form changes]
+  [view {:style {:flex-direction "row"
+                 :align-items    "center"}}
+   [text {:style (field-label-changeable-style changes :label)} ":label"]
+   [text-input {:default-value  (:label @task-form)
+                :style          {:height 40
+                                 :width  200}
+                :spell-check    true
+                :on-change-text (fn [text]
+                                  (dispatch [:update-task-form
+                                             {:label text}]))}]])
+
+(defn color-comp [task-form changes]
+  [view {:style {:flex-direction "row"
+                 :align-items    "center"}}
+   [text {:style (field-label-changeable-style changes :color)} ":color"]
+   [touchable-highlight {:on-press #(reset! color-modal-visible true)}
+    [view {:style {:height 25
+                   :width 100
+                   :background-color (:color @task-form)}}]]])
+
+(defn data-comp [task-form changes update-structured-data]
+  [view {:style {:flex           1
+                 :flex-direction "row"
+                 :align-items    "flex-start"}}
+   [text {:style (field-label-changeable-style changes :data)} ":data"]
+   [structured-data {:data   (:data @task-form)
+                     :update update-structured-data}]])
+
 (defn root [params]
   (let [task-form              (subscribe [:get-task-form])
-        update-structured-data (fn [new-data] (dispatch [:update-task-form {:data new-data}]))
+        update-structured-data (fn [new-data]
+                                 (dispatch
+                                  [:update-task-form {:data new-data}]))
         changes                (subscribe [:get-task-form-changes])]
 
     [keyboard-aware-scroll-view
@@ -31,31 +95,16 @@
                     :align-items     "flex-start"
                     :padding-top     50
                     :padding-left    10}}
-      [view {:style {:flex-direction "row"}}
-       [text {:style {:color         "grey"
-                      :padding-right 5}} ":id"]
-       [text (str (:id @task-form))]]
 
-      ;; :created     ::moment ;; can't edit display date in their time zone
-      [view {:style {:flex-direction "row"}}
-       [text {:style {:color         "grey"
-                      :padding-right 5}} ":created"]
-       [touchable-highlight {:on-press #(reset! created-modal-visible true)}
-        [text (format-date (:created @task-form))]]
-       [date-time-picker ;; {:mode "datetime"
-                         ;;  :date (:created @task-form)
-                         ;;  :style {:width 200}
-                         ;;  :format "YYYY-MM-DD-HH-MM-SS"
-                         ;;  :on-date-change #(println (new js/Date %))}
-        {:is-visible @created-modal-visible
-         :date (:created @task-form)
-         :mode "datetime"
-         :on-confirm (fn [d]
-                       (dispatch [:update-task-form {:created d}])
-                       (reset! created-modal-visible false))
-         :on-cancel #(reset! created-modal-visible false)}]]
+      [id-comp task-form]
 
-      ;; :last-edited ::moment ;; can't edit display date in their time zone
+      [created-comp task-form]
+
+      [last-edited-comp task-form]
+
+      [periods-comp task-form]
+
+      [label-comp task-form changes]
 
       [modal {:animation-type "slide"
               :transparent false
@@ -66,52 +115,20 @@
                                             (reset! color-modal-visible false))
                        :old-color (:color @task-form)
                        :style {:flex 1}}]]]
-      [view {:style {:flex-direction "row"
-                     :align-items    "center"}}
-       [text {:style {:color         (if (contains? @changes :label)
-                                       "blue"
-                                       "grey")
-                      :padding-right 5}} ":label"]
-       [text-input {:default-value  (:label @task-form)
-                    :style          {:height 40
-                                     :width  200}
-                    :spell-check    true
-                    :on-change-text (fn [text] (dispatch [:update-task-form {:label text}]))}]]
 
-      [view {:style {:flex-direction "row"
-                     :align-items    "center"}}
-       [text {:style {:color         (if (contains? @changes :color)
-                                       "blue"
-                                       "grey")
-                      :padding-right 5}} ":color"]
-       [touchable-highlight {:on-press #(reset! color-modal-visible true)}
-        [view {:style {:height 25
-                       :width 100
-                       :background-color (:color @task-form)}}]]]
+      [color-comp task-form changes]
 
-      ;; put this https://github.com/instea/react-native-color-picker
-      ;; in this https://facebook.github.io/react-native/docs/modal.html
-
-      ;; :periods     (ds/maybe [period-spec])}
-
-      [view {:style {:flex           1
-                     :flex-direction "row"
-                     :align-items    "flex-start"}}
-       [text {:style {:color         (if (contains? @changes :data)
-                                       "blue"
-                                       "grey")
-                      :padding-right 5}} ":data"]
-       [structured-data {:data   (:data @task-form)
-                         :update update-structured-data}]]
-
+      [data-comp task-form changes update-structured-data]
 
       [view {:style {:flex            1
                      :flex-direction  "row"
                      :align-items     "center"
                      :justify-content "center"}}
-       [touchable-highlight {:on-press #(dispatch [:save-task-form])
+       [touchable-highlight {:on-press #(dispatch [:save-task-form (new js/Date)])
                              :style    {:padding      5
                                         :margin-right 10}}
         [text "save"]]
        [touchable-highlight {:on-press #(dispatch [:load-task-form (:id @task-form)])}
-        [text "cancel"]]]]]))
+        [text "cancel"]]]
+
+      ]]))
