@@ -51,3 +51,37 @@
 (def ColorPicker (.-ColorPicker react-native-color-picker))
 (def color-picker (r/adapt-react-class ColorPicker))
 
+(def react-native-date-picker (js/require "react-native-modal-datetime-picker"))
+(def DatePicker (.-default react-native-date-picker))
+(def date-time-picker (r/adapt-react-class DatePicker))
+
+(def moment-tz (.-tz (js/require "moment-timezone")))
+
+
+(defn get-default-timezone []
+  (.guess moment-tz))
+(defn set-hour-for-date [date hour zone]
+  (-> (moment-tz date zone)
+      (.hour hour)
+      (.startOf "hours")
+      js/Date.))
+(defn start-of-today [date zone]
+  (set-hour-for-date date 0 zone))
+(defn end-of-today [date zone]
+  (set-hour-for-date date 20 zone)) ;;Set to 20 to avoid straddling the date line
+(defn make-date
+  ([] (.toDate (moment-tz (js/Date.) "UTC")))
+  ( [year month day]
+   (make-date year month day 0))
+  ( [year month day hour]
+   (make-date year month day hour 0))
+  ( [year month day hour minute]
+   (make-date year month day hour minute 0))
+  ( [year month day hour minute second]
+   (make-date year month day hour minute second 0))
+  ( [year month day hour minute second millisecond]
+   (-> (js/Date. (.UTC js/Date year (- 1 month) day hour minute second millisecond))
+       (moment-tz "UTC"))))
+(defn format-date [date]
+  (.format (moment-tz date (get-default-timezone))
+           "YYYY-MM-DD-hh-mm-ss"))

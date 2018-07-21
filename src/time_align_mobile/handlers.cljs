@@ -39,8 +39,10 @@
               ;; The user only cares about the Expected bit and the alert has limited space
               (when (some? alert-message) (alert
                                            "Validation failed"
-                                           (last (.split (str alert-message)
-                                                         ":"))))
+                                           (str alert-message)
+                                           ;; (last (.split (str alert-message)
+                                           ;;               ":"))
+                                           ))
               (setval [:effects :alert] sp/NONE context)))))
 
 ;; -- Handlers --------------------------------------------------------------

@@ -4,14 +4,17 @@
                                                   text
                                                   text-input
                                                   color-picker
+                                                  date-time-picker
                                                   modal
                                                   platform
-                                                  touchable-highlight]]
+                                                  touchable-highlight
+                                                  format-date]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
-(def modal-visible (r/atom false))
+(def color-modal-visible (r/atom false))
+(def created-modal-visible (r/atom false))
 
 (defn root [params]
   (let [task-form              (subscribe [:get-task-form])
@@ -33,17 +36,34 @@
                       :padding-right 5}} ":id"]
        [text (str (:id @task-form))]]
 
-
       ;; :created     ::moment ;; can't edit display date in their time zone
+      [view {:style {:flex-direction "row"}}
+       [text {:style {:color         "grey"
+                      :padding-right 5}} ":created"]
+       [touchable-highlight {:on-press #(reset! created-modal-visible true)}
+        [text (format-date (:created @task-form))]]
+       [date-time-picker ;; {:mode "datetime"
+                         ;;  :date (:created @task-form)
+                         ;;  :style {:width 200}
+                         ;;  :format "YYYY-MM-DD-HH-MM-SS"
+                         ;;  :on-date-change #(println (new js/Date %))}
+        {:is-visible @created-modal-visible
+         :date (:created @task-form)
+         :mode "datetime"
+         :on-confirm (fn [d]
+                       (dispatch [:update-task-form {:created d}])
+                       (reset! created-modal-visible false))
+         :on-cancel #(reset! created-modal-visible false)}]]
+
       ;; :last-edited ::moment ;; can't edit display date in their time zone
 
       [modal {:animation-type "slide"
               :transparent false
-              :visible @modal-visible}
+              :visible @color-modal-visible}
        [view {:style {:flex 1}}
         [color-picker {:on-color-selected (fn [color]
                                             (dispatch [:update-task-form {:color color}])
-                                            (reset! modal-visible false))
+                                            (reset! color-modal-visible false))
                        :old-color (:color @task-form)
                        :style {:flex 1}}]]]
       [view {:style {:flex-direction "row"
@@ -64,7 +84,7 @@
                                        "blue"
                                        "grey")
                       :padding-right 5}} ":color"]
-       [touchable-highlight {:on-press #(reset! modal-visible true)}
+       [touchable-highlight {:on-press #(reset! color-modal-visible true)}
         [view {:style {:height 25
                        :width 100
                        :background-color (:color @task-form)}}]]]

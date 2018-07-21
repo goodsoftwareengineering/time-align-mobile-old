@@ -3040,7 +3040,7 @@ moment-timezone@^0.5.17:
   dependencies:
     moment ">= 2.9.0"
 
-"moment@>= 2.9.0":
+"moment@>= 2.9.0", moment@^2.22.0:
   version "2.22.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
 
@@ -3522,6 +3522,12 @@ react-native-color@^0.0.10:
     react-native-slider "^0.11.0"
     tinycolor2 "^1.4.1"
 
+react-native-datepicker@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/react-native-datepicker/-/react-native-datepicker-1.7.2.tgz#58d0822591a0ac9b32aba082650222a0ee29669d"
+  dependencies:
+    moment "^2.22.0"
+
 react-native-drawer@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.5.0.tgz#022cba5c0516126a9fc9cce3185cb46c644b51c4"
@@ -3569,16 +3575,16 @@ react-native-material-ui@^1.22.3:
     prop-types "^15.5.10"
     react-native-material-design-styles "^0.2.6"
 
-react-native-modal-datetime-picker@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-5.1.0.tgz#6e183531170881c2ff5b0742d132060f828e2b77"
+react-native-modal-datetime-picker@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-6.0.0.tgz#8018994524122ad48fd6bc66f26f623c75a49fb3"
   dependencies:
     prop-types "^15.6.1"
-    react-native-modal "^5.4.0"
+    react-native-modal "^6.2.0"
 
-react-native-modal@^5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/react-native-modal/-/react-native-modal-5.4.0.tgz#95f70b5d68e08824951cd11038b9db2d6fdb9962"
+react-native-modal@^6.2.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-modal/-/react-native-modal-6.4.0.tgz#a6c2599b4c9d53ac99071bc658215367ee81e278"
   dependencies:
     prop-types "^15.6.1"
     react-native-animatable "^1.2.4"
