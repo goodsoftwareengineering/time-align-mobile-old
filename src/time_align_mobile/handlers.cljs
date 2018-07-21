@@ -89,9 +89,50 @@
         {:db db
          :alert (str "Failed data json validation " e)}))))
 
+(defn load-period-form [db [_ period-id]]
+  ;; TODO is there a more idiomatic way than first of the select?
+  ;; Without that the app silently failed with no spec errors thrown
+  (let [period (first (select [:periods sp/ALL #(= (:id %) period-id)] db))
+        period-form (merge period {:data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
+                               ;; (.stringify js/JSON
+                               ;;                   (clj->js (:data period))
+                               ;;                   nil 2)
+                               })]
+    (assoc-in db [:view :period-form] period-form)))
+
+(defn update-period-form [db [_ period-form]]
+  (transform [:view :period-form] #(merge % period-form) db))
+
+(defn save-period-form [{:keys [db]} [_ date-time]]
+  (let [period-form (get-in db [:view :period-form])]
+    (try
+      ;; TODO need to take into account keywords with spaces
+      ;; it seems to work for going in and out of clj but I have a feeling
+      ;; it won't when doing filtering
+      (let [new-data (read-string (:data period-form))
+            ;; (js->clj
+            ;;           (.parse js/JSON (:data period-form))
+            ;;           :keywordize-keys true)
+            new-period (merge period-form {:data new-data
+                                       :last-edited date-time})
+            new-db (setval [:periods sp/ALL #(= (:id %) (:id new-period))]
+                           new-period
+                           db)]
+        {:db new-db
+         ;; load period form so that the data string gets re-formatted prettier
+         :dispatch [:load-period-form (:id new-period)]})
+      (catch js/Error e
+        {:db db
+         :alert (str "Failed data json validation " e)}))))
+
+
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
 (reg-event-db :update-bucket-form [validate-spec] update-bucket-form)
 (reg-event-fx :save-bucket-form [alert-message validate-spec] save-bucket-form)
+(reg-event-db :load-period-form [validate-spec] load-period-form)
+(reg-event-db :update-period-form [validate-spec] update-period-form)
+(reg-event-fx :save-period-form [alert-message validate-spec] save-period-form)
+
 

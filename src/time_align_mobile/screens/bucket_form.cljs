@@ -10,15 +10,12 @@
                                                   touchable-highlight
                                                   format-date]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
+            [time-align-mobile.styles :refer [field-label-changeable-style
+                                              field-label-style]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
 (def color-modal-visible (r/atom false))
-(def created-modal-visible (r/atom false))
-
-(def field-label-style {:color         "grey"
-                        :padding-right 5
-                        :width 75})
 
 (defn field-label-changeable-style [changes field]
   {:color         (if (contains? @changes field)

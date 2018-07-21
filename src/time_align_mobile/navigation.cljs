@@ -67,6 +67,15 @@
                    :icon            {:family "Entypo"
                                      :name "credit"}}
 
+                  {:id              :period
+                   :label           "period"
+                   :screen          period-form-screen/root
+                   :in-drawer       true
+                   :position-drawer 998
+                   :icon            {:family "Entypo"
+                                     :name "credit"}}
+
+
                   {:id              :buckets
                    :label           "buckets"
                    :screen          bucket-list-screen/root

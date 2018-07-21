@@ -58,16 +58,18 @@
                                               :description ""
                                               :created     moment
                                               :last-edited moment})))
+(def period-data-spec {:id          uuid?
+                       :created     ::moment
+                       :last-edited ::moment
+                       :label       string?
+                       :planned     boolean?
+                       :start       (ds/maybe ::moment)
+                       :stop        (ds/maybe ::moment)
+                       :data        map?})
+
 (def period-spec
   (st/create-spec {:spec (s/and
-                          (ds/spec {:spec {:id          uuid?
-                                           :label       string?
-                                           :created     ::moment
-                                           :last-edited ::moment
-                                           :data        map?
-                                           :planned     boolean?
-                                           :start       (ds/maybe ::moment)
-                                           :stop        (ds/maybe ::moment)}
+                          (ds/spec {:spec period-data-spec
                                     :name ::period})
                           start-before-stop)
                    :gen  #(gen/fmap generate-period
@@ -89,12 +91,12 @@
                    (s/gen ::hex-str))))
 
 (def bucket-data-spec {:id          uuid?
-                     :label       string?
-                     :created     ::moment
-                     :last-edited ::moment
-                     :data        map?
-                     :color       ::color
-                     :periods     (ds/maybe [period-spec])})
+                       :label       string?
+                       :created     ::moment
+                       :last-edited ::moment
+                       :data        map?
+                       :color       ::color
+                       :periods     (ds/maybe [period-spec])})
 (def bucket-spec
   (st/create-spec {:spec
                    (ds/spec {:spec bucket-data-spec

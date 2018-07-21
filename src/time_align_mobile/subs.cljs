@@ -35,8 +35,42 @@
       ;; return an empty map if there is no loaded bucket in the form
       {})))
 
+(defn get-period-form [db _]
+  (let [period-form (get-in db [:view :period-form])]
+    (if (some? (:id period-form))
+      period-form
+      {:id          "nothing"
+       :created     (new js/Date 2018 4 28 15 57)
+       :last-edited (new js/Date 2018 4 28 15 57)
+       :label       "here yet"
+       :planned     false
+       :start       nil
+       :stop        nil
+       :data        {:please "wait"}})))
+
+(defn get-period-form-changes [db _]
+  (let [period-form (get-in db [:view :period-form])]
+    (if (some? (:id period-form))
+      (let [period (first
+                  (select [:periods sp/ALL #(= (:id %) (:id period-form))]
+                          db))
+            ;; data needs to be coerced to compare to form
+            new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
+            ;; (.stringify js/JSON
+            ;;                      (clj->js (:data period))
+            ;;                      nil 2)
+            altered-period (merge period {:data new-data})
+            different-keys (->> (clojure.data/diff period-form altered-period)
+                                (first))]
+        different-keys)
+      ;; return an empty map if there is no loaded period in the form
+      {})))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
+(reg-sub :get-period-form get-period-form)
+(reg-sub :get-period-form-changes get-period-form-changes)
+
 
 
