@@ -46,10 +46,10 @@
                                        :on-press (fn [_]
                                                    (println {:current-screen id
                                                              :params nil})
-                                                   ;; TODO remove task id params when done testing
+                                                   ;; TODO remove bucket id params when done testing
                                                    (dispatch [:navigate-to {:current-screen id
-                                                                            :params (if (= id :task)
-                                                                                      {:task-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
+                                                                            :params (if (= id :bucket)
+                                                                                      {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
                                                                                       nil)}]))}
                   [view {:flex-direction "row"
                          :justify-content "flex-start"

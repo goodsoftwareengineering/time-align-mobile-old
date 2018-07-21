@@ -6,10 +6,10 @@
 (defn get-navigation [db _]
   (get-in db [:navigation]))
 
-(defn get-task-form [db _]
-  (let [task-form (get-in db [:view :task-form])]
-    (if (some? (:id task-form))
-      task-form
+(defn get-bucket-form [db _]
+  (let [bucket-form (get-in db [:view :bucket-form])]
+    (if (some? (:id bucket-form))
+      bucket-form
       {:id          "nothing"
        :created     (new js/Date 2018 4 28 15 57)
        :last-edited (new js/Date 2018 4 28 15 57)
@@ -17,26 +17,26 @@
        :color       "#323232"
        :data        {:please "wait"}})))
 
-(defn get-task-form-changes [db _]
-  (let [task-form (get-in db [:view :task-form])]
-    (if (some? (:id task-form))
-      (let [task (first
-                  (select [:tasks sp/ALL #(= (:id %) (:id task-form))]
+(defn get-bucket-form-changes [db _]
+  (let [bucket-form (get-in db [:view :bucket-form])]
+    (if (some? (:id bucket-form))
+      (let [bucket (first
+                  (select [:buckets sp/ALL #(= (:id %) (:id bucket-form))]
                           db))
             ;; data needs to be coerced to compare to form
-            new-data (with-out-str (zprint (:data task) {:map {:force-nl? true}}))
+            new-data (with-out-str (zprint (:data bucket) {:map {:force-nl? true}}))
             ;; (.stringify js/JSON
-            ;;                      (clj->js (:data task))
+            ;;                      (clj->js (:data bucket))
             ;;                      nil 2)
-            altered-task (merge task {:data new-data})
-            different-keys (->> (clojure.data/diff task-form altered-task)
+            altered-bucket (merge bucket {:data new-data})
+            different-keys (->> (clojure.data/diff bucket-form altered-bucket)
                                 (first))]
         different-keys)
-      ;; return an empty map if there is no loaded task in the form
+      ;; return an empty map if there is no loaded bucket in the form
       {})))
 
 (reg-sub :get-navigation get-navigation)
-(reg-sub :get-task-form get-task-form)
-(reg-sub :get-task-form-changes get-task-form-changes)
+(reg-sub :get-bucket-form get-bucket-form)
+(reg-sub :get-bucket-form-changes get-bucket-form-changes)
 
 

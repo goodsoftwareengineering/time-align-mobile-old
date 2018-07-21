@@ -1,4 +1,4 @@
-(ns time-align-mobile.screens.task-list
+(ns time-align-mobile.screens.bucket-list
   (:require [time-align-mobile.js-imports :refer [view text]] ))
 
 (defn root [params]

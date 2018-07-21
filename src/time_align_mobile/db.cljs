@@ -73,7 +73,7 @@
                    :gen  #(gen/fmap generate-period
                                     (s/gen ::moment))}))
 
-;; task
+;; bucket
 (s/def ::hex-digit (s/with-gen
                      (s/and string? #(contains? (set "0123456789abcdef") %))
                      #(s/gen (set "0123456789abcdef"))))
@@ -88,23 +88,23 @@
                    (fn [hex-str] (string/join (cons "#" hex-str)))
                    (s/gen ::hex-str))))
 
-(def task-data-spec {:id          uuid?
+(def bucket-data-spec {:id          uuid?
                      :label       string?
                      :created     ::moment
                      :last-edited ::moment
                      :data        map?
                      :color       ::color
                      :periods     (ds/maybe [period-spec])})
-(def task-spec
+(def bucket-spec
   (st/create-spec {:spec
-                   (ds/spec {:spec task-data-spec
-                             :name ::task})}))
+                   (ds/spec {:spec bucket-data-spec
+                             :name ::bucket})}))
 
 ;; template
 (def template-spec
   (st/create-spec {:spec (s/and
                           (ds/spec {:spec {:id          uuid?
-                                           :task-id     uuid?
+                                           :bucket-id     uuid?
                                            :label       string?
                                            :created     ::moment
                                            :last-edited ::moment
@@ -124,20 +124,20 @@
 (s/def ::screen screen-id-set)
 
 (def app-db-spec
-  (ds/spec {:spec {:view {:task-form (ds/maybe (merge task-data-spec {:data string?}))}
+  (ds/spec {:spec {:view {:bucket-form (ds/maybe (merge bucket-data-spec {:data string?}))}
                    :navigation {:current-screen ::screen
                                 :params (ds/maybe map?)}
 
-                   :tasks     [task-spec]
+                   :buckets     [bucket-spec]
                    :templates (ds/maybe [template-spec])
                    :config    {:auto-log-time-align boolean?}}
             :name ::app-db}))
 
 (def app-db
-  {:view       {:task-form nil}
+  {:view       {:bucket-form nil}
    :navigation {:current-screen :day
                 :params         nil}
-   :tasks      [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
+   :buckets      [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
                  :label       "Using Time Align"
                  :created     (new js/Date 2018 4 28 15 57)
                  :last-edited (new js/Date 2018 4 28 15 57)

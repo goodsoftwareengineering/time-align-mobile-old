@@ -5,8 +5,8 @@
             [time-align-mobile.screens.period-list :as period-list-screen]
             [time-align-mobile.screens.queue :as queue-screen]
             [time-align-mobile.screens.report :as report-screen]
-            [time-align-mobile.screens.task-form :as task-form-screen]
-            [time-align-mobile.screens.task-list :as task-list-screen]
+            [time-align-mobile.screens.bucket-form :as bucket-form-screen]
+            [time-align-mobile.screens.bucket-list :as bucket-list-screen]
             [time-align-mobile.screens.template-form :as template-form-screen]
             [time-align-mobile.screens.template-list :as template-list-screen]))
 
@@ -58,18 +58,18 @@
                    :icon            {:family "Entypo"
                                      :name   "bar-graph"}}
 
-                  ;; TODO remove this when done testing task form
-                  {:id              :task
-                   :label           "task"
-                   :screen          task-form-screen/root
+                  ;; TODO remove this when done testing bucket form
+                  {:id              :bucket
+                   :label           "bucket"
+                   :screen          bucket-form-screen/root
                    :in-drawer       true
                    :position-drawer 999
                    :icon            {:family "Entypo"
                                      :name "credit"}}
 
-                  {:id              :tasks
-                   :label           "tasks"
-                   :screen          task-list-screen/root
+                  {:id              :buckets
+                   :label           "buckets"
+                   :screen          bucket-list-screen/root
                    :in-drawer       true
                    :position-drawer 5
                    :icon            {:family "FontAwesome"
