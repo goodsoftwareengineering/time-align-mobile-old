@@ -123,16 +123,21 @@
 
 ;; app-db
 (def app-db-spec
-  (ds/spec {:spec {:view {:bucket-form (ds/maybe (merge bucket-data-spec {:data string?}))}
+  (ds/spec {:spec {:view       {:bucket-form (ds/maybe (merge bucket-data-spec {:data string?}))
+                                :period-form (ds/maybe (merge period-data-spec {:data         string?
+                                                                                :bucket-id    uuid?
+                                                                                :bucket-label string?
+                                                                                :bucket-color ::color}))}
                    :navigation {:current-screen ::screen
-                                :params (ds/maybe map?)}
+                                :params         (ds/maybe map?)}
 
-                   :buckets     [bucket-spec]
+                   :buckets   [bucket-spec]
                    :templates (ds/maybe [template-spec])
                    :config    {:auto-log-time-align boolean?}}
             :name ::app-db}))
 (def app-db
-  {:view       {:bucket-form nil}
+  {:view       {:bucket-form nil
+                :period-form nil}
    :navigation {:current-screen :day
                 :params         nil}
    :buckets    [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")

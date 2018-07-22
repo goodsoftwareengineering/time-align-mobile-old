@@ -39,14 +39,17 @@
   (let [period-form (get-in db [:view :period-form])]
     (if (some? (:id period-form))
       period-form
-      {:id          "nothing"
-       :created     (new js/Date 2018 4 28 15 57)
-       :last-edited (new js/Date 2018 4 28 15 57)
-       :label       "here yet"
-       :planned     false
-       :start       nil
-       :stop        nil
-       :data        {:please "wait"}})))
+      {:id           "nothing"
+       :bucket-color "#2222aa"
+       :bucket-label "nothing here yet"
+       :bucket-id    "nope"
+       :created      (new js/Date 2018 4 28 15 57)
+       :last-edited  (new js/Date 2018 4 28 15 57)
+       :label        "here yet"
+       :planned      false
+       :start        nil
+       :stop         nil
+       :data         {:please "wait"}})))
 
 (defn get-period-form-changes [db _]
   (let [period-form (get-in db [:view :period-form])]

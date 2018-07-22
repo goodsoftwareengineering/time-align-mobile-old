@@ -14,20 +14,34 @@
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
 
-(defn id-comp [bucket-form]
+(defn id-comp [period-form]
   [view {:style {:flex-direction "row"}}
    [text {:style field-label-style} ":id"]
-   [text (str (:id @bucket-form))]])
+   [text (str (:id @period-form))]])
 
-(defn created-comp [bucket-form]
+(defn parent-id-comp [period-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style (merge field-label-style
+                        {:width 90})} ":bucket-id"]
+   [text (str (:bucket-id @period-form))]])
+
+(defn parent-label-comp [period-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style (merge field-label-style
+                        {:width 90})} ":bucket-label"]
+   [view {:style {:background-color (str (:bucket-color @period-form))
+                  :width 25}}]
+   [text (str (:bucket-label @period-form))]])
+
+(defn created-comp [period-form]
   [view {:style {:flex-direction "row"}}
    [text {:style field-label-style} ":created"]
-   [text (format-date (:created @bucket-form))]])
+   [text (format-date (:created @period-form))]])
 
-(defn last-edited-comp [bucket-form]
+(defn last-edited-comp [period-form]
   [view {:style {:flex-direction "row"}}
    [text {:style field-label-style} ":last-edited"]
-   [text (format-date (:last-edited @bucket-form))]])
+   [text (format-date (:last-edited @period-form))]])
 
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
@@ -46,8 +60,14 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [parent-id-comp period-form]
+
+      [parent-label-comp period-form]
+
       [id-comp period-form]
 
       [created-comp period-form]
 
-      [last-edited-comp period-form]]]))
+      [last-edited-comp period-form]
+
+      ]]))
