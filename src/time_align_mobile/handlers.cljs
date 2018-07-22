@@ -51,7 +51,9 @@
   (merge {:db (assoc-in db [:navigation] {:current-screen current-screen
                                           :params         params})}
          (when (= current-screen :bucket)
-           {:dispatch [:load-bucket-form (:bucket-id params)]})))
+           {:dispatch [:load-bucket-form (:bucket-id params)]})
+         (when (= current-screen :period)
+           {:dispatch [:load-period-form (:period-id params)]})))
 
 (defn load-bucket-form [db [_ bucket-id]]
   ;; TODO is there a more idiomatic way than first of the select?
@@ -92,7 +94,7 @@
 (defn load-period-form [db [_ period-id]]
   ;; TODO is there a more idiomatic way than first of the select?
   ;; Without that the app silently failed with no spec errors thrown
-  (let [period (first (select [:periods sp/ALL #(= (:id %) period-id)] db))
+  (let [period (first (select [:buckets sp/ALL :periods sp/ALL #(= (:id %) period-id)] db))
         period-form (merge period {:data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
                                ;; (.stringify js/JSON
                                ;;                   (clj->js (:data period))
@@ -115,7 +117,7 @@
             ;;           :keywordize-keys true)
             new-period (merge period-form {:data new-data
                                        :last-edited date-time})
-            new-db (setval [:periods sp/ALL #(= (:id %) (:id new-period))]
+            new-db (setval [:buckets sp/ALL :periods sp/ALL #(= (:id %) (:id new-period))]
                            new-period
                            db)]
         {:db new-db

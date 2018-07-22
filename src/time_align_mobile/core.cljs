@@ -48,9 +48,11 @@
                                                              :params nil})
                                                    ;; TODO remove bucket id params when done testing
                                                    (dispatch [:navigate-to {:current-screen id
-                                                                            :params (if (= id :bucket)
-                                                                                      {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
-                                                                                      nil)}]))}
+                                                                            :params
+                                                                            (cond
+                                                                                (= id :bucket) {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
+                                                                                (= id :period) {:period-id (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")}
+                                                                                :else nil)}]))}
                   [view {:flex-direction "row"
                          :justify-content "flex-start"
                          :align-items "center"
