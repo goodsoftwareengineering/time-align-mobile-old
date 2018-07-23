@@ -11,6 +11,7 @@
                                                   platform
                                                   touchable-highlight
                                                   format-date]]
+            [time-align-mobile.components.form-buttons :as form-buttons]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
 
@@ -43,6 +44,18 @@
    [text {:style field-label-style} ":last-edited"]
    [text (format-date (:last-edited @period-form))]])
 
+(defn label-comp [period-form changes]
+  [view {:style {:flex-direction "row"
+                 :align-items    "center"}}
+   [text {:style (field-label-changeable-style changes :label)} ":label"]
+   [text-input {:default-value  (:label @period-form)
+                :style          {:height 40
+                                 :width  200}
+                :spell-check    true
+                :on-change-text (fn [text]
+                                  (dispatch [:update-period-form
+                                             {:label text}]))}]])
+
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
@@ -70,4 +83,8 @@
 
       [last-edited-comp period-form]
 
-      ]]))
+      [label-comp period-form changes]
+
+      [form-buttons/root
+       #(dispatch [:save-period-form (new js/Date)])
+       #(dispatch [:load-period-form (:id @period-form)])]]]))

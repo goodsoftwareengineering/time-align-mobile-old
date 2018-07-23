@@ -1,7 +1,7 @@
 (ns time-align-mobile.subs
   (:require [re-frame.core :refer [reg-sub]]
             [zprint.core :refer [zprint]]
-            [com.rpl.specter :as sp :refer-macros [select setval transform]]))
+            [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
 (defn get-navigation [db _]
   (get-in db [:navigation]))
@@ -31,7 +31,9 @@
             altered-bucket (merge bucket {:data new-data})
             different-keys (->> (clojure.data/diff bucket-form altered-bucket)
                                 (first))]
-        different-keys)
+        (if (nil? different-keys)
+          {} ;; empty map if no changes
+          different-keys))
       ;; return an empty map if there is no loaded bucket in the form
       {})))
 
@@ -54,18 +56,16 @@
 (defn get-period-form-changes [db _]
   (let [period-form (get-in db [:view :period-form])]
     (if (some? (:id period-form))
-      (let [period (first
-                  (select [:periods sp/ALL #(= (:id %) (:id period-form))]
-                          db))
+      (let [period (select-one [:buckets sp/ALL :periods sp/ALL #(= (:id %) (:id period-form))]
+                               db)
             ;; data needs to be coerced to compare to form
             new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
-            ;; (.stringify js/JSON
-            ;;                      (clj->js (:data period))
-            ;;                      nil 2)
             altered-period (merge period {:data new-data})
             different-keys (->> (clojure.data/diff period-form altered-period)
                                 (first))]
-        different-keys)
+        (if (nil? different-keys)
+          {} ;; empty map if no changes
+          different-keys))
       ;; return an empty map if there is no loaded period in the form
       {})))
 

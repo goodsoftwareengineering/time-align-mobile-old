@@ -10,19 +10,13 @@
                                                   touchable-highlight
                                                   format-date]]
             [time-align-mobile.components.structured-data :refer [structured-data]]
+            [time-align-mobile.components.form-buttons :as form-buttons]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
 (def color-modal-visible (r/atom false))
-
-(defn field-label-changeable-style [changes field]
-  {:color         (if (contains? @changes field)
-                    "blue"
-                    "grey")
-   :width 45
-   :padding-right 5})
 
 (defn id-comp [bucket-form]
   [view {:style {:flex-direction "row"}}
@@ -117,15 +111,6 @@
 
       [data-comp bucket-form changes update-structured-data]
 
-      [view {:style {:flex            1
-                     :flex-direction  "row"
-                     :align-items     "center"
-                     :justify-content "center"}}
-       [touchable-highlight {:on-press #(dispatch [:save-bucket-form (new js/Date)])
-                             :style    {:padding      5
-                                        :margin-right 10}}
-        [text "save"]]
-       [touchable-highlight {:on-press #(dispatch [:load-bucket-form (:id @bucket-form)])}
-        [text "cancel"]]]
-
-      ]]))
+      [form-buttons/root
+       #(dispatch [:save-bucket-form (new js/Date)])
+       #(dispatch [:load-bucket-form (:id @bucket-form)])]]]))
