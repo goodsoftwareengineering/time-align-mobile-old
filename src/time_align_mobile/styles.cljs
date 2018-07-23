@@ -4,7 +4,7 @@
   {:color         (if (contains? @changes field)
                     "blue"
                     "grey")
-   :width 45
+   :width 60
    :padding-right 5})
 
 

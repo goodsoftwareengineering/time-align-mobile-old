@@ -8,6 +8,7 @@
                                                   color-picker
                                                   date-time-picker
                                                   modal
+                                                  switch
                                                   platform
                                                   touchable-highlight
                                                   format-date]]
@@ -56,6 +57,13 @@
                                   (dispatch [:update-period-form
                                              {:label text}]))}]])
 
+(defn planned-comp [period-form changes]
+  [view {:style {:flex-direction "row"
+                 :align-items    "center"}}
+   [text {:style (field-label-changeable-style changes :planned)} ":planned"]
+   [switch {:value (:planned @period-form)
+            :on-value-change #(dispatch [:update-period-form {:planned %}])}]])
+
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
@@ -84,6 +92,8 @@
       [last-edited-comp period-form]
 
       [label-comp period-form changes]
+
+      [planned-comp period-form changes]
 
       [form-buttons/root
        #(dispatch [:save-period-form (new js/Date)])
