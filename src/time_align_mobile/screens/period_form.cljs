@@ -19,6 +19,8 @@
 
 (def start-modal-visible (r/atom false))
 
+(def stop-modal-visible (r/atom false))
+
 (defn id-comp [period-form]
   [view {:style {:flex-direction "row"}}
    [text {:style field-label-style} ":id"]
@@ -80,6 +82,19 @@
                    (reset! start-modal-visible false))
      :on-cancel #(reset! start-modal-visible false)}]] )
 
+(defn stop-comp [period-form changes]
+  [view {:style {:flex-direction "row"}}
+   [text {:style (field-label-changeable-style changes :stop)} ":stop"]
+   [touchable-highlight {:on-press #(reset! stop-modal-visible true)}
+    [text (format-date (:stop @period-form))]]
+   [date-time-picker {:is-visible @stop-modal-visible
+                      :date (:stop @period-form)
+                      :mode "datetime"
+                      :on-confirm (fn [d]
+                                    (dispatch [:update-period-form {:stop d}])
+                                    (reset! stop-modal-visible false))
+                      :on-cancel #(reset! stop-modal-visible false)}]] )
+
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
@@ -112,6 +127,8 @@
       [planned-comp period-form changes]
 
       [start-comp period-form changes]
+
+      [stop-comp period-form changes]
 
       [form-buttons/root
        #(dispatch [:save-period-form (new js/Date)])
