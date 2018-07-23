@@ -16,7 +16,8 @@
   "Throw an exception if db doesn't have a valid spec."
   [spec db]
   (when-not (s/valid? spec db)
-    (let [explain-data (s/explain-data spec db)]
+    (let [explain-data (s/explain spec db)]
+      (println (zprint explain-data {:map {:force-nl? true}}))
       (throw (ex-info (str "Spec check failed: " explain-data) explain-data)))))
 
 (def validate-spec

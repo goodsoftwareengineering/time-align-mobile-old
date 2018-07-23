@@ -13,8 +13,11 @@
                                                   touchable-highlight
                                                   format-date]]
             [time-align-mobile.components.form-buttons :as form-buttons]
+            [reagent.core :as r :refer [atom]]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
+
+(def start-modal-visible (r/atom false))
 
 (defn id-comp [period-form]
   [view {:style {:flex-direction "row"}}
@@ -64,6 +67,19 @@
    [switch {:value (:planned @period-form)
             :on-value-change #(dispatch [:update-period-form {:planned %}])}]])
 
+(defn start-comp [period-form changes]
+  [view {:style {:flex-direction "row"}}
+   [text {:style (field-label-changeable-style changes :start)} ":start"]
+   [touchable-highlight {:on-press #(reset! start-modal-visible true)}
+    [text (format-date (:start @period-form))]]
+   [date-time-picker {:is-visible @start-modal-visible
+     :date (:start @period-form)
+     :mode "datetime"
+     :on-confirm (fn [d]
+                   (dispatch [:update-period-form {:start d}])
+                   (reset! start-modal-visible false))
+     :on-cancel #(reset! start-modal-visible false)}]] )
+
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
@@ -94,6 +110,8 @@
       [label-comp period-form changes]
 
       [planned-comp period-form changes]
+
+      [start-comp period-form changes]
 
       [form-buttons/root
        #(dispatch [:save-period-form (new js/Date)])
