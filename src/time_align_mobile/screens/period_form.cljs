@@ -13,6 +13,7 @@
                                                   touchable-highlight
                                                   format-date]]
             [time-align-mobile.components.form-buttons :as form-buttons]
+            [time-align-mobile.components.structured-data :refer [structured-data]]
             [reagent.core :as r :refer [atom]]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
@@ -95,6 +96,14 @@
                                     (reset! stop-modal-visible false))
                       :on-cancel #(reset! stop-modal-visible false)}]] )
 
+(defn data-comp [period-form changes update-structured-data]
+  [view {:style {:flex           1
+                 :flex-direction "row"
+                 :align-items    "flex-start"}}
+   [text {:style (field-label-changeable-style changes :data)} ":data"]
+   [structured-data {:data   (:data @period-form)
+                     :update update-structured-data}]])
+
 (defn root [params]
   (let [period-form (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
@@ -129,6 +138,8 @@
       [start-comp period-form changes]
 
       [stop-comp period-form changes]
+
+      [data-comp period-form changes update-structured-data]
 
       [form-buttons/root
        #(dispatch [:save-period-form (new js/Date)])
