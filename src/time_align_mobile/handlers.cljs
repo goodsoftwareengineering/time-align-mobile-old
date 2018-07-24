@@ -18,16 +18,20 @@
   (when-not (s/valid? spec db)
     (let [explain-data (s/explain spec db)]
       (println (zprint explain-data {:map {:force-nl? true}}))
-      (throw (ex-info (str "Spec check failed: " explain-data) explain-data)))))
+      ;; (throw (ex-info (str "Spec check failed: " explain-data) explain-data))
+      (alert "Failed spec validation" "Check the command line output.")
+      true)))
 
 (def validate-spec
   (if goog.DEBUG
     (->interceptor
         :id :validate-spec
         :after (fn [context]
-                 (let [db (-> context :effects :db)]
-                   (check-and-throw app-db-spec db)
-                   context)))
+                 (let [db (-> context :effects :db)
+                       old-db (-> context :coeffects :db)]
+                   (if (some? (check-and-throw app-db-spec db))
+                     (assoc-in context [:effects :db] old-db)
+                     context))))
     ->interceptor))
 
 (def alert-message
