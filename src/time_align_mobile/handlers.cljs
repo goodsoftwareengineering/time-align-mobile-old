@@ -89,18 +89,29 @@
                              [:buckets sp/ALL
                               (sp/collect-one (sp/submap [:id :color :label]))
                               :periods sp/ALL #(= (:id %) period-id)] db)
-        sub-bucket-remap {:bucket-id (:id sub-bucket)
-                          :bucket-color (:color sub-bucket)
-                          :bucket-label (:label sub-bucket)}
-        period-form (merge period
-                           {:data (with-out-str
-                                    (zprint (:data period)
-                                            {:map {:force-nl? true}}))}
-                           sub-bucket-remap)]
+        sub-bucket-remap    {:bucket-id    (:id sub-bucket)
+                             :bucket-color (:color sub-bucket)
+                             :bucket-label (:label sub-bucket)}
+        period-form         (merge period
+                                   {:data (with-out-str
+                                            (zprint (:data period)
+                                                    {:map {:force-nl? true}}))}
+                                   sub-bucket-remap)]
     (assoc-in db [:view :period-form] period-form)))
 
 (defn update-period-form [db [_ period-form]]
-  (transform [:view :period-form] #(merge % period-form) db))
+  (let [period-form (if (contains? period-form :bucket-id)
+                      (merge period-form
+                             {:bucket-label (:label
+                                             (select-one
+                                              [:buckets
+                                               sp/ALL
+                                               #(= (:id %) (:bucket-id period-form))]
+                                              db))})
+                      ;; ^ pulls out the label when selecting new parent
+                      ;; because all that comes from the picker is id
+                      period-form)]
+    (transform [:view :period-form] #(merge % period-form) db)))
 
 (defn save-period-form [{:keys [db]} [_ date-time]]
   (let [period-form (get-in db [:view :period-form])]

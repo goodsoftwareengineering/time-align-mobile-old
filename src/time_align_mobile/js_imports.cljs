@@ -22,6 +22,8 @@
 (def image (r/adapt-react-class (.-Image ReactNative)))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
 (def modal (r/adapt-react-class (.-Modal ReactNative)))
+(def picker (r/adapt-react-class (.-Picker ReactNative)))
+(def picker-item (r/adapt-react-class (.-Item (.-Picker ReactNative))))
 (def Alert (.-Alert ReactNative))
 (defn alert
   ([title]

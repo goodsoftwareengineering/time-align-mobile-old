@@ -56,11 +56,15 @@
 (defn get-period-form-changes [db _]
   (let [period-form (get-in db [:view :period-form])]
     (if (some? (:id period-form))
-      (let [period (select-one [:buckets sp/ALL :periods sp/ALL #(= (:id %) (:id period-form))]
+      (let [[sub-bucket period] (select-one [:buckets sp/ALL
+                                (sp/collect-one (sp/submap [:id :color :label]))
+                                :periods sp/ALL #(= (:id %) (:id period-form))]
                                db)
             ;; data needs to be coerced to compare to form
             new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
-            altered-period (merge period {:data new-data})
+            altered-period (merge period {:data new-data
+                                          :bucket-id (:id sub-bucket)
+                                          :bucket-label (:label sub-bucket)})
             different-keys (->> (clojure.data/diff period-form altered-period)
                                 (first))]
         (if (nil? different-keys)
@@ -69,11 +73,14 @@
       ;; return an empty map if there is no loaded period in the form
       {})))
 
+(defn get-buckets [db _]
+  (:buckets db))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
 (reg-sub :get-period-form get-period-form)
 (reg-sub :get-period-form-changes get-period-form-changes)
-
+(reg-sub :get-buckets get-buckets)
 
 

@@ -141,7 +141,7 @@
    :navigation {:current-screen :day
                 :params         nil}
    :buckets    [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
-                 :label       "Using Time Align"
+                 :label       "This one has periods"
                  :created     (new js/Date 2018 4 28 15 57)
                  :last-edited (new js/Date 2018 4 28 15 57)
                  :data        {:category :default}

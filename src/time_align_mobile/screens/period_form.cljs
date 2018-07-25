@@ -10,6 +10,8 @@
                                                   modal
                                                   switch
                                                   platform
+                                                  picker
+                                                  picker-item
                                                   touchable-highlight
                                                   format-date]]
             [time-align-mobile.components.form-buttons :as form-buttons]
@@ -27,19 +29,32 @@
    [text {:style field-label-style} ":id"]
    [text (str (:id @period-form))]])
 
-(defn parent-id-comp [period-form]
+(defn parent-id-comp [period-form changes]
   [view {:style {:flex-direction "row"}}
-   [text {:style (merge field-label-style
-                        {:width 90})} ":bucket-id"]
+   [text {:style (field-label-changeable-style changes :bucket-id)}
+    ":bucket-id"]
    [text (str (:bucket-id @period-form))]])
 
-(defn parent-label-comp [period-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style (merge field-label-style
-                        {:width 90})} ":bucket-label"]
-   [view {:style {:background-color (str (:bucket-color @period-form))
-                  :width 25}}]
-   [text (str (:bucket-label @period-form))]])
+(defn parent-picker-comp [period-form changes buckets]
+  [view {:style {:flex-direction "row"
+                 :align-items "center"}}
+   [text {:style (field-label-changeable-style changes :bucket-label)}
+    ":bucket-label"]
+   [picker {:selected-value  (:bucket-id @period-form)
+            :style           {:width 250}
+            :on-value-change #(dispatch [:update-period-form {:bucket-id %}])}
+    (map (fn [bucket] [picker-item {:label (:label bucket)
+                                    :key (:id bucket)
+                                    :value (:id bucket)}])
+         @buckets)]])
+
+;; (defn parent-label-comp [period-form]
+;;   [view {:style {:flex-direction "row"}}
+;;    [text {:style (merge field-label-style
+;;                         {:width 90})} ":bucket-label"]
+;;    [view {:style {:background-color (str (:bucket-color @period-form))
+;;                   :width 25}}]
+;;    [text (str (:bucket-label @period-form))]])
 
 (defn created-comp [period-form]
   [view {:style {:flex-direction "row"}}
@@ -105,11 +120,12 @@
                      :update update-structured-data}]])
 
 (defn root [params]
-  (let [period-form (subscribe [:get-period-form])
+  (let [period-form            (subscribe [:get-period-form])
         update-structured-data (fn [new-data]
                                  (dispatch
                                   [:update-period-form {:data new-data}]))
-        changes                (subscribe [:get-period-form-changes])]
+        changes                (subscribe [:get-period-form-changes])
+        buckets                (subscribe [:get-buckets])]
     [keyboard-aware-scroll-view
      ;; check link for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
      {:enable-on-android            true
@@ -121,9 +137,11 @@
                     :padding-top     50
                     :padding-left    10}}
 
-      [parent-id-comp period-form]
+      [parent-id-comp period-form changes]
 
-      [parent-label-comp period-form]
+      ;; [parent-label-comp period-form]
+
+      [parent-picker-comp period-form changes buckets]
 
       [id-comp period-form]
 
