@@ -150,6 +150,73 @@
         {:db    db
          :alert (str "Failed data json validation " e)}))))
 
+(defn load-template-form [db [_ template-id]]
+  (let [[sub-bucket template] (select-one
+                             [:buckets sp/ALL
+                              (sp/collect-one (sp/submap [:id :color :label]))
+                              :templates sp/ALL #(= (:id %) template-id)] db)
+        sub-bucket-remap    {:bucket-id    (:id sub-bucket)
+                             :bucket-color (:color sub-bucket)
+                             :bucket-label (:label sub-bucket)}
+        template-form         (merge template
+                                   {:data (with-out-str
+                                            (zprint (:data template)
+                                                    {:map {:force-nl? true}}))}
+                                   sub-bucket-remap)]
+    (assoc-in db [:view :template-form] template-form)))
+
+(defn update-template-form [db [_ template-form]]
+  (let [template-form (if (contains? template-form :bucket-id)
+                      (merge template-form
+                             {:bucket-label (:label
+                                             (select-one
+                                              [:buckets
+                                               sp/ALL
+                                               #(= (:id %) (:bucket-id template-form))]
+                                              db))})
+                      ;; ^ pulls out the label when selecting new parent
+                      ;; because all that comes from the picker is id
+                      template-form)]
+    (transform [:view :template-form] #(merge % template-form) db)))
+
+(defn save-template-form [{:keys [db]} [_ date-time]]
+  (let [template-form (get-in db [:view :template-form])]
+    (try
+      (let [new-data          (read-string (:data template-form))
+            keys-wanted       (->> template-form
+                                   (keys)
+                                   (remove #(or (= :bucket-id %)
+                                                (= :bucket-label %)
+                                                (= :bucket-color %))))
+            new-template        (-> template-form
+                                  (merge {:data        new-data
+                                          :last-edited date-time})
+                                  (select-keys keys-wanted))
+            [old-bucket
+             old-template]      (select-one [:buckets sp/ALL
+                                       (sp/collect-one (sp/submap [:id]))
+                                       :templates sp/ALL
+                                       #(= (:id %) (:id new-template))] db)
+            removed-template-db (setval [:buckets sp/ALL
+                                       #(= (:id %) (:id old-bucket))
+                                       :templates sp/ALL
+                                       #(= (:id %) (:id old-template))]
+                                      sp/NONE db)
+            new-db            (setval [:buckets sp/ALL
+                                       #(= (:id %) (:bucket-id template-form))
+                                       :templates
+                                       sp/NIL->VECTOR
+                                       sp/AFTER-ELEM]
+                                      new-template removed-template-db)]
+
+        {:db       new-db
+         ;; load template form so that the data string gets re-formatted prettier
+         :dispatch [:load-template-form (:id new-template)]})
+      (catch js/Error e
+        {:db    db
+         :alert (str "Failed data json validation " e)}))))
+
+
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)

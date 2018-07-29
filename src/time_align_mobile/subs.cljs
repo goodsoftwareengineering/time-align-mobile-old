@@ -76,11 +76,49 @@
 (defn get-buckets [db _]
   (:buckets db))
 
+(defn get-template-form [db _]
+  (let [template-form (get-in db [:view :template-form])]
+    (if (some? (:id template-form))
+      template-form
+      {:id           "nothing"
+       :bucket-color "#2222aa"
+       :bucket-label "nothing here yet"
+       :bucket-id    "nope"
+       :created      (new js/Date 2018 4 28 15 57)
+       :last-edited  (new js/Date 2018 4 28 15 57)
+       :label        "here yet"
+       :planned      false
+       :start        nil
+       :stop         nil
+       :data         {:please "wait"}})))
+
+(defn get-template-form-changes [db _]
+  (let [template-form (get-in db [:view :template-form])]
+    (if (some? (:id template-form))
+      (let [[sub-bucket template] (select-one [:buckets sp/ALL
+                                             (sp/collect-one (sp/submap [:id :color :label]))
+                                             :templates sp/ALL #(= (:id %) (:id template-form))]
+                                            db)
+            ;; data needs to be coerced to compare to form
+            new-data (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
+            altered-template (merge template {:data new-data
+                                          :bucket-id (:id sub-bucket)
+                                          :bucket-label (:label sub-bucket)})
+            different-keys (->> (clojure.data/diff template-form altered-template)
+                                (first))]
+        (if (nil? different-keys)
+          {} ;; empty map if no changes
+          different-keys))
+      ;; return an empty map if there is no loaded template in the form
+      {})))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
 (reg-sub :get-period-form get-period-form)
 (reg-sub :get-period-form-changes get-period-form-changes)
 (reg-sub :get-buckets get-buckets)
+(reg-sub :get-template-form get-template-form)
+(reg-sub :get-template-form-changes get-template-form-changes)
 
 

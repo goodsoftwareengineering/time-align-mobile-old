@@ -31,9 +31,9 @@
         (sort-by #(:position-drawer %))
         (map (fn [{:keys [icon label id]}]
                (let [{:keys [family name]} icon
-                     params                {:name name
+                     params                {:name  name
                                             :style {:margin-right 25}
-                                            :size 32}
+                                            :size  32}
                      label-element         [text label]
                      icon-element          (case family
                                              "EvilIcons"     [ei params]
@@ -42,22 +42,23 @@
                                              "Entypo"        [en params]
                                              "MaterialIcons" [mi params])]
 
-                 [touchable-highlight {:key  (str "icon-" name)
+                 [touchable-highlight {:key      (str "icon-" name)
                                        :on-press (fn [_]
                                                    (println {:current-screen id
-                                                             :params nil})
+                                                             :params         nil})
                                                    ;; TODO remove bucket id params when done testing
                                                    (dispatch [:navigate-to {:current-screen id
                                                                             :params
                                                                             (cond
-                                                                                (= id :bucket) {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
-                                                                                (= id :period) {:period-id (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")}
-                                                                                :else nil)}]))}
-                  [view {:flex-direction "row"
+                                                                              (= id :bucket)   {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
+                                                                              (= id :period)   {:period-id (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")}
+                                                                              (= id :template) {:template-id (uuid "c52e4f81-38d4-4d4f-ab19-a7cef18c8882")}
+                                                                              :else            nil)}]))}
+                  [view {:flex-direction  "row"
                          :justify-content "flex-start"
-                         :align-items "center"
-                         :padding-left 20
-                         :width 200}
+                         :align-items     "center"
+                         :padding-left    20
+                         :width           200}
                    icon-element
                    label-element]]))))])
 
