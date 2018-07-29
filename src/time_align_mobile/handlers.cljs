@@ -116,19 +116,38 @@
 (defn save-period-form [{:keys [db]} [_ date-time]]
   (let [period-form (get-in db [:view :period-form])]
     (try
-      (let [new-data (read-string (:data period-form))
-            new-period (merge period-form {:data new-data
-                                           :last-edited date-time})
-            new-db (setval [:buckets sp/ALL
-                            :periods sp/ALL
-                            #(= (:id %) (:id new-period))]
-                           new-period
-                           db)]
-        {:db new-db
+      (let [new-data          (read-string (:data period-form))
+            keys-wanted       (->> period-form
+                                   (keys)
+                                   (remove #(or (= :bucket-id %)
+                                                (= :bucket-label %)
+                                                (= :bucket-color %))))
+            new-period        (-> period-form
+                                  (merge {:data        new-data
+                                          :last-edited date-time})
+                                  (select-keys keys-wanted))
+            [old-bucket
+             old-period]      (select-one [:buckets sp/ALL
+                                       (sp/collect-one (sp/submap [:id]))
+                                       :periods sp/ALL
+                                       #(= (:id %) (:id new-period))] db)
+            removed-period-db (setval [:buckets sp/ALL
+                                       #(= (:id %) (:id old-bucket))
+                                       :periods sp/ALL
+                                       #(= (:id %) (:id old-period))]
+                                      sp/NONE db)
+            new-db            (setval [:buckets sp/ALL
+                                       #(= (:id %) (:bucket-id period-form))
+                                       :periods
+                                       sp/NIL->VECTOR
+                                       sp/AFTER-ELEM]
+                                      new-period removed-period-db)]
+
+        {:db       new-db
          ;; load period form so that the data string gets re-formatted prettier
          :dispatch [:load-period-form (:id new-period)]})
       (catch js/Error e
-        {:db db
+        {:db    db
          :alert (str "Failed data json validation " e)}))))
 
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
