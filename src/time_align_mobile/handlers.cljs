@@ -65,13 +65,13 @@
 (defn load-bucket-form [db [_ bucket-id]]
   (let [bucket      (select-one [:buckets sp/ALL #(= (:id %) bucket-id)] db)
         bucket-form (merge bucket {:data (with-out-str (zprint (:data bucket) {:map {:force-nl? true}}))})]
-    (assoc-in db [:view :bucket-form] bucket-form)))
+    (assoc-in db [:forms :bucket-form] bucket-form)))
 
 (defn update-bucket-form [db [_ bucket-form]]
-  (transform [:view :bucket-form] #(merge % bucket-form) db))
+  (transform [:forms :bucket-form] #(merge % bucket-form) db))
 
 (defn save-bucket-form [{:keys [db]} [_ date-time]]
-  (let [bucket-form (get-in db [:view :bucket-form])]
+  (let [bucket-form (get-in db [:forms :bucket-form])]
     (try
        (let [new-data (read-string (:data bucket-form))
              new-bucket (merge bucket-form {:data new-data
@@ -99,7 +99,7 @@
                                             (zprint (:data period)
                                                     {:map {:force-nl? true}}))}
                                    sub-bucket-remap)]
-    (assoc-in db [:view :period-form] period-form)))
+    (assoc-in db [:forms :period-form] period-form)))
 
 (defn update-period-form [db [_ period-form]]
   (let [period-form (if (contains? period-form :bucket-id)
@@ -113,10 +113,10 @@
                       ;; ^ pulls out the label when selecting new parent
                       ;; because all that comes from the picker is id
                       period-form)]
-    (transform [:view :period-form] #(merge % period-form) db)))
+    (transform [:forms :period-form] #(merge % period-form) db)))
 
 (defn save-period-form [{:keys [db]} [_ date-time]]
-  (let [period-form (get-in db [:view :period-form])]
+  (let [period-form (get-in db [:forms :period-form])]
     (try
       (let [new-data          (read-string (:data period-form))
             keys-wanted       (->> period-form
@@ -165,7 +165,7 @@
                                             (zprint (:data template)
                                                     {:map {:force-nl? true}}))}
                                    sub-bucket-remap)]
-    (assoc-in db [:view :template-form] template-form)))
+    (assoc-in db [:forms :template-form] template-form)))
 
 (defn update-template-form [db [_ template-form]]
   (let [template-form (if (contains? template-form :bucket-id)
@@ -179,10 +179,10 @@
                       ;; ^ pulls out the label when selecting new parent
                       ;; because all that comes from the picker is id
                       template-form)]
-    (transform [:view :template-form] #(merge % template-form) db)))
+    (transform [:forms :template-form] #(merge % template-form) db)))
 
 (defn save-template-form [{:keys [db]} [_ date-time]]
-  (let [template-form (get-in db [:view :template-form])]
+  (let [template-form (get-in db [:forms :template-form])]
     (try
       (let [new-data          (read-string (:data template-form))
             keys-wanted       (->> template-form

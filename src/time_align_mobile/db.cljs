@@ -154,33 +154,33 @@
 
 ;; app-db
 (def app-db-spec
-  (ds/spec {:spec {:view       {:bucket-form   (ds/maybe (merge bucket-data-spec {:data string?}))
-                                :period-form   (ds/maybe (merge period-data-spec {:data         string?
-                                                                                  :bucket-id    uuid?
-                                                                                  :bucket-label string?
-                                                                                  :bucket-color ::color}))
-                                :template-form (ds/maybe (merge template-data-spec {:data         string?
-                                                                                    :bucket-id    uuid?
-                                                                                    :bucket-label string?
-                                                                                    :bucket-color ::color}))
-                                :active-filter (ds/maybe uuid?)}
-                   :filters [{:id uuid?
-                              :label string?
-                              :predicates [{:path [keyword?] :value string?}]}]
-                   :navigation {:current-screen ::screen
-                                :params         (ds/maybe map?)}
+  (ds/spec {:spec {:forms         {:bucket-form   (ds/maybe (merge bucket-data-spec {:data string?}))
+                                   :period-form   (ds/maybe (merge period-data-spec {:data         string?
+                                                                                     :bucket-id    uuid?
+                                                                                     :bucket-label string?
+                                                                                     :bucket-color ::color}))
+                                   :template-form (ds/maybe (merge template-data-spec {:data         string?
+                                                                                       :bucket-id    uuid?
+                                                                                       :bucket-label string?
+                                                                                       :bucket-color ::color}))}
+                   :active-filter (ds/maybe uuid?)
+                   :filters       [{:id         uuid?
+                                    :label      string?
+                                    :predicates [{:path [keyword?] :value string?}]}]
+                   :navigation    {:current-screen ::screen
+                                   :params         (ds/maybe map?)}
 
-                   :buckets   [bucket-spec]
-                   :config    {:auto-log-time-align boolean?}}
+                   :buckets [bucket-spec]
+                   :config  {:auto-log-time-align boolean?}}
             :name ::app-db}))
 (def app-db
-  {:view       {:bucket-form   nil
+  {:forms      {:bucket-form   nil
                 :period-form   nil
-                :template-form nil
-                :active-filter nil}
-   :filters [{:id (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
-              :label "basic"
-              :predicates [{:path [:data :category] :value "basic"}]}]
+                :template-form nil}
+   :active-filter nil
+   :filters    [{:id         (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
+                 :label      "basic"
+                 :predicates [{:path [:data :category] :value "basic"}]}]
    :navigation {:current-screen :day
                 :params         nil}
    :buckets    [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")

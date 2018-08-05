@@ -7,7 +7,7 @@
   (get-in db [:navigation]))
 
 (defn get-bucket-form [db _]
-  (let [bucket-form (get-in db [:view :bucket-form])]
+  (let [bucket-form (get-in db [:forms :bucket-form])]
     (if (some? (:id bucket-form))
       bucket-form
       {:id          "nothing"
@@ -18,7 +18,7 @@
        :data        {:please "wait"}})))
 
 (defn get-bucket-form-changes [db _]
-  (let [bucket-form (get-in db [:view :bucket-form])]
+  (let [bucket-form (get-in db [:forms :bucket-form])]
     (if (some? (:id bucket-form))
       (let [bucket (first
                   (select [:buckets sp/ALL #(= (:id %) (:id bucket-form))]
@@ -38,7 +38,7 @@
       {})))
 
 (defn get-period-form [db _]
-  (let [period-form (get-in db [:view :period-form])]
+  (let [period-form (get-in db [:forms :period-form])]
     (if (some? (:id period-form))
       period-form
       {:id           "nothing"
@@ -54,7 +54,7 @@
        :data         {:please "wait"}})))
 
 (defn get-period-form-changes [db _]
-  (let [period-form (get-in db [:view :period-form])]
+  (let [period-form (get-in db [:forms :period-form])]
     (if (some? (:id period-form))
       (let [[sub-bucket period] (select-one [:buckets sp/ALL
                                 (sp/collect-one (sp/submap [:id :color :label]))
@@ -77,7 +77,7 @@
   (:buckets db))
 
 (defn get-template-form [db _]
-  (let [template-form    (get-in db [:view :template-form])
+  (let [template-form    (get-in db [:forms :template-form])
         template-form-id (:id template-form)]
     (if (and (some? template-form-id)
              (uuid? template-form-id))
@@ -95,7 +95,7 @@
        :data         {:please "wait"}})))
 
 (defn get-template-form-changes [db _]
-  (let [template-form (get-in db [:view :template-form])]
+  (let [template-form (get-in db [:forms :template-form])]
     (if (some? (:id template-form))
       (let [[sub-bucket template] (select-one [:buckets sp/ALL
                                              (sp/collect-one (sp/submap [:id :color :label]))
