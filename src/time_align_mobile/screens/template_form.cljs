@@ -101,17 +101,26 @@
                         :on-cancel  #(reset! start-modal-visible false)}]]))
 
 (defn stop-comp [template-form changes]
-  [view {:style {:flex-direction "row"}}
-   [text {:style (field-label-changeable-style changes :stop)} ":stop"]
-   [touchable-highlight {:on-press #(reset! stop-modal-visible true)}
-    [text (format-date (:stop @template-form))]]
-   [date-time-picker {:is-visible @stop-modal-visible
-                      :date (:stop @template-form)
-                      :mode "datetime"
-                      :on-confirm (fn [d]
-                                    (dispatch [:update-template-form {:stop d}])
-                                    (reset! stop-modal-visible false))
-                      :on-cancel #(reset! stop-modal-visible false)}]] )
+  (let [{:keys [hour minute]} (:stop @template-form)
+        std                   (new js/Date)
+        stop-time            (new js/Date
+                                   (.getFullYear std)
+                                   (.getMonth std)
+                                   (.getDate std)
+                                   hour
+                                   minute)]
+    [view {:style {:flex-direction "row"}}
+     [text {:style (field-label-changeable-style changes :stop)} ":stop"]
+     [touchable-highlight {:on-press #(reset! stop-modal-visible true)}
+      [text (format-time stop-time)]]
+     [date-time-picker {:is-visible @stop-modal-visible
+                        :date       stop-time
+                        :mode       "time"
+                        :on-confirm (fn [d]
+                                      (dispatch [:update-template-form {:stop {:hour   (.getHours d)
+                                                                                :minute (.getMinutes d)}}])
+                                      (reset! stop-modal-visible false))
+                        :on-cancel  #(reset! stop-modal-visible false)}]]))
 
 (defn data-comp [template-form changes update-structured-data]
   [view {:style {:flex           1
@@ -155,7 +164,7 @@
 
       [start-comp template-form changes]
 
-      ;; [stop-comp template-form changes]
+      [stop-comp template-form changes]
 
       [data-comp template-form changes update-structured-data]
 

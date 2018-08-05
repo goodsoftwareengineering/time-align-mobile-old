@@ -222,6 +222,24 @@
                                 :start       {:hour 9 :minute 32}
                                 :stop        {:hour 10 :minute 4}
                                 :duration    nil
+                                :data        {}}
+                               {:id          (uuid "da3e4f81-38d4-4d4f-ab19-a7cef18c6641")
+                                :created     (new js/Date 2018 4 28 15 57)
+                                :last-edited (new js/Date 2018 4 28 15 57)
+                                :label       ""
+                                :planned     true
+                                :start       {:hour 4 :minute 32}
+                                :stop        {:hour 10 :minute 4}
+                                :duration    nil
+                                :data        {}}
+                               {:id          (uuid "ef111f81-38d4-4d4f-ab19-a7cef18caa31")
+                                :created     (new js/Date 2018 4 28 15 57)
+                                :last-edited (new js/Date 2018 4 28 15 57)
+                                :label       ""
+                                :planned     true
+                                :start       {:hour 5 :minute 32}
+                                :stop        {:hour 10 :minute 4}
+                                :duration    nil
                                 :data        {}}]
                  :periods     nil}
                 {:id          (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")

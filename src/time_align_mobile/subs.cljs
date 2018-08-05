@@ -114,12 +114,22 @@
       ;; return an empty map if there is no loaded template in the form
       {})))
 
+(defn get-templates [db _]
+  (->> (select [:buckets sp/ALL
+                (sp/collect-one (sp/submap [:id :color :label]))
+                :templates sp/ALL] db)
+       (map (fn [[bucket template]]
+              (merge template {:bucket-id (:id bucket)
+                               :bucket-label (:label bucket)
+                               :color (:color bucket)})))))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
 (reg-sub :get-period-form get-period-form)
 (reg-sub :get-period-form-changes get-period-form-changes)
 (reg-sub :get-buckets get-buckets)
+(reg-sub :get-templates get-templates)
 (reg-sub :get-template-form get-template-form)
 (reg-sub :get-template-form-changes get-template-form-changes)
 

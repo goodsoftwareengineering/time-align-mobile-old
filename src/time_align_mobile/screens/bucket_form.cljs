@@ -40,6 +40,13 @@
     {:on-press #(println "navigate to periods list with filter")}
     [text (str (count (:periods @bucket-form)))]]])
 
+(defn templates-comp [bucket-form]
+  [view {:style {:flex-direction "row"}}
+   [text {:style field-label-style} ":templates"]
+   [touchable-highlight
+    {:on-press #(println "navigate to templates list with filter")}
+    [text (str (count (:templates @bucket-form)))]]])
+
 (defn label-comp [bucket-form changes]
   [view {:style {:flex-direction "row"
                  :align-items    "center"}}
@@ -94,6 +101,8 @@
       [last-edited-comp bucket-form]
 
       [periods-comp bucket-form]
+
+      [templates-comp bucket-form]
 
       [label-comp bucket-form changes]
 
