@@ -162,7 +162,11 @@
                                 :template-form (ds/maybe (merge template-data-spec {:data         string?
                                                                                     :bucket-id    uuid?
                                                                                     :bucket-label string?
-                                                                                    :bucket-color ::color}))}
+                                                                                    :bucket-color ::color}))
+                                :active-filter (ds/maybe uuid?)}
+                   :filters [{:id uuid?
+                              :label string?
+                              :predicates [{:path [keyword?] :value string?}]}]
                    :navigation {:current-screen ::screen
                                 :params         (ds/maybe map?)}
 
@@ -172,7 +176,11 @@
 (def app-db
   {:view       {:bucket-form   nil
                 :period-form   nil
-                :template-form nil}
+                :template-form nil
+                :active-filter nil}
+   :filters [{:id (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
+              :label "basic"
+              :predicates [{:path [:data :category] :value "basic"}]}]
    :navigation {:current-screen :day
                 :params         nil}
    :buckets    [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
@@ -222,7 +230,7 @@
                                 :start       {:hour 9 :minute 32}
                                 :stop        {:hour 10 :minute 4}
                                 :duration    nil
-                                :data        {}}
+                                :data        {:category "basic"}}
                                {:id          (uuid "da3e4f81-38d4-4d4f-ab19-a7cef18c6641")
                                 :created     (new js/Date 2018 4 28 15 57)
                                 :last-edited (new js/Date 2018 4 28 15 57)
