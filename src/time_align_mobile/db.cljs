@@ -26,13 +26,20 @@
 
 ;; period
 (defn start-before-stop [period]
-  (if (and
+  (if
+
+      ;; Check that it has time stamps
+      (and
        (contains? period :start)
        (contains? period :stop)
        (some? (:start period))
        (some? (:stop period)))
+
+    ;; If it has time stamps they need to be valid
     (> (.valueOf (:stop period))
        (.valueOf (:start period)))
+
+    ;; Passes if it has no time stamps
     true))
 (defn generate-period [moment]
   (let [desc-chance   (> 0.5 (rand))
@@ -75,6 +82,28 @@
                                     (s/gen ::moment))}))
 
 ;; template
+(defn start-before-stop-template [template]
+  (let [start-hour   (:hour (:start template))
+        start-minute (:minute (:start template))
+        stop-hour    (:hour (:stop template))
+        stop-minute  (:minute (:stop template))]
+    (if
+        ;; Check that it has time stamps
+        (and
+         (contains? template :start)
+         (contains? template :stop)
+         (some? (:start template))
+         (some? (:stop template)))
+
+      ;; If it has time stamps they need to be valid
+      ;; Compare hours then minutes
+      (or (> stop-hour start-hour)
+          (if (= stop-hour start-hour)
+            (> stop-minute start-minute)))
+
+      ;; Passes if it has no time stamps
+      true)))
+
 (def template-data-spec {:id          uuid?
                          :label       string?
                          :created     ::moment
@@ -90,7 +119,7 @@
   (st/create-spec {:spec (s/and
                           (ds/spec {:spec template-data-spec
                                     :name ::template})
-                          start-before-stop)}))
+                          start-before-stop-template)}))
 
 ;; bucket
 (s/def ::hex-digit (s/with-gen
@@ -185,15 +214,15 @@
                                :vector           [1 2 3 "string"]
                                :vector-with-keys [:a :b "c"]}
                  :color       "#2222aa"
-                 :templates   {:id          (uuid "c52e4f81-38d4-4d4f-ab19-a7cef18c8882")
-                               :created     (new js/Date 2018 4 28 15 57)
-                               :last-edited (new js/Date 2018 4 28 15 57)
-                               :label       ""
-                               :planned     true
-                               :start       {:hour 9 :minute 32}
-                               :stop        {:hour 10 :minute 4}
-                               :duration    nil
-                               :data        {}}
+                 :templates   [{:id          (uuid "c52e4f81-38d4-4d4f-ab19-a7cef18c8882")
+                                :created     (new js/Date 2018 4 28 15 57)
+                                :last-edited (new js/Date 2018 4 28 15 57)
+                                :label       ""
+                                :planned     true
+                                :start       {:hour 9 :minute 32}
+                                :stop        {:hour 10 :minute 4}
+                                :duration    nil
+                                :data        {}}]
                  :periods     nil}
                 {:id          (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
                  :label       "Using Time Align"

@@ -77,16 +77,18 @@
   (:buckets db))
 
 (defn get-template-form [db _]
-  (let [template-form (get-in db [:view :template-form])]
-    (if (some? (:id template-form))
+  (let [template-form    (get-in db [:view :template-form])
+        template-form-id (:id template-form)]
+    (if (and (some? template-form-id)
+             (uuid? template-form-id))
       template-form
-      {:id           "nothing"
+      {:id           "****"
        :bucket-color "#2222aa"
-       :bucket-label "nothing here yet"
-       :bucket-id    "nope"
+       :bucket-label "****"
+       :bucket-id    "****"
        :created      (new js/Date 2018 4 28 15 57)
        :last-edited  (new js/Date 2018 4 28 15 57)
-       :label        "here yet"
+       :label        "****"
        :planned      false
        :start        nil
        :stop         nil

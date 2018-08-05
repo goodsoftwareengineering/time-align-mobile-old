@@ -87,6 +87,6 @@
 (defn format-date [date]
   (.format (moment-tz date (get-default-timezone))
            "YYYY-MM-DD-hh-mm-ss"))
-(def forma-time [date]
+(defn format-time [date]
   (.format (moment-tz date (get-default-timezone))
            "hh-mm"))

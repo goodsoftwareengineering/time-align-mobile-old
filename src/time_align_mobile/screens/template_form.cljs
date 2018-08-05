@@ -79,14 +79,14 @@
             :on-value-change #(dispatch [:update-template-form {:planned %}])}]])
 
 (defn start-comp [template-form changes]
-  (let [[start-hour start-minute] (:start @template-form)
-        std                       (new js/Date)
-        start-time                (new js/Date
-                                       (.getFullYear std)
-                                       (.getMonth std)
-                                       (.getDate std)
-                                       start-hour
-                                       start-minute)]
+  (let [{:keys [hour minute]} (:start @template-form)
+        std                   (new js/Date)
+        start-time            (new js/Date
+                                   (.getFullYear std)
+                                   (.getMonth std)
+                                   (.getDate std)
+                                   hour
+                                   minute)]
     [view {:style {:flex-direction "row"}}
      [text {:style (field-label-changeable-style changes :start)} ":start"]
      [touchable-highlight {:on-press #(reset! start-modal-visible true)}
@@ -95,8 +95,8 @@
                         :date       start-time
                         :mode       "time"
                         :on-confirm (fn [d]
-                                      (dispatch [:update-template-form {:start {:hour   (.getHour d)
-                                                                                :minute (.getMinute d)}}])
+                                      (dispatch [:update-template-form {:start {:hour   (.getHours d)
+                                                                                :minute (.getMinutes d)}}])
                                       (reset! start-modal-visible false))
                         :on-cancel  #(reset! start-modal-visible false)}]]))
 

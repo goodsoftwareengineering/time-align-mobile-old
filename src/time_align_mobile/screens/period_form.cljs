@@ -48,14 +48,6 @@
                                     :value (:id bucket)}])
          @buckets)]])
 
-;; (defn parent-label-comp [period-form]
-;;   [view {:style {:flex-direction "row"}}
-;;    [text {:style (merge field-label-style
-;;                         {:width 90})} ":bucket-label"]
-;;    [view {:style {:background-color (str (:bucket-color @period-form))
-;;                   :width 25}}]
-;;    [text (str (:bucket-label @period-form))]])
-
 (defn created-comp [period-form]
   [view {:style {:flex-direction "row"}}
    [text {:style field-label-style} ":created"]
@@ -91,12 +83,12 @@
    [touchable-highlight {:on-press #(reset! start-modal-visible true)}
     [text (format-date (:start @period-form))]]
    [date-time-picker {:is-visible @start-modal-visible
-     :date (:start @period-form)
-     :mode "datetime"
-     :on-confirm (fn [d]
-                   (dispatch [:update-period-form {:start d}])
-                   (reset! start-modal-visible false))
-     :on-cancel #(reset! start-modal-visible false)}]] )
+                      :date (:start @period-form)
+                      :mode "datetime"
+                      :on-confirm (fn [d]
+                                    (dispatch [:update-period-form {:start d}])
+                                    (reset! start-modal-visible false))
+                      :on-cancel #(reset! start-modal-visible false)}]] )
 
 (defn stop-comp [period-form changes]
   [view {:style {:flex-direction "row"}}

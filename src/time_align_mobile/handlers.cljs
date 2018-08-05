@@ -58,7 +58,9 @@
          (when (= current-screen :bucket)
            {:dispatch [:load-bucket-form (:bucket-id params)]})
          (when (= current-screen :period)
-           {:dispatch [:load-period-form (:period-id params)]})))
+           {:dispatch [:load-period-form (:period-id params)]})
+         (when (= current-screen :template)
+           {:dispatch [:load-template-form (:template-id params)]})))
 
 (defn load-bucket-form [db [_ bucket-id]]
   (let [bucket      (select-one [:buckets sp/ALL #(= (:id %) bucket-id)] db)
@@ -225,5 +227,9 @@
 (reg-event-db :load-period-form [validate-spec] load-period-form)
 (reg-event-db :update-period-form [validate-spec] update-period-form)
 (reg-event-fx :save-period-form [alert-message validate-spec] save-period-form)
+(reg-event-db :load-template-form [validate-spec] load-template-form)
+(reg-event-db :update-template-form [validate-spec] update-template-form)
+(reg-event-fx :save-template-form [alert-message validate-spec] save-template-form)
+
 
 
