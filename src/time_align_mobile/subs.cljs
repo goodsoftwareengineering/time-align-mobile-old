@@ -123,6 +123,31 @@
                                :bucket-label (:label bucket)
                                :color (:color bucket)})))))
 
+(defn get-filter-form [db _]
+  (let [filter-form    (get-in db [:forms :filter-form])
+        filter-form-id (:id filter-form)]
+    (if (and (some? filter-form-id)
+             (uuid? filter-form-id))
+      filter-form
+      {:id          "****"
+       :created     (new js/Date 2018 4 28 15 57)
+       :last-edited (new js/Date 2018 4 28 15 57)
+       :label       "****"
+       :predicates  []})))
+
+(defn get-filter-form-changes [db _]
+  (let [filter-form (get-in db [:forms :filter-form])]
+    (if (some? (:id filter-form))
+      (let [filter (select-one [:filters sp/ALL #(= (:id %) (:id filter-form))]
+                                            db)
+            different-keys (->> (clojure.data/diff filter-form filter)
+                                (first))]
+        (if (nil? different-keys)
+          {} ;; empty map if no changes
+          different-keys))
+      ;; return an empty map if there is no loaded filter in the form
+      {})))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -132,5 +157,7 @@
 (reg-sub :get-templates get-templates)
 (reg-sub :get-template-form get-template-form)
 (reg-sub :get-template-form-changes get-template-form-changes)
+(reg-sub :get-filter-form get-filter-form)
+(reg-sub :get-filter-form-changes get-filter-form-changes)
 
 

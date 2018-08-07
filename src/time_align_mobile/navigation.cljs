@@ -8,7 +8,8 @@
             [time-align-mobile.screens.bucket-form :as bucket-form-screen]
             [time-align-mobile.screens.bucket-list :as bucket-list-screen]
             [time-align-mobile.screens.template-form :as template-form-screen]
-            [time-align-mobile.screens.template-list :as template-list-screen]))
+            [time-align-mobile.screens.template-list :as template-list-screen]
+            [time-align-mobile.screens.filter-form :as filter-form-screen]))
 
 ;; https://expo.github.io/vector-icons/
 (def screens-map [{:id              :calendar
@@ -83,13 +84,13 @@
                    :icon            {:family "Entypo"
                                      :name "credit"}}
 
-                  ;; {:id              :filter
-                  ;;  :label           "filter"
-                  ;;  :screen          filter-form-screen/root
-                  ;;  :in-drawer       true
-                  ;;  :position-drawer 997
-                  ;;  :icon            {:family "Entypo"
-                  ;;                    :name "credit"}}
+                  {:id              :filter
+                   :label           "filter"
+                   :screen          filter-form-screen/root
+                   :in-drawer       true
+                   :position-drawer 997
+                   :icon            {:family "Entypo"
+                                     :name "credit"}}
 
                   ;; TODO remove these when done testing form
 

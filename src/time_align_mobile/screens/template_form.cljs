@@ -97,7 +97,7 @@
 
       [parent-id-comp template-form changes]
 
-      [parent-picker-comp template-form changes buckets]
+      [parent-picker-comp template-form changes buckets :update-template-form]
 
       [id-comp template-form]
 
@@ -105,9 +105,9 @@
 
       [last-edited-comp template-form]
 
-      [label-comp template-form changes]
+      [label-comp template-form changes :update-template-form]
 
-      [planned-comp template-form changes]
+      [planned-comp template-form changes :update-template-form]
 
       [start-comp template-form changes]
 

@@ -74,7 +74,7 @@
 
       [templates-comp bucket-form]
 
-      [label-comp bucket-form changes]
+      [label-comp bucket-form changes :update-bucket-form]
 
       [modal {:animation-type "slide"
               :transparent false

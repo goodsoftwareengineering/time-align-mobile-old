@@ -80,7 +80,7 @@
 
       ;; [parent-label-comp period-form]
 
-      [parent-picker-comp period-form changes buckets]
+      [parent-picker-comp period-form changes buckets :update-period-form]
 
       [id-comp period-form]
 
@@ -88,9 +88,9 @@
 
       [last-edited-comp period-form]
 
-      [label-comp period-form changes]
+      [label-comp period-form changes :update-period-form]
 
-      [planned-comp period-form changes]
+      [planned-comp period-form changes :update-period-form]
 
       [start-comp period-form changes]
 

@@ -60,7 +60,9 @@
          (when (= current-screen :period)
            {:dispatch [:load-period-form (:period-id params)]})
          (when (= current-screen :template)
-           {:dispatch [:load-template-form (:template-id params)]})))
+           {:dispatch [:load-template-form (:template-id params)]})
+         (when (= current-screen :filter)
+           {:dispatch [:load-filter-form (:filter-id params)]})))
 
 (defn load-bucket-form [db [_ bucket-id]]
   (let [bucket      (select-one [:buckets sp/ALL #(= (:id %) bucket-id)] db)
@@ -218,6 +220,37 @@
         {:db    db
          :alert (str "Failed data json validation " e)}))))
 
+(defn load-filter-form [db [_ filter-id]]
+  (let [filter     (select-one
+                    [:filters sp/ALL #(= (:id %) filter-id)] db)
+        filter-form filter]
+    (assoc-in db [:forms :filter-form] filter-form)))
+
+(defn update-filter-form [db [_ filter-form]]
+  (transform [:forms :filter-form] #(merge % filter-form) db))
+
+(defn save-filter-form [{:keys [db]} [_ date-time]]
+  (let [filter-form (get-in db [:forms :filter-form])]
+    (try
+      (let [new-filter        (-> filter-form
+                                  (merge {:last-edited date-time}))
+            old-filter        (select-one [:filters sp/ALL
+                                           #(= (:id %) (:id new-filter))] db)
+            removed-filter-db (setval [:filters sp/ALL
+                                       #(= (:id %) (:id old-filter))]
+                                      sp/NONE db)
+            new-db            (setval [:filters
+                                       sp/NIL->VECTOR
+                                       sp/AFTER-ELEM]
+                                      new-filter removed-filter-db)]
+
+        {:db       new-db
+         ;; load filter form so that the data string gets re-formatted prettier
+         :dispatch [:load-filter-form (:id new-filter)]})
+      (catch js/Error e
+        {:db    db
+         :alert (str "Failed data json validation " e)}))))
+
 
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
@@ -230,6 +263,9 @@
 (reg-event-db :load-template-form [validate-spec] load-template-form)
 (reg-event-db :update-template-form [validate-spec] update-template-form)
 (reg-event-fx :save-template-form [alert-message validate-spec] save-template-form)
+(reg-event-db :load-filter-form [validate-spec] load-filter-form)
+(reg-event-db :update-filter-form [validate-spec] update-filter-form)
+(reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
 
 
 
