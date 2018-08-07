@@ -17,6 +17,14 @@
                                                   format-date]]
             [time-align-mobile.components.form-buttons :as form-buttons]
             [time-align-mobile.components.structured-data :refer [structured-data]]
+            [time-align-mobile.components.form-fields :refer [id-comp
+                                                              created-comp
+                                                              last-edited-comp
+                                                              label-comp
+                                                              parent-id-comp
+                                                              parent-picker-comp
+                                                              planned-comp
+                                                              data-comp]]
             [reagent.core :as r :refer [atom]]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
@@ -24,59 +32,6 @@
 (def start-modal-visible (r/atom false))
 
 (def stop-modal-visible (r/atom false))
-
-(defn id-comp [template-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":id"]
-   [text (str (:id @template-form))]])
-
-(defn parent-id-comp [template-form changes]
-  [view {:style {:flex-direction "row"}}
-   [text {:style (field-label-changeable-style changes :bucket-id)}
-    ":bucket-id"]
-   [text (str (:bucket-id @template-form))]])
-
-(defn parent-picker-comp [template-form changes buckets]
-  [view {:style {:flex-direction "row"
-                 :align-items "center"}}
-   [text {:style (field-label-changeable-style changes :bucket-label)}
-    ":bucket-label"]
-   [picker {:selected-value  (:bucket-id @template-form)
-            :style           {:width 250}
-            :on-value-change #(dispatch [:update-template-form {:bucket-id %}])}
-    (map (fn [bucket] [picker-item {:label (:label bucket)
-                                    :key (:id bucket)
-                                    :value (:id bucket)}])
-         @buckets)]])
-
-(defn created-comp [template-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":created"]
-   [text (format-date (:created @template-form))]])
-
-(defn last-edited-comp [template-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":last-edited"]
-   [text (format-date (:last-edited @template-form))]])
-
-(defn label-comp [template-form changes]
-  [view {:style {:flex-direction "row"
-                 :align-items    "center"}}
-   [text {:style (field-label-changeable-style changes :label)} ":label"]
-   [text-input {:default-value  (:label @template-form)
-                :style          {:height 40
-                                 :width  200}
-                :spell-check    true
-                :on-change-text (fn [text]
-                                  (dispatch [:update-template-form
-                                             {:label text}]))}]])
-
-(defn planned-comp [template-form changes]
-  [view {:style {:flex-direction "row"
-                 :align-items    "center"}}
-   [text {:style (field-label-changeable-style changes :planned)} ":planned"]
-   [switch {:value (:planned @template-form)
-            :on-value-change #(dispatch [:update-template-form {:planned %}])}]])
 
 (defn start-comp [template-form changes]
   (let [{:keys [hour minute]} (:start @template-form)
@@ -121,14 +76,6 @@
                                                                                 :minute (.getMinutes d)}}])
                                       (reset! stop-modal-visible false))
                         :on-cancel  #(reset! stop-modal-visible false)}]]))
-
-(defn data-comp [template-form changes update-structured-data]
-  [view {:style {:flex           1
-                 :flex-direction "row"
-                 :align-items    "flex-start"}}
-   [text {:style (field-label-changeable-style changes :data)} ":data"]
-   [structured-data {:data   (:data @template-form)
-                     :update update-structured-data}]])
 
 (defn root [params]
   (let [template-form            (subscribe [:get-template-form])

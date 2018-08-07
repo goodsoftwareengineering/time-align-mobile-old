@@ -13,25 +13,15 @@
             [time-align-mobile.components.form-buttons :as form-buttons]
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]
+            [time-align-mobile.components.form-fields :refer [id-comp
+                                                              created-comp
+                                                              last-edited-comp
+                                                              label-comp
+                                                              data-comp]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
 (def color-modal-visible (r/atom false))
-
-(defn id-comp [bucket-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":id"]
-   [text (str (:id @bucket-form))]])
-
-(defn created-comp [bucket-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":created"]
-   [text (format-date (:created @bucket-form))]])
-
-(defn last-edited-comp [bucket-form]
-  [view {:style {:flex-direction "row"}}
-   [text {:style field-label-style} ":last-edited"]
-   [text (format-date (:last-edited @bucket-form))]])
 
 (defn periods-comp [bucket-form]
   [view {:style {:flex-direction "row"}}
@@ -47,18 +37,6 @@
     {:on-press #(println "navigate to templates list with filter")}
     [text (str (count (:templates @bucket-form)))]]])
 
-(defn label-comp [bucket-form changes]
-  [view {:style {:flex-direction "row"
-                 :align-items    "center"}}
-   [text {:style (field-label-changeable-style changes :label)} ":label"]
-   [text-input {:default-value  (:label @bucket-form)
-                :style          {:height 40
-                                 :width  200}
-                :spell-check    true
-                :on-change-text (fn [text]
-                                  (dispatch [:update-bucket-form
-                                             {:label text}]))}]])
-
 (defn color-comp [bucket-form changes]
   [view {:style {:flex-direction "row"
                  :align-items    "center"}}
@@ -67,14 +45,6 @@
     [view {:style {:height 25
                    :width 100
                    :background-color (:color @bucket-form)}}]]])
-
-(defn data-comp [bucket-form changes update-structured-data]
-  [view {:style {:flex           1
-                 :flex-direction "row"
-                 :align-items    "flex-start"}}
-   [text {:style (field-label-changeable-style changes :data)} ":data"]
-   [structured-data {:data   (:data @bucket-form)
-                     :update update-structured-data}]])
 
 (defn root [params]
   (let [bucket-form              (subscribe [:get-bucket-form])

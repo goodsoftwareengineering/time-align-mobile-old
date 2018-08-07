@@ -82,6 +82,15 @@
                    :position-drawer 997
                    :icon            {:family "Entypo"
                                      :name "credit"}}
+
+                  ;; {:id              :filter
+                  ;;  :label           "filter"
+                  ;;  :screen          filter-form-screen/root
+                  ;;  :in-drawer       true
+                  ;;  :position-drawer 997
+                  ;;  :icon            {:family "Entypo"
+                  ;;                    :name "credit"}}
+
                   ;; TODO remove these when done testing form
 
                   {:id              :buckets
