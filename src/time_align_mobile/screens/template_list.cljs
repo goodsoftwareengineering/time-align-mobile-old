@@ -6,7 +6,6 @@
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
-
 (defn root [params]
   (let [templates (subscribe [:get-templates])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
@@ -21,7 +20,9 @@
                          bucket-label (:bucket-label item)]
                      (r/as-element [touchable-highlight
                                     {:key id
-                                     :on-press #(println "navigate to form")}
+                                     :on-press #(dispatch [:navigate-to
+                                                           {:current-screen :template
+                                                            :params {:template-id id}}])}
                                     [view {:style {:flex-direction "row"}}
                                      [view
                                       {:style {:width 50
