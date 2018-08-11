@@ -25,6 +25,13 @@
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
 
+(defn negate-comp [form changes]
+  [view {:style {:flex-direction "row"
+                 :align-items    "center"}}
+   [text {:style (field-label-changeable-style changes :negate)} ":negate"]
+   [switch {:value (:negate @form)
+            :on-value-change #(dispatch [:update-filter-form {:negate %}])}]])
+
 (defn root [params]
   (let [filter-form            (subscribe [:get-filter-form])
         changes                (subscribe [:get-filter-form-changes])]
@@ -46,6 +53,8 @@
       [last-edited-comp filter-form]
 
       [label-comp filter-form changes :update-filter-form]
+
+      [negate-comp filter-form changes]
 
       [form-buttons/root
        #(dispatch [:save-filter-form (new js/Date)])
