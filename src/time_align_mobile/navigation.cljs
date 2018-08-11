@@ -59,7 +59,7 @@
                    :icon            {:family "Entypo"
                                      :name   "bar-graph"}}
 
-                  ;; TODO remove these when done testing forms
+                  ;; TODO negate :in-drawer when done testing forms
                   {:id              :bucket
                    :label           "bucket"
                    :screen          bucket-form-screen/root
@@ -92,7 +92,7 @@
                    :icon            {:family "Entypo"
                                      :name "credit"}}
 
-                  ;; TODO remove these when done testing form
+                  ;; />
 
                   {:id              :buckets
                    :label           "buckets"
