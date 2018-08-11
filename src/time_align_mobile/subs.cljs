@@ -133,7 +133,7 @@
        :created     (new js/Date 2018 4 28 15 57)
        :last-edited (new js/Date 2018 4 28 15 57)
        :label       "****"
-       :predicates  []})))
+       :predicates  "{:nothing \"here yet\"}"})))
 
 (defn get-filter-form-changes [db _]
   (let [filter-form (get-in db [:forms :filter-form])]
