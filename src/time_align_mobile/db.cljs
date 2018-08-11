@@ -155,10 +155,11 @@
 (def filter-data-spec
   {:id          uuid?
    :label       string?
-   :negate      boolean?
    :created     ::moment
    :last-edited ::moment
-   :predicates  [{:path [keyword?] :value string?}]})
+   :predicates  [{:path [keyword?]
+                  :value string?
+                  :negate boolean?}]})
 
 ;; app-db
 (def app-db-spec
@@ -188,10 +189,10 @@
    :active-filter nil
    :filters       [{:id          (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
                     :label       "basic"
-                    :negate      false
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :predicates  [{:path [:data :category] :value "basic"}]}]
+                    :predicates  [{:path [:data :category] :value "basic" :negate false}
+                                  {:path [:sumthin] :value "something" :negate false}]}]
    :navigation    {:current-screen :day
                    :params         nil}
    :buckets       [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
