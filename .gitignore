@@ -18,3 +18,6 @@ main.js
 /env/dev/env/expo/dev.cljs
 /env/dev/env/expo/index.cljs
 ?/
+\.lan-ip
+
+docker-compose\.override\.yml

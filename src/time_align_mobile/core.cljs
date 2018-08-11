@@ -3,35 +3,91 @@
               [re-frame.core :refer [subscribe dispatch dispatch-sync]]
               [oops.core :refer [ocall]]
               [time-align-mobile.handlers]
-              [time-align-mobile.subs]))
-
-(def ReactNative (js/require "react-native"))
-(def expo (js/require "expo"))
-(def AtExpo (js/require "@expo/vector-icons"))
-(def ionicons (.-Ionicons AtExpo))
-(def ic (r/adapt-react-class ionicons))
-
-(def text (r/adapt-react-class (.-Text ReactNative)))
-(def view (r/adapt-react-class (.-View ReactNative)))
-(def image (r/adapt-react-class (.-Image ReactNative)))
-(def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
-(def Alert (.-Alert ReactNative))
+              [time-align-mobile.subs]
+              [time-align-mobile.navigation :as nav]
+              [time-align-mobile.js-imports :refer [ReactNative
+                                                    expo
+                                                    AtExpo
+                                                    ei
+                                                    en
+                                                    fa
+                                                    ic
+                                                    mi
+                                                    text
+                                                    view
+                                                    image
+                                                    Alert
+                                                    touchable-highlight
+                                                    gesture-handler
+                                                    drawer-layout]] ))
 
 (defn alert [title]
   (.alert Alert title))
 
+(defn drawer-list []
+  [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+   (->> nav/screens-map
+        (filter #(:in-drawer %))
+        (sort-by #(:position-drawer %))
+        (map (fn [{:keys [icon label id]}]
+               (let [{:keys [family name]} icon
+                     params                {:name  name
+                                            :style {:margin-right 25}
+                                            :size  32}
+                     label-element         [text label]
+                     icon-element          (case family
+                                             "EvilIcons"     [ei params]
+                                             "FontAwesome"   [fa params]
+                                             "IonIcons"      [ic params]
+                                             "Entypo"        [en params]
+                                             "MaterialIcons" [mi params])]
+
+                 [touchable-highlight {:key      (str "icon-" name)
+                                       :on-press (fn [_]
+                                                   (println {:current-screen id
+                                                             :params         nil})
+                                                   ;; TODO remove bucket id params when done testing
+                                                   (dispatch
+                                                    [:navigate-to
+                                                     {:current-screen id
+                                                      :params
+                                                      (cond
+                                                        (= id :bucket)
+                                                        {:bucket-id (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")}
+
+                                                        (= id :period)
+                                                        {:period-id (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")}
+
+                                                        (= id :template)
+                                                        {:template-id (uuid "c52e4f81-38d4-4d4f-ab19-a7cef18c8882")}
+
+                                                        (= id :filter)
+                                                        {:filter-id (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")}
+                                                        :else            nil)}]))}
+                  [view {:flex-direction  "row"
+                         :justify-content "flex-start"
+                         :align-items     "center"
+                         :padding-left    20
+                         :width           200}
+                   icon-element
+                   label-element]]))))])
+
 (defn app-root []
-  (let [greeting (subscribe [:get-greeting])]
+  (let [navigation (subscribe [:get-navigation])]
     (fn []
-      [view {:style {:flex-direction "column" :margin 40 :align-items "center"}}
-       [image {:source (js/require "./assets/images/cljs.png")
-               :style {:width 200
-                       :height 200}}]
-       [text {:style {:font-size 30 :font-weight "100" :margin-bottom 20 :text-align "center"}} @greeting]
-       [ic {:name "ios-arrow-down" :size 60 :color "green"}]
-       [touchable-highlight {:style {:background-color "#999" :padding 10 :border-radius 5}
-                             :on-press #(alert "HELLO!")}
-        [text {:style {:color "white" :text-align "center" :font-weight "bold"}} "press me"]]])))
+      [view {:style {:flex 1}}
+       [drawer-layout
+        {:drawer-width 200
+         :drawer-position "left"
+         :drawer-type "front"
+         :drawer-background-color "#ddd"
+         :render-navigation-view (fn [] (r/as-element (drawer-list)))}
+
+        (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
+                                      (:screen %))
+                                   nav/screens-map)]
+          [screen-comp (:params @navigation)]
+          [view [text "That screen doesn't exist"]])]])))
 
 (defn init []
   (dispatch-sync [:initialize-db])
