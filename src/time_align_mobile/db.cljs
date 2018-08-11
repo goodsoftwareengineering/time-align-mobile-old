@@ -163,16 +163,24 @@
 
 ;; app-db
 (def app-db-spec
-  (ds/spec {:spec {:forms         {:bucket-form   (ds/maybe (merge bucket-data-spec {:data string?}))
-                                   :period-form   (ds/maybe (merge period-data-spec {:data         string?
-                                                                                     :bucket-id    uuid?
-                                                                                     :bucket-label string?
-                                                                                     :bucket-color ::color}))
-                                   :template-form (ds/maybe (merge template-data-spec {:data         string?
-                                                                                       :bucket-id    uuid?
-                                                                                       :bucket-label string?
-                                                                                       :bucket-color ::color}))
-                                   :filter-form   (ds/maybe (merge filter-data-spec {:predicates string?}))}
+  (ds/spec {:spec {:forms         {:bucket-form
+                                   (ds/maybe (merge bucket-data-spec
+                                                    {:data string?}))
+                                   :period-form
+                                   (ds/maybe (merge period-data-spec
+                                                    {:data         string?
+                                                     :bucket-id    uuid?
+                                                     :bucket-label string?
+                                                     :bucket-color ::color}))
+                                   :template-form
+                                   (ds/maybe (merge template-data-spec
+                                                    {:data         string?
+                                                     :bucket-id    uuid?
+                                                     :bucket-label string?
+                                                     :bucket-color ::color}))
+                                   :filter-form
+                                   (ds/maybe (merge filter-data-spec
+                                                    {:predicates string?}))}
                    :active-filter (ds/maybe uuid?)
                    :filters       [filter-data-spec]
                    :navigation    {:current-screen ::screen
