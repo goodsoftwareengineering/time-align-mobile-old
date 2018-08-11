@@ -26,47 +26,20 @@
             [time-align-mobile.styles :refer [field-label-changeable-style
                                               field-label-style]]))
 
-(defn negate-comp [form changes]
-  [view {:style {:flex-direction "row"
-                 :align-items    "center"}}
-   [text {:style (field-label-changeable-style changes :negate)} ":negate"]
-   [switch {:value (:negate @form)
-            :on-value-change #(dispatch [:update-filter-form {:negate %}])}]])
-
-(defn path-comp [path]
-  [view {:key (str (clojure.string/join "-" path) "-" (random-uuid))
-         :style {:flex 1 :flex-direction "row"}}
-   [text {:style {:margin-right 10}} "Path"]
-   [view 
-    (doall
-     (->> path
-          (map-indexed
-           (fn [i path-key]
-             [view {:style {:flex 1 :flex-direction "row"
-                            :align-items "center"}
-                    :key (str path-key "-" i "-" (random-uuid))}
-              [text {:style {:color "grey"
-                             :width 5}} ":"]
-              [text-input {:default-value  path-key
-                           :style          {:height 40
-                                            :width  200}
-                           :spell-check    true
-                           :on-change-text #(println (str % " " i))}]]))))]])
-
-(defn predicates-comp [form changes]
-  (let [predicates (:predicates @form)]
-    [flat-list {:data predicates
-                :render-item
-                (fn [item index _]
-                  (let [{:keys [path value negate]} (:item
-                                                     (js->clj
-                                                      item
-                                                      :keywordize-keys true))]
-                    (println (str index "-" (clojure.string/join "-" path)))
-                    (r/as-element (path-comp path))))}]))
+(defn predicates-comp [form changes update-structured-data]
+  [view {:style {:flex           1
+                 :flex-direction "row"
+                 :align-items    "flex-start"}}
+   [text {:style (field-label-changeable-style changes :predicates)}
+    ":predicates"]
+   [structured-data {:data   (:predicates @form)
+                     :update update-structured-data}]])
 
 (defn root [params]
   (let [filter-form            (subscribe [:get-filter-form])
+        update-structured-data (fn [new-data]
+                                 (dispatch
+                                  [:update-filter-form {:predicates new-data}]))
         changes                (subscribe [:get-filter-form-changes])]
     [keyboard-aware-scroll-view
      ;; check link for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
@@ -87,9 +60,7 @@
 
       [label-comp filter-form changes :update-filter-form]
 
-      [negate-comp filter-form changes]
-
-      [predicates-comp filter-form changes]
+      [predicates-comp filter-form changes update-structured-data]
 
       [form-buttons/root
        #(dispatch [:save-filter-form (new js/Date)])

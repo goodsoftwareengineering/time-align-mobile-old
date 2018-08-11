@@ -172,7 +172,7 @@
                                                                                        :bucket-id    uuid?
                                                                                        :bucket-label string?
                                                                                        :bucket-color ::color}))
-                                   :filter-form   (ds/maybe filter-data-spec)}
+                                   :filter-form   (ds/maybe (merge filter-data-spec {:predicates string?}))}
                    :active-filter (ds/maybe uuid?)
                    :filters       [filter-data-spec]
                    :navigation    {:current-screen ::screen

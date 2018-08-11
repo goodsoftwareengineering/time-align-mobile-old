@@ -218,12 +218,15 @@
          :dispatch [:load-template-form (:id new-template)]})
       (catch js/Error e
         {:db    db
-         :alert (str "Failed data json validation " e)}))))
+         :alert (str "Failed data read validation " e)}))))
 
 (defn load-filter-form [db [_ filter-id]]
   (let [filter     (select-one
                     [:filters sp/ALL #(= (:id %) filter-id)] db)
-        filter-form filter]
+        filter-form (merge filter
+                           {:predicates (with-out-str
+                                          (zprint (:predicates filter)
+                                                  {:map {:force-nl? true}}))})]
     (assoc-in db [:forms :filter-form] filter-form)))
 
 (defn update-filter-form [db [_ filter-form]]
@@ -232,8 +235,10 @@
 (defn save-filter-form [{:keys [db]} [_ date-time]]
   (let [filter-form (get-in db [:forms :filter-form])]
     (try
-      (let [new-filter        (-> filter-form
-                                  (merge {:last-edited date-time}))
+      (let [new-predicates {:predicates (read-string (:predicates filter-form))}
+            new-filter        (-> filter-form
+                                  (merge {:last-edited date-time}
+                                         new-predicates))
             old-filter        (select-one [:filters sp/ALL
                                            #(= (:id %) (:id new-filter))] db)
             removed-filter-db (setval [:filters sp/ALL
@@ -249,7 +254,7 @@
          :dispatch [:load-filter-form (:id new-filter)]})
       (catch js/Error e
         {:db    db
-         :alert (str "Failed data json validation " e)}))))
+         :alert (str "Failed predicate read validation " e)}))))
 
 
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))

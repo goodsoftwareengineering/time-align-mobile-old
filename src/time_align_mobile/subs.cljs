@@ -140,7 +140,11 @@
     (if (some? (:id filter-form))
       (let [filter (select-one [:filters sp/ALL #(= (:id %) (:id filter-form))]
                                             db)
-            different-keys (->> (clojure.data/diff filter-form filter)
+            ;; data needs to be coerced to compare to form
+            new-predicates (with-out-str (zprint (:predicates filter) {:map {:force-nl? true}}))
+            altered-filter (merge filter {:predicates new-predicates})
+
+            different-keys (->> (clojure.data/diff filter-form altered-filter)
                                 (first))]
         (if (nil? different-keys)
           {} ;; empty map if no changes
