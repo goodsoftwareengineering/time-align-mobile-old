@@ -152,6 +152,7 @@
                           (map (fn [{:keys [id]}] id)))))
 (s/def ::screen screen-id-set)
 
+;; filter
 (def filter-data-spec
   {:id          uuid?
    :label       string?
@@ -200,7 +201,13 @@
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
                     :predicates  [{:path [:data :category] :value "basic" :negate false}
-                                  {:path [:sumthin] :value "something" :negate false}]}]
+                                  {:path [:bucket-label] :value "This one has periods" :negate false}]}
+                   {:id          (uuid "defaaa81-38d4-4d4f-ab19-a7cef18c1300")
+                    :label       "other"
+                    :created     (new js/Date 2018 4 28 15 57)
+                    :last-edited (new js/Date 2018 4 28 15 57)
+                    :predicates  [{:path [:data :category] :value "other" :negate false}
+                                  {:path [:bucket-label] :value "This one has periods" :negate false}]}]
    :navigation    {:current-screen :day
                    :params         nil}
    :buckets       [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")

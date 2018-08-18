@@ -152,6 +152,13 @@
       ;; return an empty map if there is no loaded filter in the form
       {})))
 
+(defn get-filters [db _]
+  (select [:filters sp/ALL] db))
+
+(defn get-active-filter [db _]
+  (let  [id (:active-filter db)]
+    (select-one [:filters sp/ALL #(= (:id %) id)] db)))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -163,5 +170,7 @@
 (reg-sub :get-template-form-changes get-template-form-changes)
 (reg-sub :get-filter-form get-filter-form)
 (reg-sub :get-filter-form-changes get-filter-form-changes)
+(reg-sub :get-filters get-filters)
+(reg-sub :get-active-filter get-active-filter)
 
 

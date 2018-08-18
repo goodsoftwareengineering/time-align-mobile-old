@@ -256,6 +256,8 @@
         {:db    db
          :alert (str "Failed predicate read validation " e)}))))
 
+(defn update-active-filter [db [_ id]]
+  (assoc db :active-filter id))
 
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
@@ -271,6 +273,6 @@
 (reg-event-db :load-filter-form [validate-spec] load-filter-form)
 (reg-event-db :update-filter-form [validate-spec] update-filter-form)
 (reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
-
+(reg-event-db :update-active-filter [validate-spec] update-active-filter)
 
 
