@@ -3,15 +3,17 @@
                                                   text
                                                   flat-list
                                                   touchable-highlight]]
-            [time-align-mobile.components.filter-picker :refer [filter-picker]]
+            [time-align-mobile.components.filter-picker :refer [filter-picker
+                                                                filter-items]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
 (defn root [params]
-  (let [templates (subscribe [:get-templates])]
+  (let [templates (subscribe [:get-templates])
+        active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [filter-picker]
-     [flat-list {:data @templates
+     [flat-list {:data (filter-items @templates @active-filter)
                  :render-item
                  (fn [i]
                    (let [item (:item (js->clj i :keywordize-keys true))

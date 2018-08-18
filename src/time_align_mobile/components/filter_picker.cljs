@@ -8,6 +8,18 @@
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
+(defn filter-items [items active-filter]
+  (if (some? active-filter)
+    (->> items
+         (filter
+          (fn [item]
+            (->> (:predicates active-filter)
+                 (some (fn [{:keys [negate path value]}]
+                         (if negate
+                           (not= (get-in item path) value)
+                           (= (get-in item path) value))))))))
+    items))
+
 (defn filter-picker []
   (let [filters (subscribe [:get-filters])
         selected-filter (subscribe [:get-active-filter])]
@@ -15,10 +27,14 @@
                    :justify-content "center"
                    :align-items "center"}}
      [text {:style {:color "grey"}} ":filter"]
-     [picker {:selected-value  (:id @selected-filter)
+     [picker {:selected-value  (if-let [id (:id @selected-filter)]
+                                 id
+                                 "none")
               :style           {:width 250}
-              :on-value-change #(dispatch [:update-active-filter %])}
+              :on-value-change #(dispatch [:update-active-filter (if (= % "none")
+                                                                   nil
+                                                                   %)])}
       (map (fn [filter] [picker-item {:label (:label filter)
                                       :key (:id filter)
                                       :value (:id filter)}])
-           @filters)]]))
+           (cons {:label "none" :id "none"} @filters))]]))
