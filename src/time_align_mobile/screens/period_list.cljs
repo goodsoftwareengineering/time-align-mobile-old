@@ -12,6 +12,7 @@
   (let [periods (subscribe [:get-periods])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+     [text "Periods"]
      [filter-picker]
      [flat-list {:data (filter-items @periods @active-filter)
                  :render-item

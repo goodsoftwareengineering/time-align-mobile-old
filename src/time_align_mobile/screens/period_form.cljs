@@ -76,6 +76,8 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Period form"]
+
       [parent-id-comp period-form changes]
 
       ;; [parent-label-comp period-form]

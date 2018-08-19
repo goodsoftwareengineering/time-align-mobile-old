@@ -12,6 +12,7 @@
   (let [buckets (subscribe [:get-buckets])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+     [text "Buckets"]
      [filter-picker]
      [flat-list {:data (filter-items @buckets @active-filter)
                  :render-item

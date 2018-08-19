@@ -64,6 +64,7 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Bucket form"]
       [id-comp bucket-form]
 
       [created-comp bucket-form]

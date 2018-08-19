@@ -12,6 +12,7 @@
   (let [templates (subscribe [:get-templates])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+     [text "Templates"]
      [filter-picker]
      [flat-list {:data (filter-items @templates @active-filter)
                  :render-item

@@ -95,6 +95,8 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Template form"]
+
       [parent-id-comp template-form changes]
 
       [parent-picker-comp template-form changes buckets :update-template-form]
