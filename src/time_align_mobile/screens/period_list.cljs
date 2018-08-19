@@ -4,7 +4,7 @@
                                                   flat-list
                                                   touchable-highlight]]
             [time-align-mobile.components.filter-picker :refer [filter-picker
-                                                                filter-items]]
+                                                                filter-sort]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
@@ -14,7 +14,7 @@
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Periods"]
      [filter-picker]
-     [flat-list {:data (filter-items @periods @active-filter)
+     [flat-list {:data (filter-sort @periods @active-filter)
                  :render-item
                  (fn [i]
                    (let [item (:item (js->clj i :keywordize-keys true))

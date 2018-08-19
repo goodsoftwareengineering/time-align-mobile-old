@@ -4,7 +4,7 @@
                                                   flat-list
                                                   touchable-highlight]]
             [time-align-mobile.components.filter-picker :refer [filter-picker
-                                                                filter-items]]
+                                                                fitler-sort]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
@@ -14,7 +14,7 @@
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Templates"]
      [filter-picker]
-     [flat-list {:data (filter-items @templates @active-filter)
+     [flat-list {:data (fitler-sort @templates @active-filter)
                  :render-item
                  (fn [i]
                    (let [item (:item (js->clj i :keywordize-keys true))
