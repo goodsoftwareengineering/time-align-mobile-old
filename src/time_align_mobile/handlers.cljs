@@ -226,6 +226,9 @@
         filter-form (merge filter
                            {:predicates (with-out-str
                                           (zprint (:predicates filter)
+                                                  {:map {:force-nl? true}}))}
+                           {:sort (with-out-str
+                                          (zprint (:sort filter)
                                                   {:map {:force-nl? true}}))})]
     (assoc-in db [:forms :filter-form] filter-form)))
 
@@ -236,9 +239,11 @@
   (let [filter-form (get-in db [:forms :filter-form])]
     (try
       (let [new-predicates {:predicates (read-string (:predicates filter-form))}
+            new-sort {:sort (read-string (:sort filter-form))}
             new-filter        (-> filter-form
                                   (merge {:last-edited date-time}
-                                         new-predicates))
+                                         new-predicates
+                                         new-sort))
             old-filter        (select-one [:filters sp/ALL
                                            #(= (:id %) (:id new-filter))] db)
             removed-filter-db (setval [:filters sp/ALL

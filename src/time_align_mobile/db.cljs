@@ -158,6 +158,8 @@
    :label       string?
    :created     ::moment
    :last-edited ::moment
+   :sort        {:path [keyword?]
+                 :ascending boolean?}
    :predicates  [{:path [keyword?]
                   :value string?
                   :negate boolean?}]})
@@ -181,7 +183,8 @@
                                                      :bucket-color ::color}))
                                    :filter-form
                                    (ds/maybe (merge filter-data-spec
-                                                    {:predicates string?}))}
+                                                    {:predicates string?}
+                                                    {:sort string?}))}
                    :active-filter (ds/maybe uuid?)
                    :filters       [filter-data-spec]
                    :navigation    {:current-screen ::screen
@@ -200,11 +203,15 @@
                     :label       "basic"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
+                    :sort {:path [:periods]
+                           :ascending false}
                     :predicates  [{:path [:bucket-label] :value "This one has periods" :negate false}]}
                    {:id          (uuid "defaaa81-38d4-4d4f-ab19-a7cef18c1300")
                     :label       "other"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
+                    :sort {:path [:data :category]
+                           :ascending true}
                     :predicates  [{:path [:data :category] :value "other" :negate false}
                                   {:path [:bucket-label] :value "This one has periods" :negate false}]}]
    :navigation    {:current-screen :day

@@ -35,12 +35,28 @@
    [structured-data {:data   (:predicates @form)
                      :update update-structured-data}]])
 
+(defn sort-comp [form changes update-structured-data]
+  [view {:style {:flex           1
+                 :flex-direction "row"
+                 :align-items    "flex-start"}}
+   [text {:style (field-label-changeable-style changes :sort)}
+    ":sort"]
+   [structured-data {:data   (:sort @form)
+                     :update update-structured-data}]])
+
 (defn root [params]
-  (let [filter-form            (subscribe [:get-filter-form])
-        update-structured-data (fn [new-data]
-                                 (dispatch
-                                  [:update-filter-form {:predicates new-data}]))
-        changes                (subscribe [:get-filter-form-changes])]
+  (let [filter-form (subscribe [:get-filter-form])
+
+        update-structured-data-predicates
+        (fn [new-data]
+          (dispatch
+           [:update-filter-form {:predicates new-data}]))
+
+        update-structured-data-sort
+        (fn [new-data]
+          (dispatch [:update-filter-form {:sort new-data}]))
+
+        changes     (subscribe [:get-filter-form-changes])]
     [keyboard-aware-scroll-view
      ;; check link for why these options https://stackoverflow.com/questions/45466026/keyboard-aware-scroll-view-android-issue?rq=1
      {:enable-on-android            true
@@ -52,6 +68,8 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Filter form"]
+
       [id-comp filter-form]
 
       [created-comp filter-form]
@@ -60,7 +78,9 @@
 
       [label-comp filter-form changes :update-filter-form]
 
-      [predicates-comp filter-form changes update-structured-data]
+      [sort-comp filter-form changes update-structured-data-sort]
+
+      [predicates-comp filter-form changes update-structured-data-predicates]
 
       [form-buttons/root
        #(dispatch [:save-filter-form (new js/Date)])

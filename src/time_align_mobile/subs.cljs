@@ -142,7 +142,9 @@
                                             db)
             ;; data needs to be coerced to compare to form
             new-predicates (with-out-str (zprint (:predicates filter) {:map {:force-nl? true}}))
-            altered-filter (merge filter {:predicates new-predicates})
+            new-sort (with-out-str (zprint (:sort filter) {:map {:force-nl? true}}))
+            altered-filter (merge filter {:predicates new-predicates
+                                          :sort new-sort})
 
             different-keys (->> (clojure.data/diff filter-form altered-filter)
                                 (first))]
