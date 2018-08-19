@@ -200,8 +200,7 @@
                     :label       "basic"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :predicates  [{:path [:data :category] :value "basic" :negate false}
-                                  {:path [:bucket-label] :value "This one has periods" :negate false}]}
+                    :predicates  [{:path [:bucket-label] :value "This one has periods" :negate false}]}
                    {:id          (uuid "defaaa81-38d4-4d4f-ab19-a7cef18c1300")
                     :label       "other"
                     :created     (new js/Date 2018 4 28 15 57)

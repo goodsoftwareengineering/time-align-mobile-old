@@ -159,6 +159,15 @@
   (let  [id (:active-filter db)]
     (select-one [:filters sp/ALL #(= (:id %) id)] db)))
 
+(defn get-periods [db _]
+  (->> (select [:buckets sp/ALL
+                (sp/collect-one (sp/submap [:id :color :label]))
+                :periods sp/ALL] db)
+       (map (fn [[bucket period]]
+              (merge period {:bucket-id    (:id bucket)
+                             :bucket-label (:label bucket)
+                             :color        (:color bucket)})))))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -172,5 +181,5 @@
 (reg-sub :get-filter-form-changes get-filter-form-changes)
 (reg-sub :get-filters get-filters)
 (reg-sub :get-active-filter get-active-filter)
-
+(reg-sub :get-periods get-periods)
 
