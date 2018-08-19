@@ -14,7 +14,7 @@
          (filter
           (fn [item]
             (->> (:predicates active-filter)
-                 (some (fn [{:keys [negate path value]}]
+                 (every? (fn [{:keys [negate path value]}]
                          (if negate
                            (not= (get-in item path) value)
                            (= (get-in item path) value))))))))
