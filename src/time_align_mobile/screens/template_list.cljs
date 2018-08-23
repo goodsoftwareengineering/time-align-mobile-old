@@ -4,36 +4,36 @@
                                                   flat-list
                                                   touchable-highlight]]
             [time-align-mobile.components.filter-picker :refer [filter-picker
-                                                                fitler-sort]]
+                                                                filter-sort]]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
 (defn root [params]
-  (let [templates (subscribe [:get-templates])
+  (let [templates     (subscribe [:get-templates])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Templates"]
      [filter-picker]
-     [flat-list {:data (fitler-sort @templates @active-filter)
+     [flat-list {:data (filter-sort @templates @active-filter)
                  :render-item
                  (fn [i]
-                   (let [item (:item (js->clj i :keywordize-keys true))
-                         id (:id item)
-                         label (:label item)
-                         color (:color item)
+                   (let [item         (:item (js->clj i :keywordize-keys true))
+                         id           (:id item)
+                         label        (:label item)
+                         color        (:color item)
                          bucket-label (:bucket-label item)]
                      (r/as-element [touchable-highlight
-                                    {:key id
+                                    {:key      id
                                      :on-press #(dispatch
                                                  [:navigate-to
                                                   {:current-screen :template
-                                                   :params {:template-id id}}])}
+                                                   :params         {:template-id id}}])}
 
                                     [view {:style {:flex-direction "row"}}
                                      [view
-                                      {:style {:width 50
-                                               :height 50
-                                               :margin-right 20
+                                      {:style {:width            50
+                                               :height           50
+                                               :margin-right     20
                                                :background-color color}}]
                                      [view {:style {:flex-direction "column"}}
                                       [text (if (> (count label) 0)
