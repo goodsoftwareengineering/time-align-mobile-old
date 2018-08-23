@@ -44,6 +44,35 @@
    [structured-data {:data   (:sort @form)
                      :update update-structured-data}]])
 
+(defn compatible-list-comp [form changes]
+  (let [compatible-list (:compatible @form)
+        style (fn [comp-key]
+                      {:color (if (some #{comp-key} compatible-list)
+                                "black"
+                                "grey")
+                       :margin-right 10})
+        on-press (fn [comp-key]
+                   (if (some #{comp-key} compatible-list)
+                     #(dispatch [:update-filter-form
+                                 {:compatible (remove #{comp-key}
+                                                      compatible-list)}])
+                     #(dispatch [:update-filter-form
+                                 {:compatible (conj compatible-list
+                                                    comp-key)}])))]
+    [view {:style {:flex           1
+                   :flex-direction "row"
+                   :align-items    "flex-start"}}
+     [text {:style (field-label-changeable-style changes :compatible)}
+      ":compatible"]
+     [view {:style {:flex-direction "row"}}
+      ;; TODO pull all compatible-options from common place?
+      (->> [:bucket :period :template]
+           (map (fn [comp-key]
+                  [touchable-highlight
+                   {:key (str comp-key "-compatible-list-option")
+                    :on-press (on-press comp-key)}
+                   [text {:style (style comp-key)} (str comp-key)]])))]]))
+
 (defn root [params]
   (let [filter-form (subscribe [:get-filter-form])
 
@@ -77,6 +106,8 @@
       [last-edited-comp filter-form]
 
       [label-comp filter-form changes :update-filter-form]
+
+      [compatible-list-comp filter-form changes]
 
       [sort-comp filter-form changes update-structured-data-sort]
 
