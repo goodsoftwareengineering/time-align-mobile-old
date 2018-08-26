@@ -13,7 +13,7 @@
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Buckets"]
-     [filter-picker]
+     [filter-picker :bucket]
      [flat-list {:data (filter-sort @buckets @active-filter)
                  :render-item
                  (fn [i]

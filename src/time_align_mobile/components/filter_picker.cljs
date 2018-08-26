@@ -37,7 +37,7 @@
 (defn filter-sort [items active-filter]
   (sort-items (filter-items items active-filter) active-filter))
 
-(defn filter-picker []
+(defn filter-picker [type]
   (let [filters (subscribe [:get-filters])
         selected-filter (subscribe [:get-active-filter])]
     [view {:style {:flex-direction "column"
@@ -57,7 +57,8 @@
        (map (fn [filter] [picker-item {:label (:label filter)
                                        :key (:id filter)
                                        :value (:id filter)}])
-            (cons {:label "none" :id "none"} @filters))]]
+            (cons {:label "none" :id "none"}
+                  (filter #(some #{type} (:compatible %)) @filters)))]]
      [view {:style {:flex-direction "row"
                     :justify-content "center"
                     :align-items "center"}}

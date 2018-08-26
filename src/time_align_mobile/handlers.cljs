@@ -53,8 +53,12 @@
 ;; -- Handlers --------------------------------------------------------------
 
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
-  (merge {:db (assoc-in db [:navigation] {:current-screen current-screen
-                                          :params         params})}
+  (merge {:db (-> db
+                  (assoc-in [:navigation] {:current-screen current-screen
+                                           :params         params})
+                  ;; prevents using incompatible filters
+                  (assoc-in [:active-filter] nil))}
+
          (when (= current-screen :bucket)
            {:dispatch [:load-bucket-form (:bucket-id params)]})
          (when (= current-screen :period)

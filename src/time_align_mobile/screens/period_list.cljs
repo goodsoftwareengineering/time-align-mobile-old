@@ -13,7 +13,7 @@
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Periods"]
-     [filter-picker]
+     [filter-picker :period]
      [flat-list {:data (filter-sort @periods @active-filter)
                  :render-item
                  (fn [i]

@@ -13,7 +13,7 @@
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Templates"]
-     [filter-picker]
+     [filter-picker :template]
      [flat-list {:data (filter-sort @templates @active-filter)
                  :render-item
                  (fn [i]

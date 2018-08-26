@@ -158,7 +158,7 @@
    :label       string?
    :created     ::moment
    :last-edited ::moment
-   :compatible  [(s/spec #{:bucket :period :template})]
+   :compatible  [(s/spec #{:bucket :period :template :filter})]
    :sort        {:path [keyword?]
                  :ascending boolean?}
    :predicates  [{:path [keyword?]
@@ -201,22 +201,29 @@
                    :filter-form   nil}
    :active-filter nil
    :filters       [{:id          (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
-                    :label       "basic"
+                    :label       "bucket label sort"
                     :created     (new js/Date 2018 4 28 15 57)
                     :compatible  [:period :template]
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :sort        {:path      [:periods]
+                    :sort        {:path      [:bucket-label]
                                   :ascending false}
-                    :predicates  [{:path [:bucket-label] :value "This one has periods" :negate false}]}
+                    :predicates  []}
+                   {:id          (uuid "cda44081-38d4-4d4f-ab19-a7cef18c1718")
+                    :label       "label"
+                    :created     (new js/Date 2018 4 28 15 57)
+                    :compatible  [:period :template :filter :bucket]
+                    :last-edited (new js/Date 2018 4 28 15 57)
+                    :sort        {:path      [:label]
+                                  :ascending false}
+                    :predicates  []}
                    {:id          (uuid "defaaa81-38d4-4d4f-ab19-a7cef18c1300")
-                    :label       "other"
+                    :label       "nuetral mood"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
                     :compatible  [:bucket]
-                    :sort        {:path      [:data :category]
+                    :sort        {:path      [:label]
                                   :ascending true}
-                    :predicates  [{:path [:data :category] :value "other" :negate false}
-                                  {:path [:bucket-label] :value "This one has periods" :negate false}]}]
+                    :predicates  [{:path [:data :mood] :value "neutral" :negate false}]}]
    :navigation    {:current-screen :day
                    :params         nil}
    :buckets       [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")

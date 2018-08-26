@@ -66,7 +66,7 @@
       ":compatible"]
      [view {:style {:flex-direction "row"}}
       ;; TODO pull all compatible-options from common place?
-      (->> [:bucket :period :template]
+      (->> [:bucket :period :template :filter]
            (map (fn [comp-key]
                   [touchable-highlight
                    {:key (str comp-key "-compatible-list-option")
