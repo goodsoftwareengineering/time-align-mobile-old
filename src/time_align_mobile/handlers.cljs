@@ -268,6 +268,22 @@
 (defn update-active-filter [db [_ id]]
   (assoc db :active-filter id))
 
+(defn add-new-bucket [{:keys [db]} [_ _]]
+  (let [id (random-uuid)]
+    {:db (setval [:buckets
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 {:id          id
+                  :label       "Bucket label"
+                  :created     (new js/Date)
+                  :last-edited (new js/Date)
+                  :data        {:category "new"}
+                  :color       "#ff1122"
+                  :templates   nil
+                  :periods     nil}
+                 db)
+     :dispatch [:navigate-to {:current-screen :bucket :params {:bucket-id id}}]}))
+
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -283,5 +299,5 @@
 (reg-event-db :update-filter-form [validate-spec] update-filter-form)
 (reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
 (reg-event-db :update-active-filter [validate-spec] update-active-filter)
-
+(reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
 

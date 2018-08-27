@@ -5,6 +5,7 @@
                                                   touchable-highlight]]
             [time-align-mobile.components.filter-picker :refer [filter-picker
                                                                 filter-sort]]
+            [time-align-mobile.components.list-buttons :as list-buttons]
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
@@ -45,4 +46,5 @@
                                       [text {:style {:color "grey"}}
                                        "templates: " (count templates)]
                                       [text {:style {:color "grey"}}
-                                       (str "id: " id)]]]])))}]]))
+                                       (str "id: " id)]]]])))}]
+     [list-buttons/root #(dispatch [:add-new-bucket])]]))
