@@ -282,7 +282,68 @@
                   :templates   nil
                   :periods     nil}
                  db)
-     :dispatch [:navigate-to {:current-screen :bucket :params {:bucket-id id}}]}))
+     :dispatch [:navigate-to {:current-screen :bucket
+                              :params {:bucket-id id}}]}))
+
+(defn add-new-period [{:keys [db]} [_ bucket-id]]
+  (let [id (random-uuid)
+        now (new js/Date)]
+    {:db (setval [:buckets sp/ALL
+                  #(= (:id %) bucket-id)
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 {:id id
+                  :created now
+                  :last-edited now
+                  :label ""
+                  :data {}
+                  :planned true
+                  :start now
+                  :stop (new js/Date (+ (.valueOf now) (* 1000 60)))}
+                 db)
+     :dispatch [:navigate-to {:current-screen :period
+                              :params {:period-id id}}]}))
+
+(defn add-templated-period [{:keys [db]} [_ {:keys [bucket-id template]}]]
+  (let [id             (random-uuid)
+        new-data       (merge (:data template)
+                              {:template (:id template)})
+        start-relative (:start template)
+        stop-relative  (:stop template)
+        duration       (:duration template)
+        now            (new js/Date)
+        start          (if (some? start-relative)
+                         (new js/Date
+                              (.getFullYear now)
+                              (.getDate now)
+                              (:hour start-relative)
+                              (:minute start-relative))
+                         now)
+        stop           (if (some? stop-relative)
+                         (new js/Date
+                              (.getFullYear now)
+                              (.getDate now)
+                              (:hour stop-relative)
+                              (:minute stop-relative))
+                         (if (some? duration)
+                           (new js/Date (+ (.valueOf start) duration))
+                           (new js/Date (+ (.valueOf start) (* 1000 60)))))
+        period         (merge template
+                              {:id    id
+                               :data  new-data
+                               :start start
+                               :stop  stop})]
+
+    {:db       (setval [:buckets sp/ALL
+                        #(= (:id %) bucket-id)
+                        :periods
+                        sp/NIL->VECTOR
+                        sp/AFTER-ELEM]
+                       period
+                       db)
+     :dispatch [:navigate-to {:current-screen :period
+                              :params         {:period-id id}}]}))
 
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
@@ -300,4 +361,6 @@
 (reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
 (reg-event-db :update-active-filter [validate-spec] update-active-filter)
 (reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
+(reg-event-fx :add-new-period [validate-spec] add-new-period)
+(reg-event-fx :add-templated-period [validate-spec] add-templated-period)
 
