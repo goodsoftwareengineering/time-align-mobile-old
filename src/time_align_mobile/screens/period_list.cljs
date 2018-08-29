@@ -11,11 +11,14 @@
             [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch]]))
 
-(def modal-visible (atom false))
+(def bucket-modal-visible (atom false))
+(def template-modal-visible (atom false))
+(def choice-modal-visible (atom false))
 
 (defn root [params]
-  (let [periods (subscribe [:get-periods])
-        buckets (subscribe [:get-buckets])
+  (let [periods       (subscribe [:get-periods])
+        buckets       (subscribe [:get-buckets])
+        templates     (subscribe [:get-templates])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
      [text "Periods"]
@@ -23,24 +26,24 @@
      [flat-list {:data (filter-sort @periods @active-filter)
                  :render-item
                  (fn [i]
-                   (let [item (:item (js->clj i :keywordize-keys true))
-                         id (:id item)
-                         label (:label item)
-                         color (:color item)
+                   (let [item         (:item (js->clj i :keywordize-keys true))
+                         id           (:id item)
+                         label        (:label item)
+                         color        (:color item)
                          bucket-label (:bucket-label item)]
                      (r/as-element [touchable-highlight
-                                    {:key id
+                                    {:key      id
                                      :on-press #(dispatch
                                                  [:navigate-to
                                                   {:current-screen :period
-                                                   :params {:period-id id}}])}
+                                                   :params         {:period-id id}}])}
 
                                     [view {:style {:flex-direction "row"}}
                                      [view
-                                      {:style {:width 50
-                                               :height 50
-                                               :border-radius 25
-                                               :margin-right 20
+                                      {:style {:width            50
+                                               :height           50
+                                               :border-radius    25
+                                               :margin-right     20
                                                :background-color color}}]
                                      [view {:style {:flex-direction "column"}}
                                       [text (if (> (count label) 0)
@@ -54,24 +57,61 @@
                                        (str "id: " id)]]]])))}]
 
      [modal {:animation-type "slide"
-             :transparent false
-             :visible @modal-visible}
-      [view {:style {:flex 1
+             :transparent    false
+             :visible        @bucket-modal-visible}
+      [view {:style {:flex    1
                      :padding 10}}
        [text "Select a bucket to add the period to"]
        [flat-list {:data @buckets
-                    :render-item
-                    (fn [i]
-                      (let [item (:item (js->clj i :keywordize-keys true))]
-                        (r/as-element
-                         (list-items/bucket
-                          (merge
-                           item
-                           {:on-press
-                            (fn [_]
-                              (reset! modal-visible false)
-                              ;; passing dispatch the parent bucket id
-                              ;; for the period about to be created
-                              (dispatch [:add-new-period (:id item)]))})))))}]]]
+                   :render-item
+                   (fn [i]
+                     (let [item (:item (js->clj i :keywordize-keys true))]
+                       (r/as-element
+                        (list-items/bucket
+                         (merge
+                          item
+                          {:on-press
+                           (fn [_]
+                             (reset! bucket-modal-visible false)
+                             ;; passing dispatch the parent bucket id
+                             ;; for the period about to be created
+                             (dispatch [:add-new-period (:id item)]))})))))}]]]
 
-     [list-buttons/root #(reset! modal-visible true)]]))
+     [modal {:animation-type "slide"
+             :transparent    false
+             :visible        @template-modal-visible}
+      [view {:style {:flex    1
+                     :padding 10}}
+       [text "Select a template to make the period with"]
+       [flat-list {:data @templates
+                   :render-item
+                   (fn [i]
+                     (let [item (:item (js->clj i :keywordize-keys true))]
+                       (r/as-element
+                        (list-items/template
+                         (merge
+                          item
+                          {:on-press
+                           (fn [_]
+                             (reset! template-modal-visible false)
+                             ;; passing dispatch the parent bucket id
+                             ;; for the period about to be created
+                             (dispatch [:add-template-period item]))})))))}]]]
+
+     [modal {:animation-type "slide"
+             :transparent    false
+             :visible        @choice-modal-visible}
+      [view {:style {:flex    1
+                     :padding 10}}
+       [touchable-highlight
+        {:on-press (fn []
+                     (reset! choice-modal-visible false)
+                     (reset! bucket-modal-visible true))}
+        [text "Blank period"]]
+
+       [touchable-highlight {:on-press (fn []
+                                         (reset! choice-modal-visible false)
+                                         (reset! template-modal-visible true))}
+        [text "Template period"]]]]
+
+     [list-buttons/root #(reset! choice-modal-visible true)]]))

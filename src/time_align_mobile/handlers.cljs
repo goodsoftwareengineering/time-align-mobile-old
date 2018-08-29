@@ -305,10 +305,11 @@
      :dispatch [:navigate-to {:current-screen :period
                               :params {:period-id id}}]}))
 
-(defn add-templated-period [{:keys [db]} [_ {:keys [bucket-id template]}]]
+(defn add-template-period [{:keys [db]} [_ template]]
+  ;; template needs bucket-id
   (let [id             (random-uuid)
         new-data       (merge (:data template)
-                              {:template (:id template)})
+                              {:template-id (:id template)})
         start-relative (:start template)
         stop-relative  (:stop template)
         duration       (:duration template)
@@ -336,7 +337,7 @@
                                :stop  stop})]
 
     {:db       (setval [:buckets sp/ALL
-                        #(= (:id %) bucket-id)
+                        #(= (:id %) (:bucket-id template))
                         :periods
                         sp/NIL->VECTOR
                         sp/AFTER-ELEM]
@@ -362,5 +363,5 @@
 (reg-event-db :update-active-filter [validate-spec] update-active-filter)
 (reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
 (reg-event-fx :add-new-period [validate-spec] add-new-period)
-(reg-event-fx :add-templated-period [validate-spec] add-templated-period)
+(reg-event-fx :add-template-period [validate-spec] add-template-period)
 

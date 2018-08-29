@@ -21,4 +21,26 @@
      [text {:style {:color "grey"}} "templates: " (count templates)]
      [text {:style {:color "grey"}} (str "id: " id)]]]])
 
-;; TODO move period, templates, and filters here
+(defn template [{:keys [id color label bucket-label on-press]}]
+  [touchable-highlight
+   {:key      id
+    :on-press on-press}
+
+   [view {:style {:flex-direction "row"}}
+    [view
+     {:style {:width            50
+              :height           50
+              :margin-right     20
+              :background-color color}}]
+    [view {:style {:flex-direction "column"}}
+     [text (if (> (count label) 0)
+             label
+             "No label")]
+     [text {:style {:color "grey"}}
+      (if (> (count bucket-label) 0)
+        (str "bucket-label: " bucket-label)
+        "No bucket label")]
+     [text {:style {:color "grey"}}
+      (str "id: " id)]]]])
+
+;; TODO move periods and filters
