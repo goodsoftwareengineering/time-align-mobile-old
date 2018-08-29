@@ -346,6 +346,29 @@
      :dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id id}}]}))
 
+(defn add-new-template [{:keys [db]} [_ bucket-id]]
+  (let [id  (random-uuid)
+        now (new js/Date)]
+    {:db       (setval [:buckets sp/ALL
+                        #(= (:id %) bucket-id)
+                        :templates
+                        sp/NIL->VECTOR
+                        sp/AFTER-ELEM]
+                       {:id          id
+                        :created     now
+                        :last-edited now
+                        :label       ""
+                        :data        {}
+                        :planned     true
+                        :start       {:hour   (.getHours now)
+                                      :minute (.getMinutes now)}
+                        :stop        {:hour   (.getHours now)
+                                      :minute (+ 5 (.getMinutes now))}
+                        :duration    nil}
+                       db)
+     :dispatch [:navigate-to {:current-screen :template
+                              :params         {:template-id id}}]}))
+
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -364,4 +387,5 @@
 (reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
 (reg-event-fx :add-new-period [validate-spec] add-new-period)
 (reg-event-fx :add-template-period [validate-spec] add-template-period)
+(reg-event-fx :add-new-template [validate-spec] add-new-template)
 

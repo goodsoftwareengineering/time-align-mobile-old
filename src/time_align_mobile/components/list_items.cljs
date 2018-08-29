@@ -28,10 +28,17 @@
 
    [view {:style {:flex-direction "row"}}
     [view
-     {:style {:width            50
-              :height           50
+     {:style {:width            0
+              :height           0
               :margin-right     20
-              :background-color color}}]
+              :background-color "transparent"
+              :border-style "solid"
+              :border-left-width 25
+              :border-right-width 25
+              :border-bottom-width 50
+              :border-left-color "transparent"
+              :border-right-color "transparent"
+              :border-bottom-color color}}]
     [view {:style {:flex-direction "column"}}
      [text (if (> (count label) 0)
              label
