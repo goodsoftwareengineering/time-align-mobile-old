@@ -44,9 +44,8 @@
 
                  [touchable-highlight {:key      (str "icon-" name)
                                        :on-press (fn [_]
-                                                   (println {:current-screen id
-                                                             :params         nil})
                                                    ;; TODO remove bucket id params when done testing
+
                                                    (dispatch
                                                     [:navigate-to
                                                      {:current-screen id
