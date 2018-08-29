@@ -274,10 +274,10 @@
                   sp/NIL->VECTOR
                   sp/AFTER-ELEM]
                  {:id          id
-                  :label       "Bucket label"
+                  :label       ""
                   :created     (new js/Date)
                   :last-edited (new js/Date)
-                  :data        {:category "new"}
+                  :data        {}
                   :color       "#ff1122"
                   :templates   nil
                   :periods     nil}
@@ -369,6 +369,21 @@
      :dispatch [:navigate-to {:current-screen :template
                               :params         {:template-id id}}]}))
 
+(defn add-new-filter [{:keys [db]} [_ _]]
+  (let [id (random-uuid)]
+    {:db (setval [:filters
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 {:id          id
+                  :label       ""
+                  :created     (new js/Date)
+                  :last-edited (new js/Date)
+                  :compatible []
+                  :sort nil
+                  :predicates []}
+                 db)
+     :dispatch [:navigate-to {:current-screen :filter
+                              :params {:filter-id id}}]}))
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -388,4 +403,5 @@
 (reg-event-fx :add-new-period [validate-spec] add-new-period)
 (reg-event-fx :add-template-period [validate-spec] add-template-period)
 (reg-event-fx :add-new-template [validate-spec] add-new-template)
+(reg-event-fx :add-new-filter [validate-spec] add-new-filter)
 

@@ -159,8 +159,8 @@
    :created     ::moment
    :last-edited ::moment
    :compatible  [(s/spec #{:bucket :period :template :filter})]
-   :sort        {:path [keyword?]
-                 :ascending boolean?}
+   :sort        (ds/maybe {:path [keyword?]
+                           :ascending boolean?})
    :predicates  [{:path [keyword?]
                   :value string?
                   :negate boolean?}]})
