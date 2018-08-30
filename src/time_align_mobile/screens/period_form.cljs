@@ -101,5 +101,7 @@
       [data-comp period-form changes update-structured-data]
 
       [form-buttons/root
-       #(dispatch [:save-period-form (new js/Date)])
-       #(dispatch [:load-period-form (:id @period-form)])]]]))
+       {:changed        (> (count @changes) 0)
+        :save-changes   #(dispatch [:save-period-form (new js/Date)])
+        :cancel-changes #(dispatch [:load-period-form (:id @period-form)])
+        :delete-item    #(dispatch [:delete-period (:id @period-form)])}]]]))

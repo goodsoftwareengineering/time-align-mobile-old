@@ -64,6 +64,7 @@
             new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
             altered-period (merge period {:data new-data
                                           :bucket-id (:id sub-bucket)
+                                          :bucket-color (:color sub-bucket)
                                           :bucket-label (:label sub-bucket)})
             different-keys (->> (clojure.data/diff period-form altered-period)
                                 (first))]
@@ -98,16 +99,17 @@
   (let [template-form (get-in db [:forms :template-form])]
     (if (some? (:id template-form))
       (let [[sub-bucket template] (select-one [:buckets sp/ALL
-                                             (sp/collect-one (sp/submap [:id :color :label]))
-                                             :templates sp/ALL #(= (:id %) (:id template-form))]
-                                            db)
+                                               (sp/collect-one (sp/submap [:id :color :label]))
+                                               :templates sp/ALL #(= (:id %) (:id template-form))]
+                                              db)
             ;; data needs to be coerced to compare to form
-            new-data (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
-            altered-template (merge template {:data new-data
-                                          :bucket-id (:id sub-bucket)
-                                          :bucket-label (:label sub-bucket)})
-            different-keys (->> (clojure.data/diff template-form altered-template)
-                                (first))]
+            new-data              (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
+            altered-template      (merge template {:data         new-data
+                                                   :bucket-id    (:id sub-bucket)
+                                                   :bucket-color (:color sub-bucket)
+                                                   :bucket-label (:label sub-bucket)})
+            different-keys        (->> (clojure.data/diff template-form altered-template)
+                                       (first))]
         (if (nil? different-keys)
           {} ;; empty map if no changes
           different-keys))

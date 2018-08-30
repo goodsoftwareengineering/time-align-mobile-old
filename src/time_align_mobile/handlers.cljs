@@ -4,7 +4,7 @@
     [zprint.core :refer [zprint]]
     [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
-    [time-align-mobile.db :as db :refer [app-db app-db-spec]]
+    [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
     [time-align-mobile.js-imports :refer [alert]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
@@ -334,14 +334,15 @@
                               {:id    id
                                :data  new-data
                                :start start
-                               :stop  stop})]
+                               :stop  stop})
+        period-clean   (select-keys period (keys period-data-spec))]
 
     {:db       (setval [:buckets sp/ALL
                         #(= (:id %) (:bucket-id template))
                         :periods
                         sp/NIL->VECTOR
                         sp/AFTER-ELEM]
-                       period
+                       period-clean
                        db)
      :dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id id}}]}))
@@ -384,6 +385,35 @@
                  db)
      :dispatch [:navigate-to {:current-screen :filter
                               :params {:filter-id id}}]}))
+
+(defn delete-bucket [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :bucket-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :buckets}]})
+
+(defn delete-period [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL :periods sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :period-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :periods}]})
+
+(defn delete-template [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL :templates sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :template-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :templates}]})
+
+(defn delete-filter [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:filters sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :filter-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :filters}]})
+
 (reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -404,4 +434,7 @@
 (reg-event-fx :add-template-period [validate-spec] add-template-period)
 (reg-event-fx :add-new-template [validate-spec] add-new-template)
 (reg-event-fx :add-new-filter [validate-spec] add-new-filter)
-
+(reg-event-fx :delete-bucket [validate-spec] delete-bucket)
+(reg-event-fx :delete-period [validate-spec] delete-period)
+(reg-event-fx :delete-template [validate-spec] delete-template)
+(reg-event-fx :delete-filter [validate-spec] delete-filter)

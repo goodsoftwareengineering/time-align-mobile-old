@@ -118,5 +118,7 @@
       [data-comp template-form changes update-structured-data]
 
       [form-buttons/root
-       #(dispatch [:save-template-form (new js/Date)])
-       #(dispatch [:load-template-form (:id @template-form)])]]]))
+       {:changed        (> (count @changes) 0)
+        :save-changes   #(dispatch [:save-template-form (new js/Date)])
+        :cancel-changes #(dispatch [:load-template-form (:id @template-form)])
+        :delete-item    #(dispatch [:delete-template (:id @template-form)])}]]]))

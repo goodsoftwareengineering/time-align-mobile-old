@@ -114,5 +114,7 @@
       [predicates-comp filter-form changes update-structured-data-predicates]
 
       [form-buttons/root
-       #(dispatch [:save-filter-form (new js/Date)])
-       #(dispatch [:load-filter-form (:id @filter-form)])]]]))
+       {:changed        (> (count @changes) 0)
+        :save-changes   #(dispatch [:save-filter-form (new js/Date)])
+        :cancel-changes #(dispatch [:load-filter-form (:id @filter-form)])
+        :delete-item    #(dispatch [:delete-filter (:id @filter-form)])}]]]))
