@@ -311,7 +311,6 @@
         new-data       (merge (:data template)
                               {:template-id (:id template)})
         start-relative (:start template)
-        stop-relative  (:stop template)
         duration       (:duration template)
         now            (new js/Date)
         start          (if (some? start-relative)
@@ -321,15 +320,9 @@
                               (:hour start-relative)
                               (:minute start-relative))
                          now)
-        stop           (if (some? stop-relative)
-                         (new js/Date
-                              (.getFullYear now)
-                              (.getDate now)
-                              (:hour stop-relative)
-                              (:minute stop-relative))
-                         (if (some? duration)
-                           (new js/Date (+ (.valueOf start) duration))
-                           (new js/Date (+ (.valueOf start) (* 1000 60)))))
+        stop           (if (some? duration)
+                         (new js/Date (+ (.valueOf start) duration))
+                         (new js/Date (+ (.valueOf start) (* 1000 60))))
         period         (merge template
                               {:id    id
                                :data  new-data

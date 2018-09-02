@@ -112,8 +112,6 @@
                          :planned     boolean?
                          :start       (ds/maybe {:hour   integer?
                                                  :minute integer?})
-                         :stop        (ds/maybe {:hour   integer?
-                                                 :minute integer?})
                          :duration    (ds/maybe integer?)})
 (def template-spec
   (st/create-spec {:spec (s/and
