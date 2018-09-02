@@ -53,6 +53,71 @@
                                       (reset! start-modal-visible false))
                         :on-cancel  #(reset! start-modal-visible false)}]]))
 
+(defn duration-comp [template-form changes]
+  (let [duration (:duration @template-form) ;; in ms
+        hours    (quot duration (* 60 60 1000))
+        minutes  (quot (- duration
+                          (* hours 60 60 1000))
+                       (* 60 1000))
+        seconds  (quot (- duration
+                          (* hours 60 60 1000)
+                          (* minutes 60 1000))
+                       1000)]
+
+    [view {:style {:flex-direction "row"}}
+     [text {:style (field-label-changeable-style changes :duration)} ":duration"]
+     [view {:style {:flex-direction "column"}}
+      [view {:style {:flex-direction "row"}}
+       ;; hours
+       [text {:style {:color "grey" :margin-right 10}} "hours"]
+       [text-input {:default-value  (.toString hours)
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [hours (js/parseFloat val)]
+                                        (if (not (js/isNaN hours)) 
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]
+
+      ;; minutes
+      [view {:style {:flex-direction "row"}}
+       [text {:style {:color "grey" :margin-right 10}} "minutes"]
+       [text-input {:default-value  (.toString minutes) 
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [minutes (js/parseFloat val)]
+                                        (if (not (js/isNaN minutes))
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]
+
+      ;; seconds
+      [view {:style {:flex-direction "row"}}
+       [text {:style {:color "grey" :margin-right 10}} "seconds"]
+       [text-input {:default-value  (.toString seconds)
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [seconds (js/parseFloat val)]
+                                        (if (not (js/isNaN seconds))
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]]]))
+
 (defn root [params]
   (let [template-form            (subscribe [:get-template-form])
         update-structured-data (fn [new-data]
@@ -89,7 +154,7 @@
 
       [start-comp template-form changes]
 
-      ;; TODO duration comp
+      [duration-comp template-form changes]
 
       [data-comp template-form changes update-structured-data]
 
