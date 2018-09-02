@@ -160,7 +160,7 @@
    :sort        (ds/maybe {:path [keyword?]
                            :ascending boolean?})
    :predicates  [{:path [keyword?]
-                  :value string?
+                  :value string? ;; TODO the form uses read and that coerces all values to strings
                   :negate boolean?}]})
 
 ;; app-db
@@ -207,110 +207,108 @@
                                   :ascending false}
                     :predicates  []}
                    {:id          (uuid "cda44081-38d4-4d4f-ab19-a7cef18c1718")
-                    :label       "label"
+                    :label       "Home workouts"
                     :created     (new js/Date 2018 4 28 15 57)
                     :compatible  [:period :template :filter :bucket]
                     :last-edited (new js/Date 2018 4 28 15 57)
                     :sort        {:path      [:label]
                                   :ascending false}
-                    :predicates  []}
+                    :predicates  [{:path [:data :location]
+                                   :value "home"
+                                   :negate false}]}
                    {:id          (uuid "defaaa81-38d4-4d4f-ab19-a7cef18c1300")
-                    :label       "nuetral mood"
+                    :label       "Night life"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :compatible  [:bucket]
-                    :sort        {:path      [:label]
+                    :compatible  [:period :template]
+                    :sort        {:path      [:created]
                                   :ascending true}
-                    :predicates  [{:path [:data :mood] :value "neutral" :negate false}]}]
+                    :predicates  [{:path [:data :category]
+                                   :value "night life"
+                                   :negate false}]}]
    :navigation    {:current-screen :day
                    :params         nil}
    :buckets       [{:id          (uuid "a7396f81-38d4-4d4f-ab19-a7cef18c4ea2")
-                    :label       "This one has periods"
+                    :label       "Exercise"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :data        {:category :default}
-                    :color       "#2222aa"
+                    :data        {}
+                    :color       "#11aa11"
                     :templates   nil
                     :periods     [{:id          (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")
-                                   :created     (new js/Date 2018 4 28 15 57)
-                                   :last-edited (new js/Date 2018 4 28 15 57)
-                                   :label       ""
-                                   :planned     true
-                                   :start       (new js/Date 2018 6 28 14 55)
-                                   :stop        (new js/Date 2018 6 28 15 35)
-                                   :data        {}}
-                                  {:id          (uuid "e3314f81-38d4-4d4f-ab19-a7cef17c4182")
-                                   :created     (new js/Date 2018 4 28 15 58)
-                                   :last-edited (new js/Date 2018 4 28 15 58)
+                                   :created     (new js/Date 2018 9 0 15 25)
+                                   :last-edited (new js/Date 2018 9 0 15 25)
                                    :label       ""
                                    :planned     false
-                                   :start       (new js/Date 2018 6 28 16 55)
-                                   :stop        (new js/Date 2018 6 28 17 35)
-                                   :data        {:mood :neutral}}]}
-
+                                   :start       (new js/Date 2018 9 0 15 25)
+                                   :stop        (new js/Date 2018 9 0 16 17)
+                                   :data        {:location "gym"
+                                                 :session  {:plank                   [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :arch-hold               [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :side-plank              [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :lumbar-extension        [{:s 1 :r 5}]
+                                                            :hip-tilts-wall          [{:s 1 :r 10}]
+                                                            :thoracic-extension-wall [{:s 1 :r 10}]
+                                                            :dislocates              [{:s 1 :r 10}]
+                                                            :pushup                  [{:s 1 :r 20}]
+                                                            :incline-pushup          [{:s 1 :r 20}]
+                                                            :squat                   [{:s 3 :r 5}]
+                                                            :dip-forward             [{:s 1 :r 8}]
+                                                            :dip-neutral             [{:s 2 :r 5}]
+                                                            :chinup                  [{:s 2 :r 7}]}}}
+                                  {:id          (uuid "e3314f81-38d4-4d4f-ab19-a7cef17c4182")
+                                   :created     (new js/Date 2018 9 1 9 30)
+                                   :last-edited (new js/Date 2018 9 1 9 30)
+                                   :label       ""
+                                   :planned     false
+                                   :start       (new js/Date 2018 9 1 9 30)
+                                   :stop        (new js/Date 2018 9 1 9 40)
+                                   :data        {:location "home"
+                                                 :session  {:plank            [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :arch-hold        [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :side-plank       [{:s 1 :time {:min 1 :sec 0}}]
+                                                            :lumbar-extension [{:s 1 :r 5}]}}}]}
                    {:id          (uuid "8c3907da-5222-408c-aba4-777f0a1204de")
-                    :label       "This one has a template"
+                    :label       "Social"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :data        {:string           "default"
-                                  :boolean          true
-                                  :number           1.2
-                                  :another-number   555
-                                  :keyword-as-value :keyword-value
-                                  :map              {:string-in-map "key-val"
-                                                     :vec-in-map    [1 2 3 4 5]
-                                                     :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
-                                  :vector           [1 2 3 "string"]
-                                  :vector-with-keys [:a :b "c"]}
-                    :color       "#2222aa"
+                    :data        {}
+                    :color       "#1111aa"
                     :templates   [{:id          (uuid "c52e4f81-38d4-4d4f-ab19-a7cef18c8882")
                                    :created     (new js/Date 2018 4 28 15 57)
                                    :last-edited (new js/Date 2018 4 28 15 57)
-                                   :label       ""
+                                   :label       "Drinks with friends"
                                    :planned     true
-                                   :start       {:hour 9 :minute 32}
-                                   :stop        {:hour 10 :minute 4}
-                                   :duration    nil
-                                   :data        {:category "basic"}}
+                                   :start       {:hour 19 :minute 0}
+                                   :duration    (* 2 ;; 2 hours converted to ms
+                                                   60 60 1000)
+                                   :data        {:category "night life"}}
                                   {:id          (uuid "da3e4f81-38d4-4d4f-ab19-a7cef18c6641")
                                    :created     (new js/Date 2018 4 28 15 57)
                                    :last-edited (new js/Date 2018 4 28 15 57)
-                                   :label       ""
+                                   :label       "Date with kaiti"
                                    :planned     true
-                                   :start       {:hour 4 :minute 32}
-                                   :stop        {:hour 10 :minute 4}
+                                   :start       nil
                                    :duration    nil
                                    :data        {}}
                                   {:id          (uuid "ef111f81-38d4-4d4f-ab19-a7cef18caa31")
                                    :created     (new js/Date 2018 4 28 15 57)
                                    :last-edited (new js/Date 2018 4 28 15 57)
-                                   :label       ""
+                                   :label       "Lunch with Jason"
                                    :planned     true
-                                   :start       {:hour 5 :minute 32}
-                                   :stop        {:hour 10 :minute 4}
-                                   :duration    nil
+                                   :start       nil
+                                   :duration    (* 1.5 60 60 1000)
                                    :data        {}}]
                     :periods     nil}
                    {:id          (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
-                    :label       "Using Time Align"
+                    :label       "Work"
                     :created     (new js/Date 2018 4 28 15 57)
                     :last-edited (new js/Date 2018 4 28 15 57)
-                    :data        {:string           "default"
-                                  :boolean          true
-                                  :number           1.2
-                                  :another-number   555
-                                  :keyword-as-value :keyword-value
-                                  :map              {:string-in-map "key-val"
-                                                     :vec-in-map    [1 2 3 4 5]
-                                                     :map-in-map    {:list-in-map-in-map '("a" "b" "c")}}
-                                  :vector           [1 2 3 "string"]
-                                  :vector-with-keys [:a :b "c"]}
-                    :color       "#2222aa"
+                    :data        {}
+                    :color       "#aa1111"
                     :templates   nil
-                    :periods     nil}
-                   ]
-   :templates nil
-   :config    {:auto-log-time-align true}})
+                    :periods     nil}]
+   :config        {:auto-log-time-align true}})
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
 ;; old initial state of app-db
