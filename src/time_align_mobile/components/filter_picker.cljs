@@ -23,13 +23,16 @@
 (defn sort-items [items active-filter]
   (if (some? active-filter)
     (->> items
+
          (sort-by
           (fn [item]
             (let [path  (get-in active-filter [:sort :path])
                   value (get-in item path)]
-              (if (coll? value)
-                (count value)
-                value))))
+              (cond
+                (coll? value) (count value)
+                (inst? value) (.valueOf value)
+                :else value))))
+
          (#(if (not (get-in active-filter [:sort :ascending]))
               (reverse %) %)))
     items))
