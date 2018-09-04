@@ -15,66 +15,62 @@
 (def bucket {:id              :bucket
              :label           "bucket"
              :screen          bucket-form-screen/root
-             :in-drawer       true
+             :in-drawer       false
              :position-drawer 999
-             :icon            {:family "Entypo"
-                               :name "credit"}})
+             :icon            nil})
 
 (def buckets {:id              :buckets
               :label           "buckets"
               :screen          bucket-list-screen/root
               :in-drawer       true
-              :position-drawer 5
+              :position-drawer 3
               :icon            {:family "FontAwesome"
                                 :name   "list"}})
 
 (def period {:id              :period
              :label           "period"
              :screen          period-form-screen/root
-             :in-drawer       true
-             :position-drawer 998
-             :icon            {:family "Entypo"
-                               :name "credit"}})
+             :in-drawer       false
+             :position-drawer nil
+             :icon            nil})
 
 (def periods {:id                  :periods
               :label           "periods"
               :screen          period-list-screen/root
               :in-drawer       true
-              :position-drawer 2
+              :position-drawer 4
               :icon            {:family "Entypo"
                                 :name   "time-slot"}})
 
 (def template {:id              :template
                :label           "template"
                :screen          template-form-screen/root
-               :in-drawer       true
-               :position-drawer 997
-               :icon            {:family "Entypo"
-                                 :name   "credit"}})
+               :in-drawer       false
+               :position-drawer nil
+               :icon            nil})
 
 (def templates {:id              :templates
                 :label           "templates"
                 :screen          template-list-screen/root
                 :in-drawer       true
-                :position-drawer 6
+                :position-drawer 5
                 :icon            {:family "FontAwesome"
                                   :name   "wpforms"}})
 
 (def _filter {:id              :filter
              :label           "filter"
              :screen          filter-form-screen/root
-             :in-drawer       true
-             :position-drawer 997
-             :icon            {:family "Entypo"
-                               :name   "credit"}})
+             :in-drawer       false
+             :position-drawer nil
+             :icon            nil})
 
 (def _filters {:id             :filters
               :label           "filters"
               :screen          filter-list-screen/root
               :in-drawer       true
-              :position-drawer 997
-              :icon            {:family "Entypo"
-                                :name   "credit"}})
+              :position-drawer 6
+              :icon            {:family "FontAwesome"
+                                :name   "filter"}})
 
 (def day {:id              :day
           :label           "day"
@@ -88,7 +84,7 @@
                :label           "calendar"
                :screen          calendar-screen/root
                :in-drawer       true
-               :position-drawer 0
+               :position-drawer 2
                :icon            {:family "Entypo"
                                  :name   "calendar"}})
 
@@ -96,7 +92,7 @@
              :label           "report"
              :screen          report-screen/root
              :in-drawer       true
-             :position-drawer 4
+             :position-drawer 8
              :icon            {:family "Entypo"
                                :name   "bar-graph"}})
 
@@ -104,7 +100,7 @@
             :label           "queue"
             :screen          queue-screen/root
             :in-drawer       true
-            :position-drawer 3
+            :position-drawer 7
             :icon            {:family "MaterialIcons"
                               :name   "queue"}})
 
