@@ -14,7 +14,7 @@
   (let [filters       (subscribe [:get-filters])
         active-filter (subscribe [:get-active-filter])]
     [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
-     [text "Periods"]
+     [text "Filters"]
      [filter-picker :filter]
      [flat-list {:data (filter-sort @filters @active-filter)
                  :render-item
