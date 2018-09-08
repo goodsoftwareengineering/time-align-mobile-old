@@ -52,6 +52,8 @@
 
 ;; -- Handlers --------------------------------------------------------------
 
+(defn initialize-db [_ _] app-db)
+
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
   (merge {:db (-> db
                   (assoc-in [:navigation] {:current-screen current-screen
@@ -408,7 +410,7 @@
    ;; TODO pop stack when possible
    :dispatch [:navigate-to {:current-screen :filters}]})
 
-(reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
+(reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
 (reg-event-db :update-bucket-form [validate-spec] update-bucket-form)
