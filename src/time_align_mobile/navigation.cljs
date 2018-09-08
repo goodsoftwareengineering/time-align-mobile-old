@@ -12,14 +12,14 @@
             [time-align-mobile.screens.filter-form :as filter-form-screen]
             [time-align-mobile.screens.filter-list :as filter-list-screen]))
 
-(def bucket {:id              :bucket
+(def bucket-screen {:id              :bucket
              :label           "bucket"
              :screen          bucket-form-screen/root
              :in-drawer       false
              :position-drawer 999
              :icon            nil})
 
-(def buckets {:id              :buckets
+(def buckets-screen {:id              :buckets
               :label           "buckets"
               :screen          bucket-list-screen/root
               :in-drawer       true
@@ -27,14 +27,14 @@
               :icon            {:family "FontAwesome"
                                 :name   "list"}})
 
-(def period {:id              :period
+(def period-screen {:id              :period
              :label           "period"
              :screen          period-form-screen/root
              :in-drawer       false
              :position-drawer nil
              :icon            nil})
 
-(def periods {:id                  :periods
+(def periods-screen {:id                  :periods
               :label           "periods"
               :screen          period-list-screen/root
               :in-drawer       true
@@ -42,14 +42,14 @@
               :icon            {:family "Entypo"
                                 :name   "time-slot"}})
 
-(def template {:id              :template
+(def template-screen {:id              :template
                :label           "template"
                :screen          template-form-screen/root
                :in-drawer       false
                :position-drawer nil
                :icon            nil})
 
-(def templates {:id              :templates
+(def templates-screen {:id              :templates
                 :label           "templates"
                 :screen          template-list-screen/root
                 :in-drawer       true
@@ -57,14 +57,14 @@
                 :icon            {:family "FontAwesome"
                                   :name   "wpforms"}})
 
-(def _filter {:id              :filter
+(def filter-screen {:id              :filter
              :label           "filter"
              :screen          filter-form-screen/root
              :in-drawer       false
              :position-drawer nil
              :icon            nil})
 
-(def _filters {:id             :filters
+(def filters-screen {:id             :filters
               :label           "filters"
               :screen          filter-list-screen/root
               :in-drawer       true
@@ -72,7 +72,7 @@
               :icon            {:family "FontAwesome"
                                 :name   "filter"}})
 
-(def day {:id              :day
+(def day-screen {:id              :day
           :label           "day"
           :screen          day-screen/root
           :in-drawer       true
@@ -80,7 +80,7 @@
           :icon            {:family "FontAwesome"
                             :name   "columns"}})
 
-(def calendar {:id              :calendar
+(def calendar-screen {:id              :calendar
                :label           "calendar"
                :screen          calendar-screen/root
                :in-drawer       true
@@ -88,7 +88,7 @@
                :icon            {:family "Entypo"
                                  :name   "calendar"}})
 
-(def report {:id              :report
+(def report-screen {:id              :report
              :label           "report"
              :screen          report-screen/root
              :in-drawer       true
@@ -96,7 +96,7 @@
              :icon            {:family "Entypo"
                                :name   "bar-graph"}})
 
-(def queue {:id              :queue
+(def queue-screen {:id              :queue
             :label           "queue"
             :screen          queue-screen/root
             :in-drawer       true
@@ -105,15 +105,15 @@
                               :name   "queue"}})
 
 ;; https://expo.github.io/vector-icons/
-(def screens-map [bucket
-                  buckets
-                  period
-                  periods
-                  template
-                  templates
-                  _filter
-                  _filters
-                  day
-                  calendar
-                  report
-                  queue])
+(def screens-map [bucket-screen
+                  buckets-screen
+                  period-screen
+                  periods-screen
+                  template-screen
+                  templates-screen
+                  filter-screen
+                  filters-screen
+                  day-screen
+                  calendar-screen
+                  report-screen
+                  queue-screen])
