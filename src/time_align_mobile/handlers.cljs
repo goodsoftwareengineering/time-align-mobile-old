@@ -316,6 +316,7 @@
         start          (if (some? start-relative)
                          (new js/Date
                               (.getFullYear now)
+                              (.getMonth now)
                               (.getDate now)
                               (:hour start-relative)
                               (:minute start-relative))
