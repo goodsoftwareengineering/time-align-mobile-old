@@ -52,6 +52,8 @@
                              (reset! bucket-modal-visible false)
                              ;; passing dispatch the parent bucket id
                              ;; for the period about to be created
-                             (dispatch [:add-new-template (:id item)]))})))))}]]]
+                             (dispatch [:add-new-template {:bucket-id (:id item)
+                                                           :id (random-uuid)
+                                                           :now (js/Date.)}]))})))))}]]]
 
      [list-buttons/root #(reset! bucket-modal-visible true)]]))

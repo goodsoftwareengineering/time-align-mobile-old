@@ -47,4 +47,5 @@
                                               "No label")]
                                       [text {:style {:color "grey"}}
                                        (str "id: " id)]]]])))}]
-     [list-buttons/root #(dispatch [:add-new-filter])]]))
+     [list-buttons/root #(dispatch [:add-new-filter {:id (random-uuid)
+                                                     :now (js/Date.)}])]]))

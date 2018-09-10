@@ -270,51 +270,46 @@
 (defn update-active-filter [db [_ id]]
   (assoc db :active-filter id))
 
-(defn add-new-bucket [{:keys [db]} [_ _]]
-  (let [id (random-uuid)]
-    {:db (setval [:buckets
-                  sp/NIL->VECTOR
-                  sp/AFTER-ELEM]
-                 {:id          id
-                  :label       ""
-                  :created     (new js/Date)
-                  :last-edited (new js/Date)
-                  :data        {}
-                  :color       "#ff1122"
-                  :templates   nil
-                  :periods     nil}
-                 db)
-     :dispatch [:navigate-to {:current-screen :bucket
-                              :params {:bucket-id id}}]}))
+(defn add-new-bucket [{:keys [db]} [_ {:keys [id now]}]]
+  {:db (setval [:buckets
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id          id
+                :label       ""
+                :created     now
+                :last-edited now
+                :data        {}
+                :color       "#ff1122"
+                :templates   nil
+                :periods     nil}
+               db)
+   :dispatch [:navigate-to {:current-screen :bucket
+                            :params {:bucket-id id}}]})
 
-(defn add-new-period [{:keys [db]} [_ bucket-id]]
-  (let [id (random-uuid)
-        now (new js/Date)]
-    {:db (setval [:buckets sp/ALL
-                  #(= (:id %) bucket-id)
-                  :periods
-                  sp/NIL->VECTOR
-                  sp/AFTER-ELEM]
-                 {:id id
-                  :created now
-                  :last-edited now
-                  :label ""
-                  :data {}
-                  :planned true
-                  :start now
-                  :stop (new js/Date (+ (.valueOf now) (* 1000 60)))}
-                 db)
-     :dispatch [:navigate-to {:current-screen :period
-                              :params {:period-id id}}]}))
+(defn add-new-period [{:keys [db]} [_ {:keys [bucket-id id now]}]]
+  {:db (setval [:buckets sp/ALL
+                #(= (:id %) bucket-id)
+                :periods
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id id
+                :created now
+                :last-edited now
+                :label ""
+                :data {}
+                :planned true
+                :start now
+                :stop (new js/Date (+ (.valueOf now) (* 1000 60)))}
+               db)
+   :dispatch [:navigate-to {:current-screen :period
+                            :params {:period-id id}}]})
 
-(defn add-template-period [{:keys [db]} [_ template]]
+(defn add-template-period [{:keys [db]} [_ {:keys [template id now]}]]
   ;; template needs bucket-id
-  (let [id             (random-uuid)
-        new-data       (merge (:data template)
+  (let [new-data       (merge (:data template)
                               {:template-id (:id template)})
         start-relative (:start template)
         duration       (:duration template)
-        now            (new js/Date)
         start          (if (some? start-relative)
                          (new js/Date
                               (.getFullYear now)
@@ -329,6 +324,8 @@
         period         (merge template
                               {:id    id
                                :data  new-data
+                               :created now
+                               :last-edited now
                                :start start
                                :stop  stop})
         period-clean   (select-keys period (keys period-data-spec))]
@@ -343,44 +340,41 @@
      :dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id id}}]}))
 
-(defn add-new-template [{:keys [db]} [_ bucket-id]]
-  (let [id  (random-uuid)
-        now (new js/Date)]
-    {:db       (setval [:buckets sp/ALL
-                        #(= (:id %) bucket-id)
-                        :templates
-                        sp/NIL->VECTOR
-                        sp/AFTER-ELEM]
-                       {:id          id
-                        :created     now
-                        :last-edited now
-                        :label       ""
-                        :data        {}
-                        :planned     true
-                        :start       {:hour   (.getHours now)
-                                      :minute (.getMinutes now)}
-                        :stop        {:hour   (.getHours now)
-                                      :minute (+ 5 (.getMinutes now))}
-                        :duration    nil}
-                       db)
-     :dispatch [:navigate-to {:current-screen :template
-                              :params         {:template-id id}}]}))
+(defn add-new-template [{:keys [db]} [_ {:keys [bucket-id id now]}]]
+  {:db       (setval [:buckets sp/ALL
+                      #(= (:id %) bucket-id)
+                      :templates
+                      sp/NIL->VECTOR
+                      sp/AFTER-ELEM]
+                     {:id          id
+                      :created     now
+                      :last-edited now
+                      :label       ""
+                      :data        {}
+                      :planned     true
+                      :start       {:hour   (.getHours now)
+                                    :minute (.getMinutes now)}
+                      :stop        {:hour   (.getHours now)
+                                    :minute (+ 5 (.getMinutes now))}
+                      :duration    nil}
+                     db)
+   :dispatch [:navigate-to {:current-screen :template
+                            :params         {:template-id id}}]})
 
-(defn add-new-filter [{:keys [db]} [_ _]]
-  (let [id (random-uuid)]
-    {:db (setval [:filters
-                  sp/NIL->VECTOR
-                  sp/AFTER-ELEM]
-                 {:id          id
-                  :label       ""
-                  :created     (new js/Date)
-                  :last-edited (new js/Date)
-                  :compatible []
-                  :sort nil
-                  :predicates []}
-                 db)
-     :dispatch [:navigate-to {:current-screen :filter
-                              :params {:filter-id id}}]}))
+(defn add-new-filter [{:keys [db]} [_ {:keys [id now]}]]
+  {:db (setval [:filters
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id          id
+                :label       ""
+                :created     now
+                :last-edited now
+                :compatible []
+                :sort nil
+                :predicates []}
+               db)
+   :dispatch [:navigate-to {:current-screen :filter
+                            :params {:filter-id id}}]})
 
 (defn delete-bucket [{:keys [db]} [_ id]]
   {:db (->> db

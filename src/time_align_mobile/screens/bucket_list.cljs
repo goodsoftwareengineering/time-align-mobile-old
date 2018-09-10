@@ -29,4 +29,5 @@
                            [:navigate-to
                             {:current-screen :bucket
                              :params         {:bucket-id (:id item)}}])})))))}]
-     [list-buttons/root #(dispatch [:add-new-bucket])]]))
+     [list-buttons/root #(dispatch [:add-new-bucket {:id (random-uuid)
+                                                     :now (new js/Date)}])]]))
