@@ -53,28 +53,53 @@
          (handlers/load-bucket-form {:buckets [{:id 12345
                                                 :data {}}]} [[] 12345]))))
 
-(deftest load-period-form )
-(deftest load-filter-form )
-(deftest load-template-form )
+(deftest load-period-form
+  (let [db {:buckets [{:id 12345
+                       :color "#112233"
+                       :label "bucket label"
+                       :periods [{:id 6789
+                                  :data {}}]}]}]
+    (is (= (merge db {:forms {:period-form {:id 6789
+                                            :data "{}\n"
+                                            :bucket-id 12345
+                                            :bucket-color "#112233"
+                                            :bucket-label "bucket label"}}})
+           (handlers/load-period-form db [:whatever 6789])))))
 
+(deftest load-filter-form
+  (let [db {:filters [{:id 12345 :predicates {} :sort {}}]}]
+    (is (= (merge db {:forms {:filter-form {:id 12345
+                                            :predicates "{}\n"
+                                            :sort "{}\n"}}})
+           (handlers/load-filter-form db [:whatever 12345])))))
 
-(deftest add-new-bucket )
+(deftest load-template-form
+  (let [db {:buckets [{:id 12345
+                       :color "blue"
+                       :label "label"
+                       :templates [{:id 67890
+                                    :data {}}]}]}]
+    (is = (merge db {:forms {:template-forms {:id 67890
+                                              :bucket-id 12345
+                                              :bucket-color "blue"
+                                              :bucket-label "label"
+                                              :data "{}\n"}}}))))
+
+;; (deftest add-new-bucket
+;;   (let [db ]))
 (deftest add-new-period )
 (deftest add-new-filter )
 (deftest add-new-template )
 (deftest add-template-period )
-
 (deftest update-bucket-form )
 (deftest update-period-form )
 (deftest update-filter-form )
 (deftest update-template-form )
 (deftest update-active-filter )
-
 (deftest delete-bucket )
 (deftest delete-period )
 (deftest delete-filter )
 (deftest delete-template )
-
 (deftest save-bucket-form )
 (deftest save-period-form )
 (deftest save-filter-form )
