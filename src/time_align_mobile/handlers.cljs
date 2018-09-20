@@ -129,6 +129,7 @@
       (let [new-data          (read-string (:data period-form))
             keys-wanted       (->> period-form
                                    (keys)
+                                   ;; TODO use spec to get only keys wanted
                                    (remove #(or (= :bucket-id %)
                                                 (= :bucket-label %)
                                                 (= :bucket-color %))))
@@ -147,6 +148,7 @@
                                        #(= (:id %) (:id old-period))]
                                       sp/NONE db)
             new-db            (setval [:buckets sp/ALL
+                                       ;; TODO should the bucket-id come from period form?
                                        #(= (:id %) (:bucket-id period-form))
                                        :periods
                                        sp/NIL->VECTOR
@@ -306,6 +308,8 @@
 
 (defn add-template-period [{:keys [db]} [_ {:keys [template id now]}]]
   ;; template needs bucket-id
+  ;; TODO refactor so that this function takes in a template id (maybe bucket id)
+  ;; and then queries the db for the template
   (let [new-data       (merge (:data template)
                               {:template-id (:id template)})
         start-relative (:start template)
