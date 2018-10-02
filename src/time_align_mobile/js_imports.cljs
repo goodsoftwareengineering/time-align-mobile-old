@@ -17,6 +17,11 @@
 (def en (r/adapt-react-class entypo))
 (def mi (r/adapt-react-class material-icons))
 
+(def pan-responder (.-PanResponder ReactNative))
+(def Animated (.-Animated ReactNative))
+(def animated-xy (.-ValueXY Animated))
+(def animated-view (r/adapt-react-class (.-View Animated)))
+(def dimensions (.-Dimensions ReactNative))
 (def text (r/adapt-react-class (.-Text ReactNative)))
 (def view (r/adapt-react-class (.-View ReactNative)))
 (def image (r/adapt-react-class (.-Image ReactNative)))
@@ -59,7 +64,6 @@
 (def date-time-picker (r/adapt-react-class DatePicker))
 
 (def moment-tz (.-tz (js/require "moment-timezone")))
-
 
 (defn get-default-timezone []
   (.guess moment-tz))

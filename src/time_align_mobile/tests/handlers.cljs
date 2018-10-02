@@ -323,3 +323,5 @@
                                           :buckets [{:id 67890
                                                      :templates [{:id 12345}]}]}}
                                     [:whatever (js/Date. 2018 0 1)]))))
+
+(t/run-tests)
