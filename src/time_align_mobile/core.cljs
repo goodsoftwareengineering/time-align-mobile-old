@@ -25,16 +25,17 @@
   (.alert Alert title))
 
 (defn drawer-list []
-  [view {:style {:flex 1 :justify-content "center" :align-items "center"}}
+  [view {:style {:flex 1 :justify-content "center" :align-items "flex-start"}}
    (->> nav/screens-map
         (filter #(:in-drawer %))
         (sort-by #(:position-drawer %))
         (map (fn [{:keys [icon label id]}]
                (let [{:keys [family name]} icon
                      params                {:name  name
-                                            :style {:margin-right 25}
+                                            :style {:margin-right 25
+                                                    :width 32}
                                             :size  32}
-                     label-element         [text label]
+                     label-element         [text  label]
                      icon-element          (case family
                                              "EvilIcons"     [ei params]
                                              "FontAwesome"   [fa params]
@@ -44,9 +45,8 @@
 
                  [touchable-highlight {:key      (str "icon-" name)
                                        :on-press (fn [_]
-                                                   (println {:current-screen id
-                                                             :params         nil})
                                                    ;; TODO remove bucket id params when done testing
+
                                                    (dispatch
                                                     [:navigate-to
                                                      {:current-screen id

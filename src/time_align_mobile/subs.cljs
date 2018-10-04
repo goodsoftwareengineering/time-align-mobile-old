@@ -64,6 +64,7 @@
             new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
             altered-period (merge period {:data new-data
                                           :bucket-id (:id sub-bucket)
+                                          :bucket-color (:color sub-bucket)
                                           :bucket-label (:label sub-bucket)})
             different-keys (->> (clojure.data/diff period-form altered-period)
                                 (first))]
@@ -98,16 +99,17 @@
   (let [template-form (get-in db [:forms :template-form])]
     (if (some? (:id template-form))
       (let [[sub-bucket template] (select-one [:buckets sp/ALL
-                                             (sp/collect-one (sp/submap [:id :color :label]))
-                                             :templates sp/ALL #(= (:id %) (:id template-form))]
-                                            db)
+                                               (sp/collect-one (sp/submap [:id :color :label]))
+                                               :templates sp/ALL #(= (:id %) (:id template-form))]
+                                              db)
             ;; data needs to be coerced to compare to form
-            new-data (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
-            altered-template (merge template {:data new-data
-                                          :bucket-id (:id sub-bucket)
-                                          :bucket-label (:label sub-bucket)})
-            different-keys (->> (clojure.data/diff template-form altered-template)
-                                (first))]
+            new-data              (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
+            altered-template      (merge template {:data         new-data
+                                                   :bucket-id    (:id sub-bucket)
+                                                   :bucket-color (:color sub-bucket)
+                                                   :bucket-label (:label sub-bucket)})
+            different-keys        (->> (clojure.data/diff template-form altered-template)
+                                       (first))]
         (if (nil? different-keys)
           {} ;; empty map if no changes
           different-keys))
@@ -142,7 +144,9 @@
                                             db)
             ;; data needs to be coerced to compare to form
             new-predicates (with-out-str (zprint (:predicates filter) {:map {:force-nl? true}}))
-            altered-filter (merge filter {:predicates new-predicates})
+            new-sort (with-out-str (zprint (:sort filter) {:map {:force-nl? true}}))
+            altered-filter (merge filter {:predicates new-predicates
+                                          :sort new-sort})
 
             different-keys (->> (clojure.data/diff filter-form altered-filter)
                                 (first))]
@@ -151,6 +155,22 @@
           different-keys))
       ;; return an empty map if there is no loaded filter in the form
       {})))
+
+(defn get-filters [db _]
+  (select [:filters sp/ALL] db))
+
+(defn get-active-filter [db _]
+  (let  [id (:active-filter db)]
+    (select-one [:filters sp/ALL #(= (:id %) id)] db)))
+
+(defn get-periods [db _]
+  (->> (select [:buckets sp/ALL
+                (sp/collect-one (sp/submap [:id :color :label]))
+                :periods sp/ALL] db)
+       (map (fn [[bucket period]]
+              (merge period {:bucket-id    (:id bucket)
+                             :bucket-label (:label bucket)
+                             :color        (:color bucket)})))))
 
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
@@ -163,5 +183,7 @@
 (reg-sub :get-template-form-changes get-template-form-changes)
 (reg-sub :get-filter-form get-filter-form)
 (reg-sub :get-filter-form-changes get-filter-form-changes)
-
+(reg-sub :get-filters get-filters)
+(reg-sub :get-active-filter get-active-filter)
+(reg-sub :get-periods get-periods)
 

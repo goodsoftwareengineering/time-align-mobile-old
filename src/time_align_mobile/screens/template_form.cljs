@@ -31,8 +31,6 @@
 
 (def start-modal-visible (r/atom false))
 
-(def stop-modal-visible (r/atom false))
-
 (defn start-comp [template-form changes]
   (let [{:keys [hour minute]} (:start @template-form)
         std                   (new js/Date)
@@ -55,27 +53,70 @@
                                       (reset! start-modal-visible false))
                         :on-cancel  #(reset! start-modal-visible false)}]]))
 
-(defn stop-comp [template-form changes]
-  (let [{:keys [hour minute]} (:stop @template-form)
-        std                   (new js/Date)
-        stop-time            (new js/Date
-                                   (.getFullYear std)
-                                   (.getMonth std)
-                                   (.getDate std)
-                                   hour
-                                   minute)]
+(defn duration-comp [template-form changes]
+  (let [duration (:duration @template-form) ;; in ms
+        hours    (quot duration (* 60 60 1000))
+        minutes  (quot (- duration
+                          (* hours 60 60 1000))
+                       (* 60 1000))
+        seconds  (quot (- duration
+                          (* hours 60 60 1000)
+                          (* minutes 60 1000))
+                       1000)]
+
     [view {:style {:flex-direction "row"}}
-     [text {:style (field-label-changeable-style changes :stop)} ":stop"]
-     [touchable-highlight {:on-press #(reset! stop-modal-visible true)}
-      [text (format-time stop-time)]]
-     [date-time-picker {:is-visible @stop-modal-visible
-                        :date       stop-time
-                        :mode       "time"
-                        :on-confirm (fn [d]
-                                      (dispatch [:update-template-form {:stop {:hour   (.getHours d)
-                                                                                :minute (.getMinutes d)}}])
-                                      (reset! stop-modal-visible false))
-                        :on-cancel  #(reset! stop-modal-visible false)}]]))
+     [text {:style (field-label-changeable-style changes :duration)} ":duration"]
+     [view {:style {:flex-direction "column"}}
+      [view {:style {:flex-direction "row"}}
+       ;; hours
+       [text {:style {:color "grey" :margin-right 10}} "hours"]
+       [text-input {:default-value  (.toString hours)
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [hours (js/parseFloat val)]
+                                        (if (not (js/isNaN hours)) 
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]
+
+      ;; minutes
+      [view {:style {:flex-direction "row"}}
+       [text {:style {:color "grey" :margin-right 10}} "minutes"]
+       [text-input {:default-value  (.toString minutes) 
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [minutes (js/parseFloat val)]
+                                        (if (not (js/isNaN minutes))
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]
+
+      ;; seconds
+      [view {:style {:flex-direction "row"}}
+       [text {:style {:color "grey" :margin-right 10}} "seconds"]
+       [text-input {:default-value  (.toString seconds)
+                    :style          {:height 40
+                                     :width  200}
+                    :on-change-text (fn [val]
+                                      (let [seconds (js/parseFloat val)]
+                                        (if (not (js/isNaN seconds))
+                                          (dispatch [:update-template-form
+                                                     {:duration
+                                                      (+ (* hours 60 60 1000)
+                                                         (* minutes 60 1000)
+                                                         (* seconds 1000))}])
+                                          ;; TODO should this be a noop?
+                                          (println "not a number...."))))}]]]]))
 
 (defn root [params]
   (let [template-form            (subscribe [:get-template-form])
@@ -95,6 +136,8 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Template form"]
+
       [parent-id-comp template-form changes]
 
       [parent-picker-comp template-form changes buckets :update-template-form]
@@ -111,10 +154,12 @@
 
       [start-comp template-form changes]
 
-      [stop-comp template-form changes]
+      [duration-comp template-form changes]
 
       [data-comp template-form changes update-structured-data]
 
       [form-buttons/root
-       #(dispatch [:save-template-form (new js/Date)])
-       #(dispatch [:load-template-form (:id @template-form)])]]]))
+       {:changed        (> (count @changes) 0)
+        :save-changes   #(dispatch [:save-template-form (new js/Date)])
+        :cancel-changes #(dispatch [:load-template-form (:id @template-form)])
+        :delete-item    #(dispatch [:delete-template (:id @template-form)])}]]]))

@@ -47,7 +47,7 @@
                    :background-color (:color @bucket-form)}}]]])
 
 (defn root [params]
-  (let [bucket-form              (subscribe [:get-bucket-form])
+  (let [bucket-form            (subscribe [:get-bucket-form])
         update-structured-data (fn [new-data]
                                  (dispatch
                                   [:update-bucket-form {:data new-data}]))
@@ -64,6 +64,7 @@
                     :padding-top     50
                     :padding-left    10}}
 
+      [text "Bucket form"]
       [id-comp bucket-form]
 
       [created-comp bucket-form]
@@ -77,19 +78,21 @@
       [label-comp bucket-form changes :update-bucket-form]
 
       [modal {:animation-type "slide"
-              :transparent false
-              :visible @color-modal-visible}
+              :transparent    false
+              :visible        @color-modal-visible}
        [view {:style {:flex 1}}
         [color-picker {:on-color-selected (fn [color]
                                             (dispatch [:update-bucket-form {:color color}])
                                             (reset! color-modal-visible false))
-                       :old-color (:color @bucket-form)
-                       :style {:flex 1}}]]]
+                       :old-color         (:color @bucket-form)
+                       :style             {:flex 1}}]]]
 
       [color-comp bucket-form changes]
 
       [data-comp bucket-form changes update-structured-data]
 
       [form-buttons/root
-       #(dispatch [:save-bucket-form (new js/Date)])
-       #(dispatch [:load-bucket-form (:id @bucket-form)])]]]))
+       {:changed        (> (count @changes) 0)
+        :save-changes   #(dispatch [:save-bucket-form (new js/Date)])
+        :cancel-changes #(dispatch [:load-bucket-form (:id @bucket-form)])
+        :delete-item    #(dispatch [:delete-bucket (:id @bucket-form)])}]]]))

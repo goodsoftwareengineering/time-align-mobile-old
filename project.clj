@@ -12,7 +12,8 @@
                  [metosin/spec-tools "0.6.1"]
                  [org.clojure/test.check "0.9.0"] ;; TODO: move to dev deps when we don't need generation of data
                  [zprint "0.4.9"]
-                 [com.rpl/specter "1.1.1"]]
+                 [com.rpl/specter "1.1.1"]
+                 [funcool/promesa "1.9.0"]]
             :plugins [[lein-cljsbuild "1.1.4"]
                       [lein-figwheel "0.5.14"]]
             :clean-targets ["target/" "main.js"]

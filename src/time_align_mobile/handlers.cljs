@@ -4,7 +4,7 @@
     [zprint.core :refer [zprint]]
     [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
-    [time-align-mobile.db :as db :refer [app-db app-db-spec]]
+    [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
     [time-align-mobile.js-imports :refer [alert]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
@@ -52,9 +52,15 @@
 
 ;; -- Handlers --------------------------------------------------------------
 
+(defn initialize-db [_ _] app-db)
+
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
-  (merge {:db (assoc-in db [:navigation] {:current-screen current-screen
-                                          :params         params})}
+  (merge {:db (-> db
+                  (assoc-in [:navigation] {:current-screen current-screen
+                                           :params         params})
+                  ;; prevents using incompatible filters
+                  (assoc-in [:active-filter] nil))}
+
          (when (= current-screen :bucket)
            {:dispatch [:load-bucket-form (:bucket-id params)]})
          (when (= current-screen :period)
@@ -123,6 +129,7 @@
       (let [new-data          (read-string (:data period-form))
             keys-wanted       (->> period-form
                                    (keys)
+                                   ;; TODO use spec to get only keys wanted
                                    (remove #(or (= :bucket-id %)
                                                 (= :bucket-label %)
                                                 (= :bucket-color %))))
@@ -141,6 +148,7 @@
                                        #(= (:id %) (:id old-period))]
                                       sp/NONE db)
             new-db            (setval [:buckets sp/ALL
+                                       ;; TODO should the bucket-id come from period form?
                                        #(= (:id %) (:bucket-id period-form))
                                        :periods
                                        sp/NIL->VECTOR
@@ -226,6 +234,9 @@
         filter-form (merge filter
                            {:predicates (with-out-str
                                           (zprint (:predicates filter)
+                                                  {:map {:force-nl? true}}))}
+                           {:sort (with-out-str
+                                          (zprint (:sort filter)
                                                   {:map {:force-nl? true}}))})]
     (assoc-in db [:forms :filter-form] filter-form)))
 
@@ -236,9 +247,11 @@
   (let [filter-form (get-in db [:forms :filter-form])]
     (try
       (let [new-predicates {:predicates (read-string (:predicates filter-form))}
+            new-sort {:sort (read-string (:sort filter-form))}
             new-filter        (-> filter-form
                                   (merge {:last-edited date-time}
-                                         new-predicates))
+                                         new-predicates
+                                         new-sort))
             old-filter        (select-one [:filters sp/ALL
                                            #(= (:id %) (:id new-filter))] db)
             removed-filter-db (setval [:filters sp/ALL
@@ -256,8 +269,146 @@
         {:db    db
          :alert (str "Failed predicate read validation " e)}))))
 
+(defn update-active-filter [db [_ id]]
+  (assoc db :active-filter id))
 
-(reg-event-db :initialize-db [validate-spec] (fn [_ _] app-db))
+(defn add-new-bucket [{:keys [db]} [_ {:keys [id now]}]]
+  {:db (setval [:buckets
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id          id
+                :label       ""
+                :created     now
+                :last-edited now
+                :data        {}
+                :color       "#ff1122"
+                :templates   nil
+                :periods     nil}
+               db)
+   :dispatch [:navigate-to {:current-screen :bucket
+                            :params {:bucket-id id}}]})
+
+(defn add-new-period [{:keys [db]} [_ {:keys [bucket-id id now]}]]
+  {:db (setval [:buckets sp/ALL
+                #(= (:id %) bucket-id)
+                :periods
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id id
+                :created now
+                :last-edited now
+                :label ""
+                :data {}
+                :planned true
+                :start now
+                :stop (new js/Date (+ (.valueOf now) (* 1000 60)))}
+               db)
+   :dispatch [:navigate-to {:current-screen :period
+                            :params {:period-id id}}]})
+
+(defn add-template-period [{:keys [db]} [_ {:keys [template id now]}]]
+  ;; template needs bucket-id
+  ;; TODO refactor so that this function takes in a template id (maybe bucket id)
+  ;; and then queries the db for the template
+  (let [new-data       (merge (:data template)
+                              {:template-id (:id template)})
+        start-relative (:start template)
+        duration       (:duration template)
+        start          (if (some? start-relative)
+                         (new js/Date
+                              (.getFullYear now)
+                              (.getMonth now)
+                              (.getDate now)
+                              (:hour start-relative)
+                              (:minute start-relative))
+                         now)
+        stop           (if (some? duration)
+                         (new js/Date (+ (.valueOf start) duration))
+                         (new js/Date (+ (.valueOf start) (* 1000 60))))
+        period         (merge template
+                              {:id    id
+                               :data  new-data
+                               :created now
+                               :last-edited now
+                               :start start
+                               :stop  stop})
+        period-clean   (select-keys period (keys period-data-spec))]
+
+    {:db       (setval [:buckets sp/ALL
+                        #(= (:id %) (:bucket-id template))
+                        :periods
+                        sp/NIL->VECTOR
+                        sp/AFTER-ELEM]
+                       period-clean
+                       db)
+     :dispatch [:navigate-to {:current-screen :period
+                              :params         {:period-id id}}]}))
+
+(defn add-new-template [{:keys [db]} [_ {:keys [bucket-id id now]}]]
+  {:db       (setval [:buckets sp/ALL
+                      #(= (:id %) bucket-id)
+                      :templates
+                      sp/NIL->VECTOR
+                      sp/AFTER-ELEM]
+                     {:id          id
+                      :created     now
+                      :last-edited now
+                      :label       ""
+                      :data        {}
+                      :planned     true
+                      :start       {:hour   (.getHours now)
+                                    :minute (.getMinutes now)}
+                      :stop        {:hour   (.getHours now)
+                                    :minute (+ 5 (.getMinutes now))}
+                      :duration    nil}
+                     db)
+   :dispatch [:navigate-to {:current-screen :template
+                            :params         {:template-id id}}]})
+
+(defn add-new-filter [{:keys [db]} [_ {:keys [id now]}]]
+  {:db (setval [:filters
+                sp/NIL->VECTOR
+                sp/AFTER-ELEM]
+               {:id          id
+                :label       ""
+                :created     now
+                :last-edited now
+                :compatible []
+                :sort nil
+                :predicates []}
+               db)
+   :dispatch [:navigate-to {:current-screen :filter
+                            :params {:filter-id id}}]})
+
+(defn delete-bucket [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :bucket-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :buckets}]})
+
+(defn delete-period [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL :periods sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :period-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :periods}]})
+
+(defn delete-template [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:buckets sp/ALL :templates sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :template-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :templates}]})
+
+(defn delete-filter [{:keys [db]} [_ id]]
+  {:db (->> db
+            (setval [:filters sp/ALL #(= id (:id %))] sp/NONE)
+            (setval [:forms :filter-form] nil))
+   ;; TODO pop stack when possible
+   :dispatch [:navigate-to {:current-screen :filters}]})
+
+(reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
 (reg-event-db :update-bucket-form [validate-spec] update-bucket-form)
@@ -271,6 +422,13 @@
 (reg-event-db :load-filter-form [validate-spec] load-filter-form)
 (reg-event-db :update-filter-form [validate-spec] update-filter-form)
 (reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
-
-
-
+(reg-event-db :update-active-filter [validate-spec] update-active-filter)
+(reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
+(reg-event-fx :add-new-period [validate-spec] add-new-period)
+(reg-event-fx :add-template-period [validate-spec] add-template-period)
+(reg-event-fx :add-new-template [validate-spec] add-new-template)
+(reg-event-fx :add-new-filter [validate-spec] add-new-filter)
+(reg-event-fx :delete-bucket [validate-spec] delete-bucket)
+(reg-event-fx :delete-period [validate-spec] delete-period)
+(reg-event-fx :delete-template [validate-spec] delete-template)
+(reg-event-fx :delete-filter [validate-spec] delete-filter)
