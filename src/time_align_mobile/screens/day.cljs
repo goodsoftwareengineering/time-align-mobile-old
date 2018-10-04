@@ -9,13 +9,23 @@
 
 (defn root [params]
   (let [dimensions (r/atom {:width nil :height nil})
-        pan        (r/atom (new animated-xy))]
+        pan        (r/atom nil)]
     (r/create-class
      {:component-will-mount
-      (fn [] (println "I will mount"))
+      (fn []
+        (println "Going to mount...")
+        (let [pr (.create pan-responder (clj->js {:onStartShouldSetPanResponder #(do (println "onStartShouldSetPanResponder called") true)
+                                                  :onMoveShouldSetPanResponder #(do (println "onMoveShouldSetPanResponder called") true)
+
+                                                  :onPanResponderGrant #(println "onPanResponderGrant called..")
+                                                  :onPanResponderMove #(println "onPanResponderMove called..")
+                                                  :onPanResponderRelease #(println "onPanResponderRelease called..")
+                                                  :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
+          (reset! pan pr)))
 
       :reagent-render
       (fn [params]
+        (println "in RENDER: pan Handlers: " (js->clj (.-panHandlers @pan)))
         [view {:style     {:flex 1 :justify-content "center" :align-items "center"}
                :on-layout (fn [event]
                             (let [layout (-> event
@@ -45,7 +55,8 @@
                                              (- 25))
                        :width            50
                        :height           50}}
-           [view {:style {:width "100%"
-                          :height "100%"
-                          :border-radius    10
-                          :background-color "green"}}]]]])})))
+           [view (merge (js->clj (.-panHandlers @pan))
+                        {:style {:width "100%"
+                                 :height "100%"
+                                 :border-radius    10
+                                 :background-color "orange"}})]]]])})))
