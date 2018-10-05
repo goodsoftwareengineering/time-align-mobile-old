@@ -47,10 +47,6 @@
 
 (def text-input (r/adapt-react-class (.-TextInput ReactNative)))
 
-;; (def date-library (js/require "react-native-modal-datetime-picker"))
-;; (def date-picker-raw-react (.-DateTimePicker date-library))
-;; (def date-time-picker (r/adapt-react-class date-picker-raw-react))
-
 (def kasv (js/require "react-native-keyboard-aware-scroll-view"))
 (def keyboard-aware-scroll-view (r/adapt-react-class (.-KeyboardAwareScrollView kasv)))
 (def platform (.-Platform ReactNative))
