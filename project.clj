@@ -6,8 +6,8 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.238"]
                  [binaryage/oops "0.5.8"]
-                           [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server cljsjs/create-react-class]]
-                           [re-frame "0.9.3"]
+                 [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server cljsjs/create-react-class]]
+                 [re-frame "0.9.3"]
                  [react-native-externs "0.1.0"]
                  [metosin/spec-tools "0.6.1"]
                  [org.clojure/test.check "0.9.0"] ;; TODO: move to dev deps when we don't need generation of data
