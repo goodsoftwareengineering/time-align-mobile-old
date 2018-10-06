@@ -9,7 +9,7 @@
                  [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server cljsjs/create-react-class]]
                  [re-frame "0.9.3"]
                  [react-native-externs "0.1.0"]
-                 [metosin/spec-tools "0.6.1"]
+                 [metosin/spec-tools "0.7.2"]
                  [org.clojure/test.check "0.9.0"] ;; TODO: move to dev deps when we don't need generation of data
                  [zprint "0.4.9"]
                  [com.rpl/specter "1.1.1"]
@@ -40,10 +40,10 @@
                                                     :compiler     {:output-to          "main.js"
                                                                    :main               "env.expo.main"
                                                                    :output-dir         "target/expo"
+                                                                   :optimizations      :advanced
                                                                    :static-fns         true
                                                                    :externs            ["js/externs.js"]
                                                                    :infer-externs      true
                                                                    :parallel-build     true
                                                                    :optimize-constants true
-                                                                   :optimizations      :advanced
                                                                    :closure-defines    {"goog.DEBUG" false}}}]}}})
