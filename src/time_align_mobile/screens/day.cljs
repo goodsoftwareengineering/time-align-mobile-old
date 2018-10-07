@@ -11,9 +11,10 @@
             [reagent.core :as r]))
 
 (defn root [params]
-  (let [dimensions (r/atom {:width nil :height nil})
-        y-pos      (r/atom 0)
-        pan        (r/atom nil)]
+  (let [dimensions     (r/atom {:width nil :height nil})
+        top-bar-height 25
+        y-pos          (r/atom 0)
+        pan            (r/atom nil)]
     (r/create-class
      {:component-will-mount
       (fn []
@@ -27,7 +28,8 @@
                                                               ;; (println (str "onPanResponderMove called.. " (js->clj %2)))
                                                               (println (str "onPanResponderMove called.. " (get (js->clj %2) "moveY")))
                                                               ;; (swap! y-pos (fn [old] (+ old (get (js->clj %2) "moveY"))))
-                                                              (reset! y-pos (get (js->clj %2) "moveY")))
+                                                              (reset! y-pos (- (get (js->clj %2) "moveY")
+                                                                               top-bar-height)))
                                   :onPanResponderRelease   #(println "onPanResponderRelease called..")
                                   :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
           (reset! pan pr)))
@@ -43,8 +45,15 @@
                                                (js->clj :keywordize-keys true))]
                                 (if (nil? (:height dimensions))
                                   (reset! dimensions {:width  (:width layout)
-                                                      :height (:height layout)}))))}
+                                                      :height (- (:height layout) top-bar-height)}))))}
            [status-bar {:hidden true}]
+           [view {:style {:height top-bar-height
+                          :width (:width @dimensions)
+                          :background-color "green"
+                          :justify-content "center"
+                          :align-items "center"}}
+            [text {:style {:justify-content "center"
+                           :align-items "center"}} (str (js/Date.))]]
 
            [view {:style {:height           (:height @dimensions)
                           :width            (:width @dimensions)
