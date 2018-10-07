@@ -41,6 +41,7 @@
                                                                    :main               "env.expo.main"
                                                                    :output-dir         "target/expo"
                                                                    :optimizations      :advanced
+                                                                   ;; :pseudo-names       true
                                                                    :static-fns         true
                                                                    :externs            ["js/externs.js"]
                                                                    :infer-externs      true

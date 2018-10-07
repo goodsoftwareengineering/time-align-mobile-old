@@ -75,7 +75,8 @@
 (defn app-root []
   (let [navigation (subscribe [:get-navigation])]
     (fn []
-      [view {:style {:flex 1}}
+      [view {:style {:flex 1
+                     :background-color "#ffffff"}}
        [drawer-layout
         {:drawer-width 200
          :drawer-position "left"
