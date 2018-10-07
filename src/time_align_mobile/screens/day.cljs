@@ -9,6 +9,8 @@
                                                   pan-responder]]
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
+            [goog.string :as gstring]
+            [goog.string.format]
             [reagent.core :as r]))
 
 (def day-ms
@@ -32,21 +34,22 @@
 
                             :onPanResponderGrant     #(println "onPanResponderGrant called..")
                             :onPanResponderMove      #(do
-                                                        (let [new-y (- (get (js->clj %2) "moveY")
-                                                                       top-bar-height)
-                                                              y-ms (-> new-y
-                                                                         (/ (:height @dimensions))
-                                                                         (* day-ms))
-                                                              y-hour (-> y-ms
-                                                                         (/ 1000)
-                                                                         (/ 60)
-                                                                         (/ 60))
-                                                              target (oget %1 "target")
+                                                        (let [new-y    (- (get (js->clj %2) "moveY")
+                                                                          top-bar-height)
+                                                              y-ms     (-> new-y
+                                                                           (/ (:height @dimensions))
+                                                                           (* day-ms))
+                                                              y-hour   (-> y-ms
+                                                                           (/ 1000)
+                                                                           (/ 60)
+                                                                           (/ 60))
+                                                              target   (oget %1 "target")
                                                               instance (get-instance-from-node target)
-                                                              key (oget instance "key")]
+                                                              key      (oget instance "key")]
                                                           (println key)
-                                                          ;; (println y-hour)
-                                                          (reset! y-pos new-y)))
+                                                          (if (< y-hour 23.99)
+                                                            (reset! y-pos new-y)
+                                                            (println "Move it to the next day"))))
                             :onPanResponderRelease   #(println "onPanResponderRelease called..")
                             :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
           (reset! pan pr)))
@@ -69,7 +72,7 @@
         (let [
               square-width  100
               start         0
-              stop          (* 3 60 60 1000) ;; 3 hours in millis
+              stop          (* 6 60 60 1000) ;; 3 hours in millis
               square-height (-> (- stop start)
                                 (/ day-ms) ;; percent of a day - makes it easy to convert to pixels
                                 (* (:height @dimensions)))]
@@ -93,11 +96,11 @@
                           :width            (:width @dimensions)
                           :background-color "blue"}}
             [view (merge (js->clj (oget @pan "panHandlers"))
-                         {:id "this-is-my-node"
-                          :key "this-is-the-key"
+                         {:id    "this-is-my-node"
+                          :key   "this-is-the-key"
                           :style {:top              (->> @y-pos
                                                          (max 0)
-                                                         (min (- (:height @dimensions) square-height)))
+                                                         (min (:height @dimensions)))
                                   :left             (-> @dimensions
                                                         (:width)
                                                         (/ 2)
@@ -105,4 +108,19 @@
                                   :width            square-width
                                   :height           square-height
                                   :border-radius    10
-                                  :background-color "yellow"}})]]]))})))
+                                  :background-color "yellow"}})
+             [text (str "starting at " (-> @y-pos
+                                           (/ (:height @dimensions))
+                                           (* day-ms)
+                                           (/ 1000)
+                                           (/ 60)
+                                           (/ 60)
+                                           (#(gstring/format "%.2f" %))))]
+             [text (str "" (-> square-height
+                               (/ (:height @dimensions))
+                               (* day-ms)
+                               (/ 1000)
+                               (/ 60)
+                               (/ 60)
+                               (#(gstring/format "%.2f" %)))
+                        " hours")]]]]))})))
