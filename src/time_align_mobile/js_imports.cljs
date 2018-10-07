@@ -20,6 +20,7 @@
 (def mi (r/adapt-react-class material-icons))
 
 (def pan-responder (oget ReactNative "PanResponder"))
+(def status-bar (r/adapt-react-class (oget ReactNative "StatusBar")))
 (def Animated (oget ReactNative "Animated"))
 (def animated-xy (oget Animated "ValueXY"))
 (def animated-view (r/adapt-react-class (oget Animated "View")))

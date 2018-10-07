@@ -2,6 +2,7 @@
   (:require [time-align-mobile.js-imports :refer [view
                                                   text
                                                   touchable-highlight
+                                                  status-bar
                                                   animated-view
                                                   animated-xy
                                                   pan-responder]]
@@ -26,8 +27,7 @@
                                                               ;; (println (str "onPanResponderMove called.. " (js->clj %2)))
                                                               (println (str "onPanResponderMove called.. " (get (js->clj %2) "moveY")))
                                                               ;; (swap! y-pos (fn [old] (+ old (get (js->clj %2) "moveY"))))
-                                                              (reset! y-pos (get (js->clj %2) "moveY"))
-                                                              )
+                                                              (reset! y-pos (get (js->clj %2) "moveY")))
                                   :onPanResponderRelease   #(println "onPanResponderRelease called..")
                                   :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
           (reset! pan pr)))
@@ -44,6 +44,7 @@
                                 (if (nil? (:height dimensions))
                                   (reset! dimensions {:width  (:width layout)
                                                       :height (:height layout)}))))}
+           [status-bar {:hidden true}]
 
            [view {:style {:height           (:height @dimensions)
                           :width            (:width @dimensions)
