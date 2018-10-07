@@ -19,6 +19,8 @@
 (def en (r/adapt-react-class entypo))
 (def mi (r/adapt-react-class material-icons))
 
+(def react-native-component-tree (js/require "ReactNativeComponentTree"))
+(defn get-instance-from-node [id] (ocall react-native-component-tree "getInstanceFromNode" id))
 (def pan-responder (oget ReactNative "PanResponder"))
 (def status-bar (r/adapt-react-class (oget ReactNative "StatusBar")))
 (def Animated (oget ReactNative "Animated"))

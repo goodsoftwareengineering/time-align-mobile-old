@@ -3,6 +3,7 @@
                                                   text
                                                   touchable-highlight
                                                   status-bar
+                                                  get-instance-from-node
                                                   animated-view
                                                   animated-xy
                                                   pan-responder]]
@@ -39,8 +40,12 @@
                                                               y-hour (-> y-ms
                                                                          (/ 1000)
                                                                          (/ 60)
-                                                                         (/ 60))]
-                                                          (println y-hour)
+                                                                         (/ 60))
+                                                              target (oget %1 "target")
+                                                              instance (get-instance-from-node target)
+                                                              key (oget instance "key")]
+                                                          (println key)
+                                                          ;; (println y-hour)
                                                           (reset! y-pos new-y)))
                             :onPanResponderRelease   #(println "onPanResponderRelease called..")
                             :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
@@ -88,7 +93,9 @@
                           :width            (:width @dimensions)
                           :background-color "blue"}}
             [view (merge (js->clj (oget @pan "panHandlers"))
-                         {:style {:top              (->> @y-pos
+                         {:id "this-is-my-node"
+                          :key "this-is-the-key"
+                          :style {:top              (->> @y-pos
                                                          (max 0)
                                                          (min (- (:height @dimensions) square-height)))
                                   :left             (-> @dimensions
