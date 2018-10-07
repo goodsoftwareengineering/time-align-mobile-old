@@ -10,6 +10,10 @@
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
             [reagent.core :as r]))
 
+(def day-ms
+  ;; 24 hours in millis
+  (* 24 60 60 1000))
+
 (defn top-bar [{:keys [top-bar-height dimensions]}]
   [view {:style {:height top-bar-height
                  :width (:width @dimensions)
@@ -19,7 +23,7 @@
    [text {:style {:justify-content "center"
                   :align-items "center"}} (str (js/Date.))]])
 
-(defn set-pan-responder [{:keys [pan-responder y-pos top-bar-height pan]}]
+(defn set-pan-responder [{:keys [pan-responder y-pos top-bar-height pan dimensions]}]
   (println "Will mount...")
   (let [pr (ocall pan-responder "create"
                   (clj->js {:onStartShouldSetPanResponder #(do (println "onStartShouldSetPanResponder called") true)
@@ -27,11 +31,17 @@
 
                             :onPanResponderGrant     #(println "onPanResponderGrant called..")
                             :onPanResponderMove      #(do
-                                                        ;; (println (str "onPanResponderMove called.. " (js->clj %2)))
-                                                        (println (str "onPanResponderMove called.. " (get (js->clj %2) "moveY")))
-                                                        ;; (swap! y-pos (fn [old] (+ old (get (js->clj %2) "moveY"))))
-                                                        (reset! y-pos (- (get (js->clj %2) "moveY")
-                                                                         top-bar-height)))
+                                                        (let [new-y (- (get (js->clj %2) "moveY")
+                                                                       top-bar-height)
+                                                              y-ms (-> new-y
+                                                                         (/ (:height @dimensions))
+                                                                         (* day-ms))
+                                                              y-hour (-> y-ms
+                                                                         (/ 1000)
+                                                                         (/ 60)
+                                                                         (/ 60))]
+                                                          (println y-hour)
+                                                          (reset! y-pos new-y)))
                             :onPanResponderRelease   #(println "onPanResponderRelease called..")
                             :onPanResponderTerminate #(println "onPanResponderTerminate called..")}))]
           (reset! pan pr)))
@@ -43,15 +53,21 @@
         pan            (r/atom nil)]
     (r/create-class
      {:component-will-mount
-      #(set-pan-responder {:pan-responder pan-responder
-                          :y-pos y-pos
-                          :top-bar-height top-bar-height
-                          :pan pan})
+      #(set-pan-responder {:pan-responder  pan-responder
+                           :y-pos          y-pos
+                           :top-bar-height top-bar-height
+                           :pan            pan
+                           :dimensions     dimensions})
 
       :reagent-render
       (fn [params]
-        (let [square-height 100
-              square-width  100]
+        (let [
+              square-width  100
+              start         0
+              stop          (* 3 60 60 1000) ;; 3 hours in millis
+              square-height (-> (- stop start)
+                                (/ day-ms) ;; percent of a day - makes it easy to convert to pixels
+                                (* (:height @dimensions)))]
 
           ;; parent view
           [view {:style     {:flex 1 :justify-content "center" :align-items "center"}
@@ -65,7 +81,7 @@
            ;; make our own status bar
            [status-bar {:hidden true}]
            [top-bar {:top-bar-height top-bar-height
-                     :dimensions dimensions}]
+                     :dimensions     dimensions}]
 
            ;; view that stretches to fill what is left of the screen
            [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
