@@ -106,10 +106,10 @@
        [text label]]]]))
 
 (defn root [params]
-  (let [dimensions     (r/atom {:width nil :height nil})
-        top-bar-height 25
-        periods       (subscribe [:get-periods])
-        displayed-day (js/Date.)
+  (let [dimensions      (r/atom {:width nil :height nil})
+        top-bar-height  25
+        periods         (subscribe [:get-periods])
+        displayed-day   (js/Date.)
         selected-period (subscribe [:get-selected-period])]
 
     (r/create-class
@@ -133,8 +133,22 @@
                         :width            (:width @dimensions)
                         :background-color "#dedede"}}
 
+          ;; info & actions section
           (when (some? @selected-period)
-            [touchable-highlight {:on-press #(dispatch [:select-period nil])}
+            [view {:style {:position "absolute"
+                           :background-color "#dfdfdf"
+                           :top      10
+                           :height   (- (:height @dimensions) 10)
+                           :width    (-> @dimensions
+                                         (:width)
+                                         (/ 2)
+                                         (- (* 2 padding)))
+                           :left     (-> @dimensions
+                                         (:width)
+                                         (/ 2)
+                                         (#(if (not (:planned @selected-period))
+                                             (+ % padding)
+                                             padding)))}}
              [text (str @selected-period)]])
 
           ;; periods

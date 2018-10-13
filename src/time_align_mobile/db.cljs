@@ -199,7 +199,7 @@
                      :period-form   nil
                      :template-form nil
                      :filter-form   nil}
-   :selected-period (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")
+   :selected-period nil
    :active-filter   nil
    :filters         [{:id          (uuid "bbc34081-38d4-4d4f-ab19-a7cef18c1212")
                       :label       "bucket label sort"
