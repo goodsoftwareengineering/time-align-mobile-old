@@ -11,23 +11,17 @@
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
             [goog.string :as gstring]
             [goog.string.format]
+            [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]))
 
+;; constants
 (def day-ms
   ;; 24 hours in millis
   (* 24 60 60 1000))
 
 (def padding 10)
 
-(defn top-bar [{:keys [top-bar-height dimensions]}]
-  [view {:style {:height top-bar-height
-                 :width (:width @dimensions)
-                 :background-color "green"
-                 :justify-content "center"
-                 :align-items "center"}}
-   [text {:style {:justify-content "center"
-                  :align-items "center"}} (str (js/Date.))]])
-
+;; helper functions
 (defn get-ms
   "takes a js/date and returns milliseconds since 00:00 that day. Essentially relative ms for the day."
   [date]
@@ -57,17 +51,36 @@
       (/ day-ms)
       (* total-height)))
 
+(defn same-day? [date-a date-b]
+  (and (= (.getFullYear date-a)
+          (.getFullYear date-b))
+       (= (.getMonth date-a)
+          (.getMonth date-b))
+       (= (.getDate date-a)
+          (.getDate date-b))))
+
+;; components
+(defn top-bar [{:keys [top-bar-height dimensions]}]
+  [view {:style {:height top-bar-height
+                 :width (:width @dimensions)
+                 :background-color "#b9b9b9"
+                 :justify-content "center"
+                 :align-items "center"}}
+   [text {:style {:justify-content "center"
+                  :align-items "center"}} (str (js/Date.))]])
+
 (defn period [{:keys [period dimensions]}]
-  (let [{:keys [id start stop actual]} period]
+  (let [{:keys [id start stop planned color label bucket-label]} period]
     [view {:key   id
-           :style {:top              (-> start
+           :style {:position         "absolute"
+                   :top              (-> start
                                          (date->y-pos (:height dimensions))
                                          (max 0)
                                          (min (:height dimensions)))
                    :left             (-> dimensions
                                          (:width)
                                          (/ 2)
-                                         (#(if actual
+                                         (#(if planned
                                              (+ % padding)
                                              padding)))
                    :width            (-> dimensions
@@ -78,26 +91,22 @@
                                          (.valueOf)
                                          (- (.valueOf start))
                                          (duration->height (:height dimensions)))
-                   :border-radius    10
-                   :background-color "yellow"}}
-     [text (str "starting at " (-> start
-                                   (get-ms)
-                                   (/ 1000)
-                                   (/ 60)
-                                   (/ 60)
-                                   (#(gstring/format "%.2f" %))))]
-     [text (str "" (-> stop
-                       (.valueOf)
-                       (- (.valueOf start))
-                       (/ 1000)
-                       (/ 60)
-                       (/ 60)
-                       (#(gstring/format "%.2f" %)))
-                " hours")]]))
+                   :padding-left     10
+                   :padding-right    10
+                   :padding-top      0
+                   :padding-bottom   0
+                   :border-radius    0
+                   :background-color color
+                   :opacity          0.5}}
+     [text bucket-label]
+     [text label]]))
 
 (defn root [params]
   (let [dimensions     (r/atom {:width nil :height nil})
-        top-bar-height 25]
+        top-bar-height 25
+        periods       (subscribe [:get-periods])
+        displayed-day (js/Date.)]
+
     (r/create-class
      {:reagent-render
       (fn [params]
@@ -117,14 +126,13 @@
          ;; view that stretches to fill what is left of the screen
          [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
                         :width            (:width @dimensions)
-                        :background-color "blue"}}
-          (doall (->> [{:start  (js/Date. 2018 11 12 5 35)
-                        :stop   (js/Date. 2018 11 12 10 0)
-                        :id     12345
-                        :actual true}
-                       {:start  (js/Date. 2018 11 12 5 35)
-                        :stop   (js/Date. 2018 11 12 10 0)
-                        :id     45678
-                        :actual false}]
+                        :background-color "#dedede"}}
+
+          ;; periods
+          (doall (->> @periods
+                      (filter (fn [{:keys [start stop]}]
+                                (cond (and (some? start) (some? stop))
+                                      (or (same-day? displayed-day start)
+                                          (same-day? displayed-day stop)))))
                       (map #(period {:period     %
                                      :dimensions @dimensions}))))]])})))

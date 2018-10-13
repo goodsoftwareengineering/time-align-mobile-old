@@ -33,30 +33,35 @@
 (def stop-modal-visible (r/atom false))
 
 (defn start-comp [period-form changes]
-  [view {:style {:flex-direction "row"}}
-   [text {:style (field-label-changeable-style changes :start)} ":start"]
-   [touchable-highlight {:on-press #(reset! start-modal-visible true)}
-    [text (format-date (:start @period-form))]]
-   [date-time-picker {:is-visible @start-modal-visible
-                      :date (:start @period-form)
-                      :mode "datetime"
-                      :on-confirm (fn [d]
-                                    (dispatch [:update-period-form {:start d}])
-                                    (reset! start-modal-visible false))
-                      :on-cancel #(reset! start-modal-visible false)}]] )
+  (let [start (:start @period-form)]
+    [view {:style {:flex-direction "row"}}
+     [text {:style (field-label-changeable-style changes :start)} ":start"]
+     [touchable-highlight {:on-press #(reset! start-modal-visible true)}
+      [text (if (some? start)
+              (format-date start)
+              "Add a start date-time")]]
+     [date-time-picker {:is-visible @start-modal-visible
+                        :date (if (some? start) start (js/Date.))
+                        :mode "datetime"
+                        :on-confirm (fn [d]
+                                      (dispatch [:update-period-form {:start d}])
+                                      (reset! start-modal-visible false))
+                        :on-cancel #(reset! start-modal-visible false)}]]))
 
 (defn stop-comp [period-form changes]
-  [view {:style {:flex-direction "row"}}
-   [text {:style (field-label-changeable-style changes :stop)} ":stop"]
-   [touchable-highlight {:on-press #(reset! stop-modal-visible true)}
-    [text (format-date (:stop @period-form))]]
-   [date-time-picker {:is-visible @stop-modal-visible
-                      :date (:stop @period-form)
-                      :mode "datetime"
-                      :on-confirm (fn [d]
-                                    (dispatch [:update-period-form {:stop d}])
-                                    (reset! stop-modal-visible false))
-                      :on-cancel #(reset! stop-modal-visible false)}]] )
+  (let [stop (:stop @period-form)]
+    [view {:style {:flex-direction "row"}}
+     [text {:style (field-label-changeable-style changes :stop)} ":stop"]
+     [touchable-highlight {:on-press #(reset! stop-modal-visible true)} [text (if (some? stop)
+              (format-date stop)
+              "Add a stop date-time")]]
+     [date-time-picker {:is-visible @stop-modal-visible
+                        :date (if (some? stop) stop (js/Date.))
+                        :mode "datetime"
+                        :on-confirm (fn [d]
+                                      (dispatch [:update-period-form {:stop d}])
+                                      (reset! stop-modal-visible false))
+                        :on-cancel #(reset! stop-modal-visible false)}]]))
 
 (defn root [params]
   (let [period-form            (subscribe [:get-period-form])

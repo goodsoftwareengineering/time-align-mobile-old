@@ -53,18 +53,18 @@
                          :stop  nil}
                         {:start (new js/Date start)
                          :stop  (new js/Date stop)})
-        type          (if-not (empty? stamps)
-                        (if actual-chance
-                          {:planned false}
-                          {:planned true})
-                        {:planned :true})]
+        type          (if (nil? (:start stamps))
+                        true
+                        actual-chance)]
 
-                                      (merge stamps type
-                                             {:id (random-uuid)}
-                                             {:data        {}
-                                              :description ""
-                                              :created     moment
-                                              :last-edited moment})))
+    (merge stamps
+           {:id          (random-uuid)
+            :created     moment
+            :last-edited moment
+            :label       ""
+            :planned     type
+            :data        {}})))
+
 (def period-data-spec {:id          uuid?
                        :created     ::moment
                        :last-edited ::moment
@@ -73,6 +73,7 @@
                        :start       (ds/maybe ::moment)
                        :stop        (ds/maybe ::moment)
                        :data        map?})
+
 (def period-spec
   (st/create-spec {:spec (s/and
                           (ds/spec {:spec period-data-spec
@@ -235,7 +236,10 @@
                     :data        {}
                     :color       "#11aa11"
                     :templates   nil
-                    :periods     [{:id          (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")
+                    :periods     (concat
+                                  (->> (range 2)
+                                       (map #(gen/generate (s/gen period-spec))))
+                                  [{:id          (uuid "a8404f81-38d4-4d4f-ab19-a7cef18c4531")
                                    :created     (new js/Date 2018 9 0 15 25)
                                    :last-edited (new js/Date 2018 9 0 15 25)
                                    :label       ""
@@ -267,7 +271,8 @@
                                                  :session  {:plank            [{:s 1 :time {:min 1 :sec 0}}]
                                                             :arch-hold        [{:s 1 :time {:min 1 :sec 0}}]
                                                             :side-plank       [{:s 1 :time {:min 1 :sec 0}}]
-                                                            :lumbar-extension [{:s 1 :r 5}]}}}]}
+                                                            :lumbar-extension [{:s 1 :r 5}]}}}]
+                                  )}
                    {:id          (uuid "8c3907da-5222-408c-aba4-777f0a1204de")
                     :label       "Social"
                     :created     (new js/Date 2018 4 28 15 57)
@@ -299,7 +304,8 @@
                                    :start       nil
                                    :duration    (* 1.5 60 60 1000)
                                    :data        {}}]
-                    :periods     nil}
+                    :periods     (->> (range 1)
+                                      (map #(gen/generate (s/gen period-spec))))}
                    {:id          (uuid "4b9b07da-5222-408c-aba4-777f0a1203af")
                     :label       "Work"
                     :created     (new js/Date 2018 4 28 15 57)
@@ -307,7 +313,8 @@
                     :data        {}
                     :color       "#aa1111"
                     :templates   nil
-                    :periods     nil}]
+                    :periods     (->> (range 5)
+                                      (map #(gen/generate (s/gen period-spec))))}]
    :config        {:auto-log-time-align true}})
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
