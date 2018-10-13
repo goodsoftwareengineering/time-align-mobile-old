@@ -98,14 +98,19 @@
                    :border-radius    0
                    :background-color color
                    :opacity          0.5}}
-     [text bucket-label]
-     [text label]]))
+     [touchable-highlight {:style {:width  "100%"
+                                   :height "100%"}
+                           :on-press #(dispatch [:select-period id])}
+      [view
+       [text bucket-label]
+       [text label]]]]))
 
 (defn root [params]
   (let [dimensions     (r/atom {:width nil :height nil})
         top-bar-height 25
         periods       (subscribe [:get-periods])
-        displayed-day (js/Date.)]
+        displayed-day (js/Date.)
+        selected-period (subscribe [:get-selected-period])]
 
     (r/create-class
      {:reagent-render
@@ -127,6 +132,10 @@
          [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
                         :width            (:width @dimensions)
                         :background-color "#dedede"}}
+
+          (when (some? @selected-period)
+            [touchable-highlight {:on-press #(dispatch [:select-period nil])}
+             [text (str @selected-period)]])
 
           ;; periods
           (doall (->> @periods

@@ -172,6 +172,18 @@
                              :bucket-label (:label bucket)
                              :color        (:color bucket)})))))
 
+(defn get-selected-period [db _]
+  (let [selected-id               (get-in db [:selected-period])
+        [bucket selected-period ] (select-one [:buckets sp/ALL
+                                               (sp/collect-one (sp/submap [:id :color :label]))
+                                               :periods sp/ALL
+                                               #(= (:id %) selected-id)] db)]
+    (if (some? selected-id)
+      (merge selected-period {:bucket-id    (:id bucket)
+                              :bucket-label (:label bucket)
+                              :color        (:color bucket)})
+      nil)))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -186,4 +198,5 @@
 (reg-sub :get-filters get-filters)
 (reg-sub :get-active-filter get-active-filter)
 (reg-sub :get-periods get-periods)
+(reg-sub :get-selected-period get-selected-period)
 

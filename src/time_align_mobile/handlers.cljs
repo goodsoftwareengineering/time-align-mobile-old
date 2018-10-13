@@ -408,6 +408,9 @@
    ;; TODO pop stack when possible
    :dispatch [:navigate-to {:current-screen :filters}]})
 
+(defn select-period [db [_ id]]
+  (assoc-in db [:selected-period] id))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -432,3 +435,4 @@
 (reg-event-fx :delete-period [validate-spec] delete-period)
 (reg-event-fx :delete-template [validate-spec] delete-template)
 (reg-event-fx :delete-filter [validate-spec] delete-filter)
+(reg-event-db :select-period [validate-spec] select-period)
