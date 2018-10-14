@@ -29,6 +29,7 @@
 (def dimensions (oget ReactNative "Dimensions"))
 (def text (r/adapt-react-class (oget ReactNative "Text")))
 (def view (r/adapt-react-class (oget ReactNative "View")))
+(def scroll-view (r/adapt-react-class (oget ReactNative "ScrollView")))
 (def image (r/adapt-react-class (oget ReactNative "Image")))
 (def flat-list (r/adapt-react-class (oget ReactNative "FlatList")))
 (def touchable-highlight (r/adapt-react-class (oget ReactNative "TouchableHighlight")))

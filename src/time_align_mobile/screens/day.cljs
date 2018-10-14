@@ -1,6 +1,8 @@
 (ns time-align-mobile.screens.day
   (:require [time-align-mobile.js-imports :refer [view
+                                                  scroll-view
                                                   text
+                                                  format-date
                                                   touchable-highlight
                                                   status-bar
                                                   get-instance-from-node
@@ -10,6 +12,7 @@
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
             [goog.string :as gstring]
+            [zprint.core :refer [zprint]]
             [goog.string.format]
             [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]))
@@ -133,24 +136,6 @@
                         :width            (:width @dimensions)
                         :background-color "#dedede"}}
 
-          ;; info & actions section
-          (when (some? @selected-period)
-            [view {:style {:position "absolute"
-                           :background-color "#dfdfdf"
-                           :top      10
-                           :height   (- (:height @dimensions) 10)
-                           :width    (-> @dimensions
-                                         (:width)
-                                         (/ 2)
-                                         (- (* 2 padding)))
-                           :left     (-> @dimensions
-                                         (:width)
-                                         (/ 2)
-                                         (#(if (not (:planned @selected-period))
-                                             (+ % padding)
-                                             padding)))}}
-             [text (str @selected-period)]])
-
           ;; periods
           (doall (->> @periods
                       (filter (fn [{:keys [start stop]}]
@@ -158,4 +143,59 @@
                                       (or (same-day? displayed-day start)
                                           (same-day? displayed-day stop)))))
                       (map #(period {:period     %
-                                     :dimensions @dimensions}))))]])})))
+                                     :dimensions @dimensions}))))
+
+
+          ;; info & actions section
+          (when (some? @selected-period)
+            (let [heading-style    {:background-color "#bfbfbf"}
+                  heading-sub-comp (fn [heading] [text {:style heading-style} heading])
+                  info-style       {}
+                  button           (fn [label action long-action] [touchable-highlight {:on-press      action
+                                                                                        :on-long-press long-action
+                                                                                        :style         {:background-color "#00ffff"
+                                                                                                        :border-radius    2
+                                                                                                        :padding          4
+                                                                                                        :align-self       "flex-start"}}
+                                                                   [text label]])]
+
+              [scroll-view {:style {:position         "absolute"
+                                    :background-color "#fefefe"
+                                    :top              0
+                                    :padding-top      10
+                                    :padding-left     4
+                                    :height           (:height @dimensions)
+                                    :width            (-> @dimensions
+                                                          (:width)
+                                                          (/ 2))
+                                    :left             (-> @dimensions
+                                                          (:width)
+                                                          (/ 2)
+                                                          (#(if (not (:planned @selected-period))
+                                                              %
+                                                              0)))}}
+               [view
+                [heading-sub-comp "label"]
+                [text {:style info-style} (:label @selected-period)]
+
+                [heading-sub-comp "bucket"]
+                [text {:style info-style} (:bucket-label @selected-period)]
+
+                [heading-sub-comp "start"]
+                [text {:style info-style}
+                 (format-date (:start @selected-period))]
+
+                [heading-sub-comp "stop"]
+                [text {:style info-style}
+                 (format-date (:stop @selected-period))]
+
+                [heading-sub-comp "data"]
+                [text {:style info-style}
+                 (with-out-str
+                   (zprint (:data @selected-period)
+                           {:map {:force-nl? true}}))]]
+
+               [view
+                [button "edit" #(dispatch [:navigate-to {:current-screen :period
+                                                         :params         {:period-id (:id @selected-period)}}])]]
+               ]))]])})))
