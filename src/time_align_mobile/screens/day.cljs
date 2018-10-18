@@ -7,6 +7,7 @@
                                                   status-bar
                                                   get-instance-from-node
                                                   animated-view
+                                                  mi
                                                   animated-xy
                                                   pan-responder]]
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
@@ -84,8 +85,8 @@
                                          (:width)
                                          (/ 2)
                                          (#(if planned
-                                             (+ % padding)
-                                             padding)))
+                                             padding
+                                             (+ % padding) )))
                    :width            (-> dimensions
                                          (:width)
                                          (/ 2)
@@ -94,15 +95,15 @@
                                          (.valueOf)
                                          (- (.valueOf start))
                                          (duration->height (:height dimensions)))
-                   :padding-left     10
-                   :padding-right    10
-                   :padding-top      0
-                   :padding-bottom   0
                    :border-radius    0
                    :background-color color
                    :opacity          0.5}}
      [touchable-highlight {:style {:width  "100%"
-                                   :height "100%"}
+                                   :height "100%"
+                                   :padding-left     10
+                                   :padding-right    10
+                                   :padding-top      0
+                                   :padding-bottom   0}
                            :on-press #(dispatch [:select-period id])}
       [view
        [text bucket-label]
@@ -149,53 +150,106 @@
           ;; info & actions section
           (when (some? @selected-period)
             (let [heading-style    {:background-color "#bfbfbf"}
-                  heading-sub-comp (fn [heading] [text {:style heading-style} heading])
                   info-style       {}
-                  button           (fn [label action long-action] [touchable-highlight {:on-press      action
-                                                                                        :on-long-press long-action
-                                                                                        :style         {:background-color "#00ffff"
-                                                                                                        :border-radius    2
-                                                                                                        :padding          4
-                                                                                                        :align-self       "flex-start"}}
-                                                                   [text label]])]
+                  heading-sub-comp (fn [heading] [text {:style heading-style} heading])
+                  info-sub-comp    (fn [info] [text {:style info-style} info])
+                  button-style     {:background-color "#00ffff"
+                                    :border-radius    2
+                                    :padding          4
+                                    :align-self       "flex-start"}]
 
-              [scroll-view {:style {:position         "absolute"
-                                    :background-color "#fefefe"
-                                    :top              0
-                                    :padding-top      10
-                                    :padding-left     4
-                                    :height           (:height @dimensions)
-                                    :width            (-> @dimensions
-                                                          (:width)
-                                                          (/ 2))
-                                    :left             (-> @dimensions
-                                                          (:width)
-                                                          (/ 2)
-                                                          (#(if (not (:planned @selected-period))
-                                                              %
-                                                              0)))}}
-               [view
-                [heading-sub-comp "label"]
-                [text {:style info-style} (:label @selected-period)]
+              [view {:style {:position         "absolute"
+                             :background-color "blue"
+                             :top              0
+                             :height           (:height @dimensions)
+                             :width            (-> @dimensions
+                                                   (:width)
+                                                   (/ 2)
+                                                   (+ padding))
+                             :left             (-> @dimensions
+                                                   (:width)
+                                                   (/ 2)
+                                                   (#(if (:planned @selected-period)
+                                                       (- % padding)
+                                                       0)))}}
 
-                [heading-sub-comp "bucket"]
-                [text {:style info-style} (:bucket-label @selected-period)]
+               [view {:style {:height           "100%"
+                              :width            (-> @dimensions
+                                                    (:width)
+                                                    (/ 2)
+                                                    (+ padding))
+                              :background-color "#dcdcdc"}}
+                ;; info
+                [scroll-view {:style {:background-color "yellow"
+                                      :width            "100%"
+                                      :padding-top      10
+                                      :padding-left     4
+                                      :max-height       "50%"}}
+                 [heading-sub-comp "label"]
+                 [info-sub-comp (:label @selected-period)]
 
-                [heading-sub-comp "start"]
-                [text {:style info-style}
-                 (format-date (:start @selected-period))]
+                 [heading-sub-comp "bucket"]
+                 [info-sub-comp (:bucket-label @selected-period)]
 
-                [heading-sub-comp "stop"]
-                [text {:style info-style}
-                 (format-date (:stop @selected-period))]
+                 [heading-sub-comp "start"]
+                 [info-sub-comp
+                  (format-date (:start @selected-period))]
 
-                [heading-sub-comp "data"]
-                [text {:style info-style}
-                 (with-out-str
-                   (zprint (:data @selected-period)
-                           {:map {:force-nl? true}}))]]
+                 [heading-sub-comp "stop"]
+                 [info-sub-comp
+                  (format-date (:stop @selected-period))]
 
-               [view
-                [button "edit" #(dispatch [:navigate-to {:current-screen :period
-                                                         :params         {:period-id (:id @selected-period)}}])]]
-               ]))]])})))
+                 [heading-sub-comp "data"]
+                 [info-sub-comp
+                  (with-out-str
+                    (zprint (:data @selected-period)
+                            {:map {:force-nl? true}}))]]
+                ;; buttons
+                [view {:style {:background-color "green"
+                               :width            "100%"
+                               :padding-top      10
+                               :padding-left     4
+                               :height           "50%"}}
+
+                 [touchable-highlight {:on-press #(dispatch [:navigate-to {:current-screen :period
+                                                                           :params         {:period-id (:id @selected-period)}}])
+                                       :style    button-style   }
+                  [view {:style {:flex-direction "row"
+                                 :align-items    "center"}}
+                   [mi {:name  "edit"
+                        :style {:margin-right 4}}]
+                   [text "edit"]]]
+
+                 [touchable-highlight {:on-press #(dispatch [:select-period nil])
+                                       :style    button-style   }
+                  [view {:style {:flex-direction "row"
+                                 :align-items    "center"}}
+                   [mi {:name  "cancel"
+                        :style {:margin-right 4}}]
+                   [text "cancel"]]]]]
+
+               ;; arrow
+               [view {:style {:position            "absolute"
+                              :top                 (-> (:start @selected-period)
+                                                       (date->y-pos (:height @dimensions))
+                                                       (max 0)
+                                                       (min (:height @dimensions))
+                                                       (- 5))
+                              :left                (if (:planned @selected-period)
+                                                     0
+                                                     (-> @dimensions
+                                                         (:width)
+                                                         (/ 2)
+                                                         (- 7.5)))
+                              :background-color    "transparent"
+                              :border-style        "solid"
+                              :border-left-width   10
+                              :border-right-width  10
+                              :border-bottom-width 15
+                              :border-left-color   "transparent"
+                              :border-right-color  "transparent"
+                              :border-bottom-color "red"
+                              :transform           (if (:planned @selected-period)
+                                                     [{:rotate "270deg"}]
+                                                     [{:rotate "90deg"}]
+                                                     )}}]]))]])})))
