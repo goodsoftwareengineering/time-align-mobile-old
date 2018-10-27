@@ -100,7 +100,8 @@
                              ;; for the period about to be created
                              (dispatch [:add-template-period {:template item
                                                               :id (random-uuid)
-                                                              :now (js/Date.)}]))})))))}]]]
+                                                              :now (js/Date.)}])
+                             )})))))}]]]
 
      [modal {:animation-type "slide"
              :transparent    false
