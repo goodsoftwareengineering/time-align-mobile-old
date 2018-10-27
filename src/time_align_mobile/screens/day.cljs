@@ -109,6 +109,120 @@
        [text bucket-label]
        [text label]]]]))
 
+(defn selection-menu-info [dimensions selected-period]
+  (let [heading-style    {:background-color "#bfbfbf"}
+        info-style       {}
+        heading-sub-comp (fn [heading] [text {:style heading-style} heading])
+        info-sub-comp    (fn [info] [text {:style info-style} info])]
+
+    [scroll-view {:style {:background-color "white"
+                          :width            "100%"
+                          :padding-top      10
+                          :padding-left     4
+                          :max-height       "50%"}}
+     [heading-sub-comp "label"]
+     [info-sub-comp (:label selected-period)]
+
+     [heading-sub-comp "bucket"]
+     [info-sub-comp (:bucket-label selected-period)]
+
+     [heading-sub-comp "start"]
+     [info-sub-comp
+      (format-date (:start selected-period))]
+
+     [heading-sub-comp "stop"]
+     [info-sub-comp
+      (format-date (:stop selected-period))]
+
+     [heading-sub-comp "data"]
+     [info-sub-comp
+      (with-out-str
+        (zprint (:data selected-period)
+                {:map {:force-nl? true}}))]]))
+
+(defn selection-menu-buttons [dimensions selected-period]
+  (let [button-style {:background-color "#00ffff"
+                      :border-radius    2
+                      :padding          4
+                      :align-self       "flex-start"}]
+    [view {:style {:background-color "white"
+                   :width            "100%"
+                   :padding-top      10
+                   :padding-left     4
+                   :height           "50%"}}
+
+     [touchable-highlight {:on-press #(dispatch [:navigate-to {:current-screen :period
+                                                               :params         {:period-id (:id selected-period)}}])
+                           :style    button-style   }
+      [view {:style {:flex-direction "row"
+                     :align-items    "center"}}
+       [mi {:name  "edit"
+            :style {:margin-right 4}}]
+                   [text "edit"]]]
+
+     [touchable-highlight {:on-press #(dispatch [:select-period nil])
+                           :style    button-style   }
+      [view {:style {:flex-direction "row"
+                     :align-items    "center"}}
+       [mi {:name  "cancel"
+            :style {:margin-right 4}}]
+                   [text "cancel"]]]]))
+
+(defn selection-menu-arrow [dimensions selected-period]
+  [view {:style {:position            "absolute"
+                              :top                 (-> (:start selected-period)
+                                                       (date->y-pos (:height dimensions))
+                                                       (max 0)
+                                                       (min (:height dimensions))
+                                                       (- 5))
+                              :left                (if (:planned selected-period)
+                                                     0
+                                                     (-> dimensions
+                                                         (:width)
+                                                         (/ 2)
+                                                         (- 7.5)))
+                              :background-color    "transparent"
+                              :border-style        "solid"
+                              :border-left-width   10
+                              :border-right-width  10
+                              :border-bottom-width 15
+                              :border-left-color   "transparent"
+                              :border-right-color  "transparent"
+                              :border-bottom-color "red"
+                              :transform           (if (:planned selected-period)
+                                                     [{:rotate "270deg"}]
+                                                     [{:rotate "90deg"}])}}])
+
+(defn selection-menu [dimensions selected-period]
+  [view {:style {:position         "absolute"
+                 :background-color "blue"
+                 :top              0
+                 :height           (:height dimensions)
+                 :width            (-> dimensions
+                                       (:width)
+                                       (/ 2)
+                                       (+ padding))
+                 :left             (-> dimensions
+                                       (:width)
+                                       (/ 2)
+                                       (#(if (:planned selected-period)
+                                           (- % padding)
+                                           0)))}}
+
+   [view {:style {:height           "100%"
+                  :width            (-> dimensions
+                                        (:width)
+                                        (/ 2)
+                                        (+ padding))
+                  :background-color "#dcdcdc"}}
+
+                [selection-menu-info dimensions selected-period]
+
+                ;; buttons
+                [selection-menu-buttons dimensions selected-period]]
+
+               [selection-menu-arrow dimensions selected-period]])
+
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
         top-bar-height  25
@@ -147,109 +261,6 @@
                                      :dimensions @dimensions}))))
 
 
-          ;; info & actions section
+          ;; selection menu
           (when (some? @selected-period)
-            (let [heading-style    {:background-color "#bfbfbf"}
-                  info-style       {}
-                  heading-sub-comp (fn [heading] [text {:style heading-style} heading])
-                  info-sub-comp    (fn [info] [text {:style info-style} info])
-                  button-style     {:background-color "#00ffff"
-                                    :border-radius    2
-                                    :padding          4
-                                    :align-self       "flex-start"}]
-
-              [view {:style {:position         "absolute"
-                             :background-color "blue"
-                             :top              0
-                             :height           (:height @dimensions)
-                             :width            (-> @dimensions
-                                                   (:width)
-                                                   (/ 2)
-                                                   (+ padding))
-                             :left             (-> @dimensions
-                                                   (:width)
-                                                   (/ 2)
-                                                   (#(if (:planned @selected-period)
-                                                       (- % padding)
-                                                       0)))}}
-
-               [view {:style {:height           "100%"
-                              :width            (-> @dimensions
-                                                    (:width)
-                                                    (/ 2)
-                                                    (+ padding))
-                              :background-color "#dcdcdc"}}
-                ;; info
-                [scroll-view {:style {:background-color "yellow"
-                                      :width            "100%"
-                                      :padding-top      10
-                                      :padding-left     4
-                                      :max-height       "50%"}}
-                 [heading-sub-comp "label"]
-                 [info-sub-comp (:label @selected-period)]
-
-                 [heading-sub-comp "bucket"]
-                 [info-sub-comp (:bucket-label @selected-period)]
-
-                 [heading-sub-comp "start"]
-                 [info-sub-comp
-                  (format-date (:start @selected-period))]
-
-                 [heading-sub-comp "stop"]
-                 [info-sub-comp
-                  (format-date (:stop @selected-period))]
-
-                 [heading-sub-comp "data"]
-                 [info-sub-comp
-                  (with-out-str
-                    (zprint (:data @selected-period)
-                            {:map {:force-nl? true}}))]]
-                ;; buttons
-                [view {:style {:background-color "green"
-                               :width            "100%"
-                               :padding-top      10
-                               :padding-left     4
-                               :height           "50%"}}
-
-                 [touchable-highlight {:on-press #(dispatch [:navigate-to {:current-screen :period
-                                                                           :params         {:period-id (:id @selected-period)}}])
-                                       :style    button-style   }
-                  [view {:style {:flex-direction "row"
-                                 :align-items    "center"}}
-                   [mi {:name  "edit"
-                        :style {:margin-right 4}}]
-                   [text "edit"]]]
-
-                 [touchable-highlight {:on-press #(dispatch [:select-period nil])
-                                       :style    button-style   }
-                  [view {:style {:flex-direction "row"
-                                 :align-items    "center"}}
-                   [mi {:name  "cancel"
-                        :style {:margin-right 4}}]
-                   [text "cancel"]]]]]
-
-               ;; arrow
-               [view {:style {:position            "absolute"
-                              :top                 (-> (:start @selected-period)
-                                                       (date->y-pos (:height @dimensions))
-                                                       (max 0)
-                                                       (min (:height @dimensions))
-                                                       (- 5))
-                              :left                (if (:planned @selected-period)
-                                                     0
-                                                     (-> @dimensions
-                                                         (:width)
-                                                         (/ 2)
-                                                         (- 7.5)))
-                              :background-color    "transparent"
-                              :border-style        "solid"
-                              :border-left-width   10
-                              :border-right-width  10
-                              :border-bottom-width 15
-                              :border-left-color   "transparent"
-                              :border-right-color  "transparent"
-                              :border-bottom-color "red"
-                              :transform           (if (:planned @selected-period)
-                                                     [{:rotate "270deg"}]
-                                                     [{:rotate "90deg"}]
-                                                     )}}]]))]])})))
+            [selection-menu @dimensions @selected-period])]])})))
