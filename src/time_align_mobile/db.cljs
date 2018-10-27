@@ -290,6 +290,15 @@
                                      :duration    (* 2 ;; 2 hours converted to ms
                                                      60 60 1000)
                                      :data        {:category "night life"}}
+                                    {:id          (uuid "b89e4f81-38d4-4d4f-ab19-a7cef18c6647")
+                                     :created     (new js/Date 2018 4 28 15 57)
+                                     :last-edited (new js/Date 2018 4 28 15 57)
+                                     :label       "Breakfast with Kaiti"
+                                     :planned     true
+                                     :start       {:hour 7 :minute 0}
+                                     :duration    (* 2 ;; 2 hours converted to ms
+                                                     60 60 1000)
+                                     :data        {:category "night life"}}
                                     {:id          (uuid "da3e4f81-38d4-4d4f-ab19-a7cef18c6641")
                                      :created     (new js/Date 2018 4 28 15 57)
                                      :last-edited (new js/Date 2018 4 28 15 57)
