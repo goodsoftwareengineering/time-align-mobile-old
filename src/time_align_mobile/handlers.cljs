@@ -411,6 +411,13 @@
 (defn select-period [db [_ id]]
   (assoc-in db [:selected-period] id))
 
+(defn update-period [db [_ {:keys [id update-map]}]]
+  (transform [:buckets sp/ALL
+              :periods sp/ALL
+              #(= id (:id %))]
+             #(merge % update-map)
+             db))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -436,3 +443,4 @@
 (reg-event-fx :delete-template [validate-spec] delete-template)
 (reg-event-fx :delete-filter [validate-spec] delete-filter)
 (reg-event-db :select-period [validate-spec] select-period)
+(reg-event-db :update-period [validate-spec] update-period)

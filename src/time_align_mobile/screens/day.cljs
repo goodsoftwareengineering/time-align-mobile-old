@@ -140,33 +140,48 @@
         (zprint (:data selected-period)
                 {:map {:force-nl? true}}))]]))
 
+(defn selection-menu-button [label on-press]
+  [touchable-highlight {:on-press on-press
+                        :style    {:background-color "#00ffff"
+                                   :border-radius    2
+                                   :padding          4
+                                   :margin           4
+                                   :align-self       "flex-start"}}
+   [view {:style {:flex-direction "row"
+                  :align-items    "center"}}
+    [mi {:name  "edit"
+         :style {:margin-right 4}}]
+    [text label]]])
+
 (defn selection-menu-buttons [dimensions selected-period]
-  (let [button-style {:background-color "#00ffff"
-                      :border-radius    2
-                      :padding          4
-                      :align-self       "flex-start"}]
-    [view {:style {:background-color "white"
-                   :width            "100%"
-                   :padding-top      10
-                   :padding-left     4
-                   :height           "50%"}}
+  [view {:style {:background-color "white"
+                 :width            "100%"
+                 :padding-top      10
+                 :padding-left     4
+                 :height           "50%"}}
 
-     [touchable-highlight {:on-press #(dispatch [:navigate-to {:current-screen :period
-                                                               :params         {:period-id (:id selected-period)}}])
-                           :style    button-style   }
-      [view {:style {:flex-direction "row"
-                     :align-items    "center"}}
-       [mi {:name  "edit"
-            :style {:margin-right 4}}]
-                   [text "edit"]]]
+   [selection-menu-button
+    "edit"
+    #(dispatch [:navigate-to {:current-screen :period
+                              :params         {:period-id (:id selected-period)}}])]
 
-     [touchable-highlight {:on-press #(dispatch [:select-period nil])
-                           :style    button-style   }
-      [view {:style {:flex-direction "row"
-                     :align-items    "center"}}
-       [mi {:name  "cancel"
-            :style {:margin-right 4}}]
-                   [text "cancel"]]]]))
+   [selection-menu-button
+    "cancel"
+    #(dispatch [:select-period nil])]
+
+   [selection-menu-button
+    "up"
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (- (* 5 60 1000)) ;; five minutes
+                                                        (js/Date.))
+                                             :stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (- (* 5 60 1000))
+                                                        (js/Date.))}}])]])
 
 (defn selection-menu-arrow [dimensions selected-period]
   [view {:style {:position            "absolute"
