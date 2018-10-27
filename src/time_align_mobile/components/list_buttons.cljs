@@ -5,10 +5,14 @@
 
 (defn root [add-fn]
   [view {:style {:flex            1
+                 :padding         25
                  :flex-direction  "row"
                  :align-items     "center"
                  :justify-content "center"}}
    [touchable-highlight {:on-press add-fn
-                         :style    {:padding      5
-                                    :margin-right 10}}
+                         :style    {:background-color "#00ffff"
+                                    :border-radius    2
+                                    :flex-direction   "row"
+                                    :justify-content  "center"
+                                    :align-items      "center"}}
     [text "add"]]])
