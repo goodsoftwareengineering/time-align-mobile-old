@@ -73,11 +73,26 @@
    [text {:style {:justify-content "center"
                   :align-items "center"}} (str (js/Date.))]])
 
-(defn period [{:keys [period dimensions]}]
-  (let [{:keys [id start stop planned color label bucket-label]} period]
+(defn period [{:keys [period dimensions displayed-day]}]
+  (let [{:keys [id start stop planned color label bucket-label]} period
+        adjusted-stop (if (same-day? displayed-day stop)
+                        stop
+                        ;; use the end of the day otherwise
+                        (js/Date. (.getFullYear displayed-day)
+                                  (.getMonth displayed-day)
+                                  (.getDate displayed-day)
+                                  23
+                                  59))
+        adjusted-start (if (same-day? displayed-day start)
+                         start
+                         (js/Date. (.getFullYear displayed-day)
+                                   (.getMonth displayed-day)
+                                   (.getDate displayed-day)
+                                   0
+                                   0))]
     [view {:key   id
            :style {:position         "absolute"
-                   :top              (-> start
+                   :top              (-> adjusted-start
                                          (date->y-pos (:height dimensions))
                                          (max 0)
                                          (min (:height dimensions)))
@@ -91,9 +106,9 @@
                                          (:width)
                                          (/ 2)
                                          (- (* 2 padding)))
-                   :height           (-> stop
+                   :height           (-> adjusted-stop
                                          (.valueOf)
-                                         (- (.valueOf start))
+                                         (- (.valueOf adjusted-start))
                                          (duration->height (:height dimensions)))
                    :border-radius    0
                    :background-color color
@@ -273,6 +288,7 @@
                                       (or (same-day? displayed-day start)
                                           (same-day? displayed-day stop)))))
                       (map #(period {:period     %
+                                     :displayed-day displayed-day
                                      :dimensions @dimensions}))))
 
 
