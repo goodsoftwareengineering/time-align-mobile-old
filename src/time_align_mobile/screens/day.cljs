@@ -63,6 +63,25 @@
        (= (.getDate date-a)
           (.getDate date-b))))
 
+(defn bound-start [start day]
+  (if (same-day? day start)
+    start
+    (js/Date. (.getFullYear day)
+              (.getMonth day)
+              (.getDate day)
+              0
+              0)))
+
+(defn bound-stop [stop day]
+  (if (same-day? day stop)
+    stop
+    ;; use the end of the day otherwise
+    (js/Date. (.getFullYear day)
+              (.getMonth day)
+              (.getDate day)
+              23
+              59)))
+
 ;; components
 (defn top-bar [{:keys [top-bar-height dimensions]}]
   [view {:style {:height top-bar-height
@@ -75,21 +94,8 @@
 
 (defn period [{:keys [period dimensions displayed-day]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
-        adjusted-stop (if (same-day? displayed-day stop)
-                        stop
-                        ;; use the end of the day otherwise
-                        (js/Date. (.getFullYear displayed-day)
-                                  (.getMonth displayed-day)
-                                  (.getDate displayed-day)
-                                  23
-                                  59))
-        adjusted-start (if (same-day? displayed-day start)
-                         start
-                         (js/Date. (.getFullYear displayed-day)
-                                   (.getMonth displayed-day)
-                                   (.getDate displayed-day)
-                                   0
-                                   0))]
+        adjusted-stop (bound-stop stop displayed-day)
+        adjusted-start (bound-start start displayed-day)]
     [view {:key   id
            :style {:position         "absolute"
                    :top              (-> adjusted-start
@@ -211,34 +217,62 @@
                                                         (:stop)
                                                         (.valueOf)
                                                         (- (* 60 60 1000))
-                                                        (js/Date.))}}])]])
+                                                        (js/Date.))}}])]
 
-(defn selection-menu-arrow [dimensions selected-period]
-  [view {:style {:position            "absolute"
-                              :top                 (-> (:start selected-period)
-                                                       (date->y-pos (:height dimensions))
-                                                       (max 0)
-                                                       (min (:height dimensions))
-                                                       (- 5))
-                              :left                (if (:planned selected-period)
-                                                     0
-                                                     (-> dimensions
-                                                         (:width)
-                                                         (/ 2)
-                                                         (- 7.5)))
-                              :background-color    "transparent"
-                              :border-style        "solid"
-                              :border-left-width   10
-                              :border-right-width  10
-                              :border-bottom-width 15
-                              :border-left-color   "transparent"
-                              :border-right-color  "transparent"
-                              :border-bottom-color "red"
-                              :transform           (if (:planned selected-period)
-                                                     [{:rotate "270deg"}]
-                                                     [{:rotate "90deg"}])}}])
+[selection-menu-button
+    "down"
+    "arrow-downward"
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (+ (* 5 60 1000)) ;; five minutes
+                                                        (js/Date.))
+                                             :stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (+ (* 5 60 1000))
+                                                        (js/Date.))}}])
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (+ (* 60 60 1000)) ;; sixty minutes
+                                                        (js/Date.))
+                                             :stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (+ (* 60 60 1000))
+                                                        (js/Date.))}}])]
+   ])
 
-(defn selection-menu [dimensions selected-period]
+(defn selection-menu-arrow [dimensions selected-period displayed-day]
+  (let [adjusted-start (bound-start (:start selected-period) displayed-day)]
+    [view {:style {:position            "absolute"
+                   :top                 (-> adjusted-start
+                                            (date->y-pos (:height dimensions))
+                                            (max 0)
+                                            (min (:height dimensions))
+                                            (- 5))
+                   :left                (if (:planned selected-period)
+                                          0
+                                          (-> dimensions
+                                              (:width)
+                                              (/ 2)
+                                              (- 7.5)))
+                   :background-color    "transparent"
+                   :border-style        "solid"
+                   :border-left-width   10
+                   :border-right-width  10
+                   :border-bottom-width 15
+                   :border-left-color   "transparent"
+                   :border-right-color  "transparent"
+                   :border-bottom-color "red"
+                   :transform           (if (:planned selected-period)
+                                          [{:rotate "270deg"}]
+                                          [{:rotate "90deg"}])}}]))
+
+(defn selection-menu [dimensions selected-period displayed-day]
   [view {:style {:position         "absolute"
                  :background-color "blue"
                  :top              0
@@ -266,7 +300,7 @@
                 ;; buttons
                 [selection-menu-buttons dimensions selected-period]]
 
-               [selection-menu-arrow dimensions selected-period]])
+               [selection-menu-arrow dimensions selected-period displayed-day]])
 
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
@@ -309,4 +343,4 @@
 
           ;; selection menu
           (when (some? @selected-period)
-            [selection-menu @dimensions @selected-period])]])})))
+            [selection-menu @dimensions @selected-period displayed-day])]])})))
