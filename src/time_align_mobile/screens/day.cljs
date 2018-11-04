@@ -267,6 +267,23 @@
                                                         (.valueOf)
                                                         (+ (* 60 60 1000))
                                                         (js/Date.))}}])]
+
+   [selection-menu-button
+    "stop earlier"
+    {:family mci
+     :name "arrow-collapse-up"}
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (- (* 5 60 1000))
+                                                        (js/Date.))}}])
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (- (* 60 60 1000))
+                                                        (js/Date.))}}])]
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
