@@ -250,6 +250,39 @@
                                                         (.valueOf)
                                                         (+ (* 60 60 1000))
                                                         (js/Date.))}}])]
+   [selection-menu-button
+    "start earlier"
+    {:family mci
+     :name "arrow-expand-up"}
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start  (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (- (* 5 60 1000))
+                                                        (js/Date.))}}])
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start  (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (- (* 60 60 1000))
+                                                        (js/Date.))}}])]
+
+   [selection-menu-button
+    "start later"
+    {:family mci
+     :name "arrow-collapse-down"}
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start  (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (+ (* 5 60 1000))
+                                                        (js/Date.))}}])
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start  (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (+ (* 60 60 1000))
+                                                        (js/Date.))}}])]
 
    [selection-menu-button
     "stop later"
