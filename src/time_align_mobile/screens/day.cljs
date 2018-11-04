@@ -8,6 +8,7 @@
                                                   get-instance-from-node
                                                   animated-view
                                                   mi
+                                                  mci
                                                   animated-xy
                                                   pan-responder]]
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
@@ -171,8 +172,9 @@
                                         :align-self       "flex-start"}}
    [view {:style {:flex-direction "row"
                   :align-items    "center"}}
-    [mi {:name  icon
-         :style {:margin-right 4}}]
+    [(:family icon)
+     {:name  (:name icon)
+      :style {:margin-right 4}}]
     [text label]]])
 
 (defn selection-menu-buttons [dimensions selected-period]
@@ -184,18 +186,21 @@
 
    [selection-menu-button
     "edit"
-    "edit"
+    {:family mi
+     :name "edit"}
     #(dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id (:id selected-period)}}])]
 
    [selection-menu-button
     "cancel"
-    "cancel"
+    {:family mi
+     :name "cancel"}
     #(dispatch [:select-period nil])]
 
    [selection-menu-button
     "up"
-    "arrow-upward"
+    {:family mi
+     :name "arrow-upward"}
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start (-> selected-period
                                                         (:start)
@@ -219,9 +224,10 @@
                                                         (- (* 60 60 1000))
                                                         (js/Date.))}}])]
 
-[selection-menu-button
+   [selection-menu-button
     "down"
-    "arrow-downward"
+    {:family mi
+     :name "arrow-downward"}
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start (-> selected-period
                                                         (:start)
@@ -240,6 +246,23 @@
                                                         (+ (* 60 60 1000)) ;; sixty minutes
                                                         (js/Date.))
                                              :stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (+ (* 60 60 1000))
+                                                        (js/Date.))}}])]
+
+   [selection-menu-button
+    "stop later"
+    {:family mci
+     :name "arrow-expand-down"}
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (+ (* 5 60 1000))
+                                                        (js/Date.))}}])
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:stop  (-> selected-period
                                                         (:stop)
                                                         (.valueOf)
                                                         (+ (* 60 60 1000))

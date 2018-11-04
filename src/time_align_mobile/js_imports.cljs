@@ -12,12 +12,14 @@
 (def ionicons (oget AtExpo "Ionicons"))
 (def entypo (oget AtExpo "Entypo"))
 (def material-icons (oget AtExpo "MaterialIcons"))
+(def material-community-icons (oget AtExpo "MaterialCommunityIcons"))
 
 (def ei (r/adapt-react-class evil-icons))
 (def fa (r/adapt-react-class font-awesome))
 (def ic (r/adapt-react-class ionicons))
 (def en (r/adapt-react-class entypo))
 (def mi (r/adapt-react-class material-icons))
+(def mci (r/adapt-react-class material-community-icons))
 
 (def react-native-component-tree (js/require "ReactNativeComponentTree"))
 (defn get-instance-from-node [id] (ocall react-native-component-tree "getInstanceFromNode" id))
