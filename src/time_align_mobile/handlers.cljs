@@ -394,7 +394,8 @@
 (defn delete-period [{:keys [db]} [_ id]]
   {:db (->> db
             (setval [:buckets sp/ALL :periods sp/ALL #(= id (:id %))] sp/NONE)
-            (setval [:forms :period-form] nil))
+            (setval [:forms :period-form] nil)
+            (setval [:selected-period] nil))
    ;; TODO pop stack when possible
    :dispatch [:navigate-to {:current-screen :periods}]})
 
