@@ -172,9 +172,7 @@
                                         :align-self       "flex-start"}}
    [view {:style {:flex-direction "row"
                   :align-items    "center"}}
-    [(:family icon)
-     {:name  (:name icon)
-      :style {:margin-right 4}}]
+    icon
     [text label]]])
 
 (defn selection-menu-buttons [dimensions selected-period]
@@ -186,21 +184,18 @@
 
    [selection-menu-button
     "edit"
-    {:family mi
-     :name "edit"}
+    [mi {:name "edit"}]
     #(dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id (:id selected-period)}}])]
 
    [selection-menu-button
     "cancel"
-    {:family mi
-     :name "cancel"}
+    [mi {:name "cancel"}]
     #(dispatch [:select-period nil])]
 
    [selection-menu-button
     "up"
-    {:family mi
-     :name "arrow-upward"}
+    [mi {:name "arrow-upward"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start (-> selected-period
                                                         (:start)
@@ -226,8 +221,7 @@
 
    [selection-menu-button
     "down"
-    {:family mi
-     :name "arrow-downward"}
+    [mi {:name "arrow-downward"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start (-> selected-period
                                                         (:start)
@@ -252,8 +246,7 @@
                                                         (js/Date.))}}])]
    [selection-menu-button
     "start earlier"
-    {:family mci
-     :name "arrow-expand-up"}
+    [mci {:name "arrow-expand-up"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start  (-> selected-period
                                                         (:start)
@@ -269,8 +262,7 @@
 
    [selection-menu-button
     "start later"
-    {:family mci
-     :name "arrow-collapse-down"}
+    [mci {:name "arrow-collapse-down"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start  (-> selected-period
                                                         (:start)
@@ -286,8 +278,7 @@
 
    [selection-menu-button
     "stop later"
-    {:family mci
-     :name "arrow-expand-down"}
+    [mci {:name "arrow-expand-down"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:stop  (-> selected-period
                                                         (:stop)
@@ -303,8 +294,7 @@
 
    [selection-menu-button
     "stop earlier"
-    {:family mci
-     :name "arrow-collapse-up"}
+    [mci {:name "arrow-collapse-up"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:stop  (-> selected-period
                                                         (:stop)
