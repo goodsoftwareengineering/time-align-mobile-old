@@ -307,6 +307,13 @@
                                                         (.valueOf)
                                                         (- (* 60 60 1000))
                                                         (js/Date.))}}])]
+
+   [selection-menu-button
+    "copy over"
+    [mi {:name "content-copy"}]
+    #(dispatch [:add-period {:period selected-period
+                             :bucket-id (:bucket-id selected-period)}])]
+
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]

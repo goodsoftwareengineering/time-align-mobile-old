@@ -50,6 +50,10 @@
                                            ))
               (setval [:effects :alert] sp/NONE context)))))
 
+;; -- Helpers ---------------------------------------------------------------
+(defn _clean-period [period]
+  (select-keys period (keys period-data-spec)))
+
 ;; -- Handlers --------------------------------------------------------------
 
 (defn initialize-db [_ _] app-db)
@@ -332,7 +336,7 @@
                                :last-edited now
                                :start start
                                :stop  stop})
-        period-clean   (select-keys period (keys period-data-spec))]
+        period-clean   (_clean-period period)]
 
     {:db       (setval [:buckets sp/ALL
                         #(= (:id %) (:bucket-id template))
@@ -418,6 +422,17 @@
              #(merge % update-map)
              db))
 
+(defn add-period [db [_ {:keys [period bucket-id]}]]
+  (setval [:buckets sp/ALL
+           #(= (:id %) bucket-id)
+           :periods
+           sp/NIL->VECTOR
+           sp/AFTER-ELEM]
+          (merge (_clean-period period)
+                 {:id (random-uuid)
+                  :planned (not (:planned period))})
+          db))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -444,3 +459,4 @@
 (reg-event-fx :delete-filter [validate-spec] delete-filter)
 (reg-event-db :select-period [validate-spec] select-period)
 (reg-event-db :update-period [validate-spec] update-period)
+(reg-event-db :add-period [validate-spec] add-period)
