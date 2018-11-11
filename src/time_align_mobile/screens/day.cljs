@@ -313,7 +313,8 @@
    [selection-menu-button
     "copy over"
     [mi {:name "content-copy"}]
-    #(dispatch [:add-period {:period    selected-period
+    #(dispatch [:add-period {:period    (merge selected-period
+                                               {:planned (not (:planned selected-period))})
                              :bucket-id (:bucket-id selected-period)}])]
 
    [selection-menu-button
@@ -346,6 +347,41 @@
                                                         (- (* 24 60 60 1000))
                                                         (js/Date.))}}])]
 
+   [selection-menu-button
+    "copy next day"
+    [view
+     [mi {:name "content-copy"}]
+     [mi {:name "arrow-forward"}]]
+    #(dispatch [:add-period {:period    (merge selected-period
+                                               {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (+ (* 24 60 60 1000))
+                                                           (js/Date.))
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (+ (* 24 60 60 1000))
+                                                           (js/Date.))})
+                             :bucket-id (:bucket-id selected-period)}])]
+
+   [selection-menu-button
+    "copy previous day"
+    [view
+     [mi {:name "content-copy"}]
+     [mi {:name "arrow-back"}]]
+    #(dispatch [:add-period {:period    (merge selected-period
+                                               {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (- (* 24 60 60 1000))
+                                                           (js/Date.))
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (- (* 24 60 60 1000))
+                                                           (js/Date.))})
+                             :bucket-id (:bucket-id selected-period)}])]
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]

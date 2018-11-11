@@ -430,8 +430,7 @@
            sp/NIL->VECTOR
            sp/AFTER-ELEM]
           (merge (_clean-period period)
-                 {:id (random-uuid)
-                  :planned (not (:planned period))})
+                 {:id (random-uuid)})
           db))
 
 (reg-event-db :initialize-db [validate-spec] initialize-db)
