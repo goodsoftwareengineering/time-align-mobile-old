@@ -317,7 +317,7 @@
                              :bucket-id (:bucket-id selected-period)}])]
 
    [selection-menu-button
-    "move to tomorrow"
+    "forward a day"
     [mi {:name "fast-forward"}]
     #(dispatch [:update-period {:id         (:id selected-period)
                                 :update-map {:start (-> selected-period
@@ -329,6 +329,21 @@
                                                         (:stop)
                                                         (.valueOf)
                                                         (+ (* 24 60 60 1000))
+                                                        (js/Date.))}}])]
+
+   [selection-menu-button
+    "back a day"
+    [mi {:name "fast-rewind"}]
+    #(dispatch [:update-period {:id         (:id selected-period)
+                                :update-map {:start (-> selected-period
+                                                        (:start)
+                                                        (.valueOf)
+                                                        (- (* 24 60 60 1000))
+                                                        (js/Date.))
+                                             :stop  (-> selected-period
+                                                        (:stop)
+                                                        (.valueOf)
+                                                        (- (* 24 60 60 1000))
                                                         (js/Date.))}}])]
 
    ])
