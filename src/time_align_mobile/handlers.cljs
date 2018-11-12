@@ -433,6 +433,22 @@
                  {:id (random-uuid)})
           db))
 
+(defn select-next-period [db [_ _]]
+  (if-let [selected-period-id (get-in db [:selected-period])]
+    (let [sorted-periods (->> db
+                              (select [:buckets sp/ALL :periods sp/ALL])
+                              (filter #(and (some? (:start %))
+                                            (some? (:stop %))
+                                            (or ())))
+                              (sort-by #(.valueOf (:start %))))
+          next-period    (->> sorted-periods
+                              (drop-while #(not (= (:id %) selected-period-id)))
+                              (second))]
+      (if (some? next-period)
+        (assoc-in db [:selected-period] (:id next-period))
+        db))
+    db))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -460,3 +476,4 @@
 (reg-event-db :select-period [validate-spec] select-period)
 (reg-event-db :update-period [validate-spec] update-period)
 (reg-event-db :add-period [validate-spec] add-period)
+(reg-event-db :select-next-period [validate-spec] select-next-period)

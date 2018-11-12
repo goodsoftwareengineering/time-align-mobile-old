@@ -185,15 +185,15 @@
                  :flex-wrap        "wrap"}}
 
    [selection-menu-button
+    "cancel"
+    [mi {:name "cancel"}]
+    #(dispatch [:select-period nil])]
+
+   [selection-menu-button
     "edit"
     [mi {:name "edit"}]
     #(dispatch [:navigate-to {:current-screen :period
                               :params         {:period-id (:id selected-period)}}])]
-
-   [selection-menu-button
-    "cancel"
-    [mi {:name "cancel"}]
-    #(dispatch [:select-period nil])]
 
    [selection-menu-button
     "up"
@@ -382,6 +382,17 @@
                                                            (- (* 24 60 60 1000))
                                                            (js/Date.))})
                              :bucket-id (:bucket-id selected-period)}])]
+
+   [selection-menu-button
+    "select next"
+    [mci {:name "arrow-down-drop-circle"}]
+    #(dispatch [:select-next-period])]
+
+   [selection-menu-button
+    "select prev"
+    [mci {:name "arrow-down-drop-circle"
+          :style {:transform [{:rotate "180deg"}]}}]
+    ]
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
