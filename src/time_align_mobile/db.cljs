@@ -293,7 +293,7 @@
                                     {:id          (uuid "b89e4f81-38d4-4d4f-ab19-a7cef18c6647")
                                      :created     (new js/Date 2018 4 28 15 57)
                                      :last-edited (new js/Date 2018 4 28 15 57)
-                                     :label       "Breakfast with Kaiti"
+                                     :label       "Breakfast with Girlfriend"
                                      :planned     true
                                      :start       {:hour 7 :minute 0}
                                      :duration    (* 2 ;; 2 hours converted to ms
@@ -302,7 +302,7 @@
                                     {:id          (uuid "da3e4f81-38d4-4d4f-ab19-a7cef18c6641")
                                      :created     (new js/Date 2018 4 28 15 57)
                                      :last-edited (new js/Date 2018 4 28 15 57)
-                                     :label       "Date with kaiti"
+                                     :label       "Date with Girlfriend"
                                      :planned     true
                                      :start       nil
                                      :duration    nil
@@ -310,7 +310,7 @@
                                     {:id          (uuid "ef111f81-38d4-4d4f-ab19-a7cef18caa31")
                                      :created     (new js/Date 2018 4 28 15 57)
                                      :last-edited (new js/Date 2018 4 28 15 57)
-                                     :label       "Lunch with Jason"
+                                     :label       "Lunch with Brother"
                                      :planned     true
                                      :start       nil
                                      :duration    (* 1.5 60 60 1000)
