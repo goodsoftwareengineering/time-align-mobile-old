@@ -83,15 +83,38 @@
               23
               59)))
 
+(defn back-n-days [date n]
+  (let [days (.getDate date)
+        month (.getMonth date)
+        year (.getFullYear date)]
+    (js/Date. year month (- days n))))
+
+(defn forward-n-days [date n]
+  (let [days (.getDate date)
+        month (.getMonth date)
+        year (.getFullYear date)]
+    (js/Date. year month (+ days n))))
+
 ;; components
-(defn top-bar [{:keys [top-bar-height dimensions]}]
+(defn top-bar [{:keys [top-bar-height dimensions displayed-day]}]
   [view {:style {:height top-bar-height
                  :width (:width @dimensions)
                  :background-color "#b9b9b9"
-                 :justify-content "center"
+                 :justify-content "space-around"
+                 :flex-direction "row"
                  :align-items "center"}}
-   [text {:style {:justify-content "center"
-                  :align-items "center"}} (str (js/Date.))]])
+   [touchable-highlight
+    {:on-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
+     :on-long-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 7)])}
+    [mi {:name "fast-rewind"}]]
+   [view {:style {:justify-content "center"
+                  :align-items "center"
+                  :width "75%"}}
+    [text  (str displayed-day)]]
+   [touchable-highlight
+    {:on-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
+     :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
+    [mi {:name "fast-forward"}]]])
 
 (defn period [{:keys [period dimensions displayed-day]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
@@ -458,7 +481,7 @@
   (let [dimensions      (r/atom {:width nil :height nil})
         top-bar-height  25
         periods         (subscribe [:get-periods])
-        displayed-day   (js/Date.)
+        displayed-day   (subscribe [:get-day-time-navigator])
         selected-period (subscribe [:get-selected-period])]
 
     (r/create-class
@@ -475,7 +498,8 @@
          ;; make our own status bar
          [status-bar {:hidden true}]
          [top-bar {:top-bar-height top-bar-height
-                   :dimensions     dimensions}]
+                   :dimensions     dimensions
+                   :displayed-day @displayed-day}]
 
          ;; view that stretches to fill what is left of the screen
          [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
@@ -486,13 +510,13 @@
           (doall (->> @periods
                       (filter (fn [{:keys [start stop]}]
                                 (cond (and (some? start) (some? stop))
-                                      (or (same-day? displayed-day start)
-                                          (same-day? displayed-day stop)))))
+                                      (or (same-day? @displayed-day start)
+                                          (same-day? @displayed-day stop)))))
                       (map #(period {:period     %
-                                     :displayed-day displayed-day
+                                     :displayed-day @displayed-day
                                      :dimensions @dimensions}))))
 
 
           ;; selection menu
           (when (some? @selected-period)
-            [selection-menu @dimensions @selected-period displayed-day])]])})))
+            [selection-menu @dimensions @selected-period @displayed-day])]])})))

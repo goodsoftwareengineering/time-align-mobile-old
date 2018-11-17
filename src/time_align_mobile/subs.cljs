@@ -184,6 +184,9 @@
                               :color        (:color bucket)})
       nil)))
 
+(defn get-day-time-navigator [db _]
+  (get-in db [:time-navigators :day]))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -199,4 +202,4 @@
 (reg-sub :get-active-filter get-active-filter)
 (reg-sub :get-periods get-periods)
 (reg-sub :get-selected-period get-selected-period)
-
+(reg-sub :get-day-time-navigator get-day-time-navigator)

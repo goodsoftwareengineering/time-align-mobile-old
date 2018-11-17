@@ -192,6 +192,9 @@
                                      :params         (ds/maybe map?)}
 
                    :buckets [bucket-spec]
+                   :time-navigators {:day ::moment
+                                     :calendar ::moment
+                                     :report ::moment}
                    :config  {:auto-log-time-align boolean?}}
             :name ::app-db}))
 (def app-db
@@ -326,6 +329,9 @@
                       :templates   nil
                       :periods     (->> (range 5)
                                         (map #(gen/generate (s/gen period-spec))))}]
+   :time-navigators {:day (js/Date.)
+                     :calendar (js/Date.)
+                     :report (js/Date.)}
    :config          {:auto-log-time-align true}})
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app

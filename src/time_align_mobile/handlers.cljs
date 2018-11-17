@@ -449,6 +449,9 @@
         db))
     db))
 
+(defn update-day-time-navigator [db [_ new-date]]
+  (assoc-in db [:time-navigators :day] new-date))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -477,3 +480,4 @@
 (reg-event-db :update-period [validate-spec] update-period)
 (reg-event-db :add-period [validate-spec] add-period)
 (reg-event-db :select-next-period [validate-spec] select-next-period)
+(reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
