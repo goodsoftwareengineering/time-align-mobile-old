@@ -13,6 +13,7 @@
                                                   pan-responder]]
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
+            [time-align-mobile.helpers :refer [same-day?]]
             [goog.string :as gstring]
             [zprint.core :refer [zprint]]
             [goog.string.format]
@@ -55,14 +56,6 @@
   (-> duration-ms
       (/ day-ms)
       (* total-height)))
-
-(defn same-day? [date-a date-b]
-  (and (= (.getFullYear date-a)
-          (.getFullYear date-b))
-       (= (.getMonth date-a)
-          (.getMonth date-b))
-       (= (.getDate date-a)
-          (.getDate date-b))))
 
 (defn bound-start [start day]
   (if (same-day? day start)
@@ -409,13 +402,13 @@
    [selection-menu-button
     "select next"
     [mci {:name "arrow-down-drop-circle"}]
-    #(dispatch [:select-next-period])]
+    #(dispatch [:select-next-or-prev-period :next])]
 
    [selection-menu-button
     "select prev"
     [mci {:name "arrow-down-drop-circle"
           :style {:transform [{:rotate "180deg"}]}}]
-    ]
+    #(dispatch [:select-next-or-prev-period :prev])]
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]

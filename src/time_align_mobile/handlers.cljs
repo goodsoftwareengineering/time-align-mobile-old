@@ -6,6 +6,7 @@
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
     [time-align-mobile.js-imports :refer [alert]]
+    [time-align-mobile.helpers :refer [same-day?]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
 ;; -- Interceptors ----------------------------------------------------------
@@ -433,15 +434,28 @@
                  {:id (random-uuid)})
           db))
 
-(defn select-next-period [db [_ _]]
+(defn select-next-or-prev-period [db [_ direction]]
   (if-let [selected-period-id (get-in db [:selected-period])]
-    (let [sorted-periods (->> db
+    (let [displayed-day (get-in db [:time-navigators :day])
+          selected-period (select-one [:buckets sp/ALL :periods sp/ALL
+                                       #(= selected-period-id (:id %))] db)
+          sorted-periods (->> db
                               (select [:buckets sp/ALL :periods sp/ALL])
+                              ;; Next period needs to be on this displayed day
                               (filter #(and (some? (:start %))
                                             (some? (:stop %))
-                                            (or ())))
-                              (sort-by #(.valueOf (:start %))))
+                                            (or (same-day? (:start %) displayed-day)
+                                                (same-day? (:stop %) displayed-day))))
+                              ;; Next period needs to be visible on this track
+                              (filter #(= (:planned selected-period) (:planned %)))
+                              (sort-by #(.valueOf (:start %)))
+                              (#(if (= direction :prev)
+                                  (reverse %)
+                                  %)))
           next-period    (->> sorted-periods
+                              ;; Since they are sorted, drop them until you get to
+                              ;; the current selected period.
+                              ;; Then take the next one.
                               (drop-while #(not (= (:id %) selected-period-id)))
                               (second))]
       (if (some? next-period)
@@ -479,5 +493,5 @@
 (reg-event-db :select-period [validate-spec] select-period)
 (reg-event-db :update-period [validate-spec] update-period)
 (reg-event-db :add-period [validate-spec] add-period)
-(reg-event-db :select-next-period [validate-spec] select-next-period)
+(reg-event-db :select-next-or-prev-period [validate-spec] select-next-or-prev-period)
 (reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
