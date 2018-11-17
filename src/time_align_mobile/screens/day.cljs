@@ -97,22 +97,22 @@
 
 ;; components
 (defn top-bar [{:keys [top-bar-height dimensions displayed-day]}]
-  [view {:style {:height top-bar-height
-                 :width (:width @dimensions)
+  [view {:style {:height           top-bar-height
+                 :width            (:width @dimensions)
                  :background-color "#b9b9b9"
-                 :justify-content "space-around"
-                 :flex-direction "row"
-                 :align-items "center"}}
+                 :justify-content  "space-around"
+                 :flex-direction   "row"
+                 :align-items      "center"}}
    [touchable-highlight
-    {:on-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
+    {:on-press      #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
      :on-long-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 7)])}
     [mi {:name "fast-rewind"}]]
    [view {:style {:justify-content "center"
-                  :align-items "center"
-                  :width "75%"}}
+                  :align-items     "center"
+                  :width           "75%"}}
     [text  (str displayed-day)]]
    [touchable-highlight
-    {:on-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
+    {:on-press      #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
      :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
     [mi {:name "fast-forward"}]]])
 
