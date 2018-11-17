@@ -21,6 +21,7 @@
 (def mi (r/adapt-react-class material-icons))
 (def mci (r/adapt-react-class material-community-icons))
 
+(def app-state (oget ReactNative "AppState"))
 (def react-native-component-tree (js/require "ReactNativeComponentTree"))
 (defn get-instance-from-node [id] (ocall react-native-component-tree "getInstanceFromNode" id))
 (def pan-responder (oget ReactNative "PanResponder"))
