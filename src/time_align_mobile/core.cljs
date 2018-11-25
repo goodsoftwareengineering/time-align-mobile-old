@@ -72,31 +72,28 @@
                    label-element]]))))])
 
 (defn app-root []
-  (let [timer-atom (r/atom (js/Date.))]
-    (fn []
-      (let [navigation (subscribe [:get-navigation])]
-        (fn []
-          (js/setTimeout (fn []
-                           (let [time (js/Date.)]
-                             (reset! timer-atom time)
-                             (println (str (.toTimeString time) " after hot reload")))) 5000)
-          [view {:style {:flex 1
-                         :background-color "#ffffff"}}
-           [drawer-layout
-            {:drawer-width 200
-             :drawer-position "left"
-             :drawer-type "front"
-             :drawer-background-color "#ddd"
-             :render-navigation-view (fn [] (r/as-element (drawer-list)))}
+  (fn []
+    (let [navigation (subscribe [:get-navigation])]
+      (fn []
+        [view {:style {:flex             1
+                       :background-color "#ffffff"}}
+         [drawer-layout
+          {:drawer-width            200
+           :drawer-position         "left"
+           :drawer-type             "front"
+           :drawer-background-color "#ddd"
+           :render-navigation-view  (fn [] (r/as-element (drawer-list)))}
 
-            (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
-                                          (:screen %))
-                                       nav/screens-map)]
-              [view {:style {:flex 1 :align-items "center" :justify-content "center"}}
-               [text (str " --- " (.toTimeString @timer-atom))]]
-              ;; [screen-comp (:params @navigation)]
-              [view [text "That screen doesn't exist"]])]])))))
+          (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
+                                        (:screen %))
+                                     nav/screens-map)]
+            [screen-comp (:params @navigation)]
+            [view [text "That screen doesn't exist"]])]]))))
 
 (defn init []
   (dispatch-sync [:initialize-db])
+  ;; Start ticking
+  (js/setInterval (fn []
+                    (let [time (js/Date.)]
+                      (dispatch [:tick time]))) 1000)
   (ocall expo "registerRootComponent" (r/reactify-component app-root)))

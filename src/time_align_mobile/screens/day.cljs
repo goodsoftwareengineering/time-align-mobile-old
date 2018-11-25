@@ -89,25 +89,35 @@
     (js/Date. year month (+ days n))))
 
 ;; components
-(defn top-bar [{:keys [top-bar-height dimensions displayed-day]}]
+(defn top-bar [{:keys [top-bar-height dimensions displayed-day now]}]
   [view {:style {:height           top-bar-height
                  :width            (:width @dimensions)
                  :background-color "#b9b9b9"
-                 :justify-content  "space-around"
-                 :flex-direction   "row"
+                 :flex-direction   "column"
                  :align-items      "center"}}
-   [touchable-highlight
-    {:on-press      #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
-     :on-long-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 7)])}
-    [mi {:name "fast-rewind"}]]
-   [view {:style {:justify-content "center"
-                  :align-items     "center"
-                  :width           "75%"}}
-    [text  (str displayed-day)]]
-   [touchable-highlight
-    {:on-press      #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
-     :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
-    [mi {:name "fast-forward"}]]])
+   [view {:style {:flex-direction "row"
+                  :align-items    "center"
+                  :margin-bottom  4}}
+    [text (str now)]]
+   [view {:style {:flex-direction "row"
+                  :align-items    "center"}}
+    ;; back
+    [touchable-highlight
+     {:on-press      #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
+      :on-long-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 7)])}
+     [mi {:name "fast-rewind"}]]
+
+    ;; displayed day
+    [view {:style {:justify-content "center"
+                   :align-items     "center"
+                   :width           "75%"}}
+     [text  (.toDateString displayed-day)]]
+
+    ;; forward
+    [touchable-highlight
+     {:on-press      #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
+      :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
+     [mi {:name "fast-forward"}]]]])
 
 (defn period [{:keys [period dimensions displayed-day]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
@@ -472,10 +482,11 @@
 
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
-        top-bar-height  25
+        top-bar-height  50
         periods         (subscribe [:get-periods])
         displayed-day   (subscribe [:get-day-time-navigator])
-        selected-period (subscribe [:get-selected-period])]
+        selected-period (subscribe [:get-selected-period])
+        now             (subscribe [:get-now])]
 
     (r/create-class
      {:reagent-render
@@ -492,7 +503,8 @@
          [status-bar {:hidden true}]
          [top-bar {:top-bar-height top-bar-height
                    :dimensions     dimensions
-                   :displayed-day @displayed-day}]
+                   :displayed-day  @displayed-day
+                   :now            @now}]
 
          ;; view that stretches to fill what is left of the screen
          [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
@@ -505,9 +517,9 @@
                                 (cond (and (some? start) (some? stop))
                                       (or (same-day? @displayed-day start)
                                           (same-day? @displayed-day stop)))))
-                      (map #(period {:period     %
+                      (map #(period {:period        %
                                      :displayed-day @displayed-day
-                                     :dimensions @dimensions}))))
+                                     :dimensions    @dimensions}))))
 
 
           ;; selection menu

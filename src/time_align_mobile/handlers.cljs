@@ -466,6 +466,10 @@
 (defn update-day-time-navigator [db [_ new-date]]
   (assoc-in db [:time-navigators :day] new-date))
 
+(defn tick [db [_ date-time]]
+  (println (str "tick update: " (.toTimeString date-time)))
+  (assoc-in db [:now] date-time))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -495,3 +499,4 @@
 (reg-event-db :add-period [validate-spec] add-period)
 (reg-event-db :select-next-or-prev-period [validate-spec] select-next-or-prev-period)
 (reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
+(reg-event-db :tick [validate-spec] tick)

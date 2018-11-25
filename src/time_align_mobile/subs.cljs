@@ -187,6 +187,9 @@
 (defn get-day-time-navigator [db _]
   (get-in db [:time-navigators :day]))
 
+(defn get-now [db _]
+  (get-in db [:now]))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -203,3 +206,4 @@
 (reg-sub :get-periods get-periods)
 (reg-sub :get-selected-period get-selected-period)
 (reg-sub :get-day-time-navigator get-day-time-navigator)
+(reg-sub :get-now get-now)

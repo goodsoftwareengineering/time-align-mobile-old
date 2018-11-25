@@ -191,11 +191,12 @@
                    :navigation      {:current-screen ::screen
                                      :params         (ds/maybe map?)}
 
-                   :buckets [bucket-spec]
-                   :time-navigators {:day ::moment
+                   :buckets         [bucket-spec]
+                   :time-navigators {:day      ::moment
                                      :calendar ::moment
-                                     :report ::moment}
-                   :config  {:auto-log-time-align boolean?}}
+                                     :report   ::moment}
+                   :config          {:auto-log-time-align boolean?}
+                   :now             inst?}
             :name ::app-db}))
 (def app-db
   {:forms           {:bucket-form   nil
@@ -332,7 +333,8 @@
    :time-navigators {:day      (js/Date.)
                      :calendar (js/Date.)
                      :report   (js/Date.)}
-   :config          {:auto-log-time-align true}})
+   :config          {:auto-log-time-align true}
+   :now             (js/Date.)})
 
 ;; TODO use https://facebook.github.io/react-native/docs/appstate.html to log all time in app
 ;; old initial state of app-db
