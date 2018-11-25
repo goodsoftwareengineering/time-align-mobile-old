@@ -467,8 +467,23 @@
   (assoc-in db [:time-navigators :day] new-date))
 
 (defn tick [db [_ date-time]]
-  (println (str "tick update: " (.toTimeString date-time)))
-  (assoc-in db [:now] date-time))
+  (let [period-in-play-id (get-in db [:period-in-play-id])]
+
+    ;; TODO remove this
+    (println (str "tick update: " (.toTimeString date-time)))
+
+    ;; Update period in play if there is one
+    (-> (if (some? period-in-play-id)
+          (transform [:buckets sp/ALL
+                      :periods sp/ALL
+                      #(= (:id %) period-in-play-id)]
+
+                     #(merge % {:stop date-time})
+
+                     db)
+          db)
+        ;; update now regardless
+        (assoc-in [:now] date-time))))
 
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
