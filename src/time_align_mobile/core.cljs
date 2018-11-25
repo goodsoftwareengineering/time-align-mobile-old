@@ -71,54 +71,31 @@
                    icon-element
                    label-element]]))))])
 
-(defn app-state-handler [next-app-state]
-  (println (str "changed to " next-app-state)))
-
-(def timer-test (r/atom "initial text"))
-(def timer-id (js/setInterval
-               (fn []
-                 (let [time (.toTimeString (js/Date.))]
-                   (println time)
-                   (reset! timer-test time))) 5000))
-
 (defn app-root []
-  (r/create-class
-   {:component-did-mount
-   (fn []
-     (println "I mounted!")
-     (ocall app-state "addEventListener"
-            "change"
-            app-state-handler))
+  (let [timer-atom (r/atom (js/Date.))]
+    (fn []
+      (let [navigation (subscribe [:get-navigation])]
+        (fn []
+          (js/setTimeout (fn []
+                           (let [time (js/Date.)]
+                             (reset! timer-atom time)
+                             (println (str (.toTimeString time) " after hot reload")))) 5000)
+          [view {:style {:flex 1
+                         :background-color "#ffffff"}}
+           [drawer-layout
+            {:drawer-width 200
+             :drawer-position "left"
+             :drawer-type "front"
+             :drawer-background-color "#ddd"
+             :render-navigation-view (fn [] (r/as-element (drawer-list)))}
 
-   :component-will-unmount
-   (fn []
-     ;; Not sure this will ever get run, I hope it doesn't cause a memory leak or something :3
-     (println "I'm unmounting!")
-     (ocall app-state "removeEventListener"
-            "change"
-            app-state-handler))
-
-   :reagent-render
-   (fn []
-     (let [navigation (subscribe [:get-navigation])]
-       (fn []
-         [view {:style {:flex 1
-                        :background-color "#ffffff"}}
-          [drawer-layout
-           {:drawer-width 200
-            :drawer-position "left"
-            :drawer-type "front"
-            :drawer-background-color "#ddd"
-            :render-navigation-view (fn [] (r/as-element (drawer-list)))}
-
-           (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
-                                         (:screen %))
-                                      nav/screens-map)]
-             [view {:style {:flex 1 :align-items "center" :justify-content "center"}}
-              [touchable-highlight {:on-press #(js/clearInterval timer-id)}
-               [text @timer-test]]]
-             ;; [screen-comp (:params @navigation)]
-             [view [text "That screen doesn't exist"]])]])))}))
+            (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
+                                          (:screen %))
+                                       nav/screens-map)]
+              [view {:style {:flex 1 :align-items "center" :justify-content "center"}}
+               [text (str " --- " (.toTimeString @timer-atom))]]
+              ;; [screen-comp (:params @navigation)]
+              [view [text "That screen doesn't exist"]])]])))))
 
 (defn init []
   (dispatch-sync [:initialize-db])
