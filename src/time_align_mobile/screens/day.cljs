@@ -416,10 +416,16 @@
 
    [selection-menu-button
     "select prev"
-    [mci {:name "arrow-down-drop-circle"
+    [mci {:name  "arrow-down-drop-circle"
           :style {:transform [{:rotate "180deg"}]}}]
     #(dispatch [:select-next-or-prev-period :prev])]
-   ])
+
+   [selection-menu-button
+    "play from"
+    [mi {:name "play-arrow"}]
+    #(dispatch [:play-from-period  {:id           (:id selected-period)
+                                    :time-started (js/Date.)
+                                    :new-id       (random-uuid)}])]])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
   (let [adjusted-start             (bound-start (:start selected-period) displayed-day)

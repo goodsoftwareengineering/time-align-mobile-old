@@ -474,16 +474,44 @@
 
     ;; Update period in play if there is one
     (-> (if (some? period-in-play-id)
-          (transform [:buckets sp/ALL
-                      :periods sp/ALL
-                      #(= (:id %) period-in-play-id)]
+          (do (println "Updating period in play")
+              (transform [:buckets sp/ALL
+                          :periods sp/ALL
+                          #(= (:id %) period-in-play-id)]
 
-                     #(merge % {:stop date-time})
+                         #(merge % {:stop date-time})
 
-                     db)
+                         db))
           db)
         ;; update now regardless
         (assoc-in [:now] date-time))))
+
+(defn play-from-period [db [_ {:keys [id time-started new-id]}]]
+  (let [[bucket-just-id
+         period-to-play-from] (select-one [:buckets sp/ALL
+                                           (sp/collect-one (sp/submap [:id]))
+                                           :periods sp/ALL
+                                           #(= (:id %) id)] db)
+        new-period            (merge period-to-play-from
+                                     {:id      new-id
+                                      :planned false
+                                      :start   time-started
+                                      :stop    (->> time-started
+                                                    (.valueOf)
+                                                    (+ (* 25 60 1000))
+                                                    (js/Date.))})]
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) (:id bucket-just-id))
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] new-id)
+         ;; Set it as selected
+         (setval [:selected-period] new-id))))
 
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
@@ -515,3 +543,4 @@
 (reg-event-db :select-next-or-prev-period [validate-spec] select-next-or-prev-period)
 (reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
 (reg-event-db :tick [validate-spec] tick)
+(reg-event-db :play-from-period [validate-spec] play-from-period)
