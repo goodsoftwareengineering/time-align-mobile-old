@@ -23,9 +23,6 @@
                                                     gesture-handler
                                                     drawer-layout]] ))
 
-
-(println (oget app-state "currentState"))
-
 (defn drawer-list []
   [view {:style {:flex 1 :justify-content "center" :align-items "flex-start"}}
    (->> nav/screens-map
@@ -77,6 +74,13 @@
 (defn app-state-handler [next-app-state]
   (println (str "changed to " next-app-state)))
 
+(def timer-test (r/atom "initial text"))
+(def timer-id (js/setInterval
+               (fn []
+                 (let [time (.toTimeString (js/Date.))]
+                   (println time)
+                   (reset! timer-test time))) 5000))
+
 (defn app-root []
   (r/create-class
    {:component-did-mount
@@ -110,7 +114,10 @@
            (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
                                          (:screen %))
                                       nav/screens-map)]
-             [screen-comp (:params @navigation)]
+             [view {:style {:flex 1 :align-items "center" :justify-content "center"}}
+              [touchable-highlight {:on-press #(js/clearInterval timer-id)}
+               [text @timer-test]]]
+             ;; [screen-comp (:params @navigation)]
              [view [text "That screen doesn't exist"]])]])))}))
 
 (defn init []
