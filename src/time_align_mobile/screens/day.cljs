@@ -578,6 +578,8 @@
                  :visible        @play-modal-visible}
           [view {:style {:flex    1
                          :padding 10}}
+           [touchable-highlight {:on-press #(reset! play-modal-visible false)}
+            [text "Cancel"]]
            [scroll-view {:style {:height "50%"}}
             [text "Select a bucket to make the period with"]
             [flat-list {:data @buckets
