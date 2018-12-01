@@ -2,6 +2,7 @@
   (:require [time-align-mobile.js-imports :refer [view
                                                   scroll-view
                                                   text
+                                                  flat-list
                                                   format-date
                                                   touchable-highlight
                                                   status-bar
@@ -9,11 +10,13 @@
                                                   animated-view
                                                   mi
                                                   mci
+                                                  modal
                                                   animated-xy
                                                   pan-responder]]
             [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                                oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
             [time-align-mobile.helpers :refer [same-day?]]
+            [time-align-mobile.components.list-items :as list-items]
             [goog.string :as gstring]
             [zprint.core :refer [zprint]]
             [goog.string.format]
@@ -26,6 +29,8 @@
   (* 24 60 60 1000))
 
 (def padding 10)
+
+(def play-modal-visible (r/atom false))
 
 ;; helper functions
 (defn get-ms
@@ -446,6 +451,11 @@
       "select playing"
       [mi {:name "play-circle-filled"}]
       #(dispatch [:select-period (:id period-in-play)])])
+
+   [selection-menu-button
+    "play"
+    [mi {:name "play-arrow"}]
+    #(reset! play-modal-visible true)]
    ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
@@ -516,7 +526,9 @@
         displayed-day   (subscribe [:get-day-time-navigator])
         selected-period (subscribe [:get-selected-period])
         period-in-play  (subscribe [:get-period-in-play])
-        now             (subscribe [:get-now])]
+        now             (subscribe [:get-now])
+        buckets         (subscribe [:get-buckets])
+        templates       (subscribe [:get-templates])]
 
     (r/create-class
      {:reagent-render
@@ -557,4 +569,50 @@
             [selection-menu {:dimensions      @dimensions
                              :selected-period @selected-period
                              :displayed-day   @displayed-day
-                             :period-in-play  @period-in-play}])]])})))
+                             :period-in-play  @period-in-play}])]
+
+
+         ;; play modal
+         [modal {:animation-type "slide"
+                 :transparent    false
+                 :visible        @play-modal-visible}
+          [view {:style {:flex    1
+                         :padding 10}}
+           [scroll-view {:style {:height "50%"}}
+            [text "Select a bucket to make the period with"]
+            [flat-list {:data @buckets
+                        :render-item
+                        (fn [i]
+                          (let [item (:item (js->clj i :keywordize-keys true))]
+                            (r/as-element
+                             (list-items/bucket
+                              (merge
+                               item
+                               {:on-press
+                                (fn [_]
+                                  (reset! play-modal-visible false)
+                                  ;; passing dispatch the parent bucket id
+                                  ;; for the period about to be created
+                                  (dispatch [:add-new-period {:bucket-id (:id item)
+                                                              :id        (random-uuid)
+                                                              :now       (new js/Date)}]))})))))}]]
+
+           [scroll-view {:style {:height "50%"}}
+            [text "Or select a template"]
+            [flat-list {:data @templates
+                        :render-item
+                        (fn [i]
+                          (let [item (:item (js->clj i :keywordize-keys true))]
+                            (r/as-element
+                             (list-items/template
+                              (merge
+                               item
+                               {:on-press
+                                (fn [_]
+                                  (reset! play-modal-visible false)
+                                  ;; passing dispatch the parent bucket id
+                                  ;; for the period about to be created
+                                  (dispatch [:add-template-period {:template item
+                                                                   :id       (random-uuid)
+                                                                   :now      (js/Date.)}]))})))))}]]]]])})))
+
