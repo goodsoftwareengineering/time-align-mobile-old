@@ -119,7 +119,7 @@
       :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
      [mi {:name "fast-forward"}]]]])
 
-(defn period [{:keys [period dimensions displayed-day]}]
+(defn period [{:keys [period dimensions displayed-day period-in-play]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
         adjusted-stop (bound-stop stop displayed-day)
         adjusted-start (bound-start start displayed-day)]
@@ -146,7 +146,10 @@
                                          (max 1)) ;; max 1 to actually see recently played periods
                    :border-radius    0
                    :background-color color
-                   :opacity          0.5}}
+                   :opacity          (if (= (:id period)
+                                            (:id period-in-play))
+                                       0.9
+                                       0.5)}}
      [touchable-highlight {:style {:width  "100%"
                                    :height "100%"
                                    :padding-left     10
@@ -206,7 +209,7 @@
     icon
     [text label]]])
 
-(defn selection-menu-buttons [dimensions selected-period]
+(defn selection-menu-buttons [{:keys [dimensions selected-period period-in-play]}]
   [view {:style {:background-color "white"
                  :width            "100%"
                  :padding-top      10
@@ -432,10 +435,18 @@
                                     :time-started (js/Date.)
                                     :new-id       (random-uuid)}])]
 
-   [selection-menu-button
-    "stop playing"
-    [mi {:name "stop"}]
-    #(dispatch [:stop-playing-period])]])
+   (when (some? period-in-play)
+     [selection-menu-button
+      "stop playing"
+      [mi {:name "stop"}]
+      #(dispatch [:stop-playing-period])])
+
+   (when (some? period-in-play)
+     [selection-menu-button
+      "select playing"
+      [mi {:name "play-circle-outline"}]
+      #(dispatch [:select-period (:id period-in-play)])])
+   ])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
   (let [adjusted-start             (bound-start (:start selected-period) displayed-day)
@@ -466,7 +477,7 @@
                                             [{:rotate "270deg"}]
                                             [{:rotate "90deg"}])}}])))
 
-(defn selection-menu [dimensions selected-period displayed-day]
+(defn selection-menu [{:keys [dimensions selected-period displayed-day period-in-play]}]
   [view {:style {:position         "absolute"
                  :background-color "blue"
                  :top              0
@@ -489,12 +500,14 @@
                                         (+ padding))
                   :background-color "#dcdcdc"}}
 
-                [selection-menu-info dimensions selected-period]
+    [selection-menu-info dimensions selected-period]
 
-                ;; buttons
-                [selection-menu-buttons dimensions selected-period]]
+    ;; buttons
+    [selection-menu-buttons {:dimensions      dimensions
+                             :selected-period selected-period
+                             :period-in-play  period-in-play}]]
 
-               [selection-menu-arrow dimensions selected-period displayed-day]])
+   [selection-menu-arrow dimensions selected-period displayed-day]])
 
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
@@ -502,6 +515,7 @@
         periods         (subscribe [:get-periods])
         displayed-day   (subscribe [:get-day-time-navigator])
         selected-period (subscribe [:get-selected-period])
+        period-in-play  (subscribe [:get-period-in-play])
         now             (subscribe [:get-now])]
 
     (r/create-class
@@ -533,11 +547,14 @@
                                 (cond (and (some? start) (some? stop))
                                       (or (same-day? @displayed-day start)
                                           (same-day? @displayed-day stop)))))
-                      (map #(period {:period        %
-                                     :displayed-day @displayed-day
-                                     :dimensions    @dimensions}))))
-
+                      (map #(period {:period         %
+                                     :displayed-day  @displayed-day
+                                     :dimensions     @dimensions
+                                     :period-in-play @period-in-play}))))
 
           ;; selection menu
           (when (some? @selected-period)
-            [selection-menu @dimensions @selected-period @displayed-day])]])})))
+            [selection-menu {:dimensions      @dimensions
+                             :selected-period @selected-period
+                             :displayed-day   @displayed-day
+                             :period-in-play  @period-in-play}])]])})))
