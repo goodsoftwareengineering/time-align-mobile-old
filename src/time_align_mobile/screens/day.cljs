@@ -430,7 +430,7 @@
 
    [selection-menu-button
     "play from"
-    [mi {:name "play-arrow"}]
+    [mi {:name "play-circle-outline"}]
     #(dispatch [:play-from-period  {:id           (:id selected-period)
                                     :time-started (js/Date.)
                                     :new-id       (random-uuid)}])]
@@ -444,7 +444,7 @@
    (when (some? period-in-play)
      [selection-menu-button
       "select playing"
-      [mi {:name "play-circle-outline"}]
+      [mi {:name "play-circle-filled"}]
       #(dispatch [:select-period (:id period-in-play)])])
    ])
 
