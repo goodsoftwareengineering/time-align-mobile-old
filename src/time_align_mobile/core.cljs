@@ -93,7 +93,5 @@
 (defn init []
   (dispatch-sync [:initialize-db])
   ;; Start ticking
-  (js/setInterval (fn []
-                    (let [time (js/Date.)]
-                      (dispatch [:tick time]))) 1000)
+  (js/setInterval #(dispatch [:tick (js/Date.)]) 1000)
   (ocall expo "registerRootComponent" (r/reactify-component app-root)))
