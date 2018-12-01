@@ -190,6 +190,18 @@
 (defn get-now [db _]
   (get-in db [:now]))
 
+(defn get-period-in-play [db _]
+  (let [period-in-play-id       (get-in db [:period-in-play-id])
+        [bucket period-in-play] (select-one [:buckets sp/ALL
+                                             (sp/collect-one (sp/submap [:id :color :label]))
+                                             :periods sp/ALL
+                                             #(= (:id %) period-in-play-id)] db)]
+    (if (some? period-in-play-id)
+      (merge period-in-play {:bucket-id     (:id bucket)
+                             :bucket-label (:label bucket)
+                             :color        (:color bucket)})
+      nil) ))
+
 (reg-sub :get-navigation get-navigation)
 (reg-sub :get-bucket-form get-bucket-form)
 (reg-sub :get-bucket-form-changes get-bucket-form-changes)
@@ -207,3 +219,4 @@
 (reg-sub :get-selected-period get-selected-period)
 (reg-sub :get-day-time-navigator get-day-time-navigator)
 (reg-sub :get-now get-now)
+(reg-sub :get-period-in-play get-period-in-play)
