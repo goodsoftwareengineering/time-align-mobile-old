@@ -516,6 +516,56 @@
 (defn stop-playing-period [db [_ _]]
   (assoc-in db [:period-in-play-id] nil))
 
+(defn play-from-bucket [db [_ {:keys [bucket-id id now]}]]
+  (let [new-period {:id          id
+                    :planned     false
+                    :start       now
+                    :stop        (->> now
+                                      (.valueOf)
+                                      (+ 1000)
+                                      (js/Date.))
+                    :created     now
+                    :last-edited now
+                    :label       ""
+                    :data        {}}]
+
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) bucket-id)
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] id)
+         ;; Set it as selected
+         (setval [:selected-period] id))))
+
+(defn play-from-template [db [_ {:keys [template id now]}]]
+  (let [new-period (merge template
+                          {:id          id
+                           :planned     false
+                           :start       now
+                           :stop        (->> now
+                                             (.valueOf)
+                                             (+ 1000)
+                                             (js/Date.))
+                           :created     now
+                           :last-edited now})]
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) (:bucket-id template))
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] id)
+         ;; Set it as selected
+         (setval [:selected-period] id))))
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
@@ -548,3 +598,5 @@
 (reg-event-db :tick [validate-spec] tick)
 (reg-event-db :play-from-period [validate-spec] play-from-period)
 (reg-event-db :stop-playing-period [validate-spec] stop-playing-period)
+(reg-event-db :play-from-bucket [validate-spec] play-from-bucket)
+(reg-event-db :play-from-template [validate-spec] play-from-template)

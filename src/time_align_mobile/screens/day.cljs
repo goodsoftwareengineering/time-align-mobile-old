@@ -595,9 +595,9 @@
                                   (reset! play-modal-visible false)
                                   ;; passing dispatch the parent bucket id
                                   ;; for the period about to be created
-                                  (dispatch [:add-new-period {:bucket-id (:id item)
-                                                              :id        (random-uuid)
-                                                              :now       (new js/Date)}]))})))))}]]
+                                  (dispatch [:play-from-bucket {:bucket-id (:id item)
+                                                                :id        (random-uuid)
+                                                                :now       (new js/Date)}]))})))))}]]
 
            [scroll-view {:style {:height "50%"}}
             [text "Or select a template"]
@@ -614,7 +614,7 @@
                                   (reset! play-modal-visible false)
                                   ;; passing dispatch the parent bucket id
                                   ;; for the period about to be created
-                                  (dispatch [:add-template-period {:template item
-                                                                   :id       (random-uuid)
-                                                                   :now      (js/Date.)}]))})))))}]]]]])})))
+                                  (dispatch [:play-from-template {:template item
+                                                                  :id       (random-uuid)
+                                                                  :now      (js/Date.)}]))})))))}]]]]])})))
 
