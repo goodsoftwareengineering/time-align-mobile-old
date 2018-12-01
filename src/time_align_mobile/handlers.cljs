@@ -498,7 +498,7 @@
                                       :start   time-started
                                       :stop    (->> time-started
                                                     (.valueOf)
-                                                    (+ (* 25 60 1000))
+                                                    (+ 1000)
                                                     (js/Date.))})]
     (->> db
          ;; Add new period
@@ -512,6 +512,9 @@
          (setval [:period-in-play-id] new-id)
          ;; Set it as selected
          (setval [:selected-period] new-id))))
+
+(defn stop-playing-period [db [_ _]]
+  (assoc-in db [:period-in-play-id] nil))
 
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec] navigate-to)
@@ -544,3 +547,4 @@
 (reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
 (reg-event-db :tick [validate-spec] tick)
 (reg-event-db :play-from-period [validate-spec] play-from-period)
+(reg-event-db :stop-playing-period [validate-spec] stop-playing-period)

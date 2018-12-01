@@ -142,7 +142,8 @@
                    :height           (-> adjusted-stop
                                          (.valueOf)
                                          (- (.valueOf adjusted-start))
-                                         (duration->height (:height dimensions)))
+                                         (duration->height (:height dimensions))
+                                         (max 1)) ;; max 1 to actually see recently played periods
                    :border-radius    0
                    :background-color color
                    :opacity          0.5}}
@@ -168,6 +169,10 @@
                           :padding-top      10
                           :padding-left     4
                           :max-height       "40%"}}
+
+     [heading-sub-comp "uuid"]
+     [info-sub-comp (:id selected-period)]
+
      [heading-sub-comp "label"]
      [info-sub-comp (:label selected-period)]
 
@@ -425,7 +430,12 @@
     [mi {:name "play-arrow"}]
     #(dispatch [:play-from-period  {:id           (:id selected-period)
                                     :time-started (js/Date.)
-                                    :new-id       (random-uuid)}])]])
+                                    :new-id       (random-uuid)}])]
+
+   [selection-menu-button
+    "stop playing"
+    [mi {:name "stop"}]
+    #(dispatch [:stop-playing-period])]])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
   (let [adjusted-start             (bound-start (:start selected-period) displayed-day)
