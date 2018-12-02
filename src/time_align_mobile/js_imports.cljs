@@ -70,6 +70,14 @@
 
 (def moment-timezone (js/require "moment-timezone"))
 (def moment-tz (oget moment-timezone "tz"))
+(def secure-store (oget expo "SecureStore"))
+(defn secure-store-set! [key value ]
+  ;; TODO include options and camel->kebab
+  (.setItemAsync secure-store key value))
+(defn secure-store-get! [key then-fn]
+  ;; TODO include options and camel->kebab
+  (-> (.getItemAsync secure-store key)
+      (.then then-fn)))
 
 (defn get-default-timezone []
   (ocall moment-tz "guess"))
@@ -103,3 +111,4 @@
   (ocall (moment-tz date (get-default-timezone))
           "format"
           "hh-mm"))
+
