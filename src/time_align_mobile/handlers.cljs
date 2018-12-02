@@ -1,5 +1,6 @@
 (ns time-align-mobile.handlers
   (:require
+    [time-align-mobile.js-imports :refer [secure-store-set! secure-store-get!]]
     [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx]]
     [zprint.core :refer [zprint]]
     [cljs.reader :refer [read-string]]
@@ -51,6 +52,13 @@
                                            ))
               (setval [:effects :alert] sp/NONE context)))))
 
+(def persist-secure-store
+  (->interceptor
+   :id :persist-secure-store
+   :after (fn [context]
+            (secure-store-set! "app-db" (-> context :effects :db str))
+            context)))
+
 ;; -- Helpers ---------------------------------------------------------------
 (defn _clean-period [period]
   (select-keys period (keys period-data-spec)))
@@ -58,6 +66,8 @@
 ;; -- Handlers --------------------------------------------------------------
 
 (defn initialize-db [_ _] app-db)
+
+(defn load-db [_ [_ db]] db)
 
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
   (merge {:db (-> db
@@ -561,37 +571,38 @@
          ;; Set it as selected
          (setval [:selected-period] id))))
 
-(reg-event-db :initialize-db [validate-spec] initialize-db)
-(reg-event-fx :navigate-to [validate-spec] navigate-to)
-(reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
-(reg-event-db :update-bucket-form [validate-spec] update-bucket-form)
-(reg-event-fx :save-bucket-form [alert-message validate-spec] save-bucket-form)
-(reg-event-db :load-period-form [validate-spec] load-period-form)
-(reg-event-db :update-period-form [validate-spec] update-period-form)
-(reg-event-fx :save-period-form [alert-message validate-spec] save-period-form)
-(reg-event-db :load-template-form [validate-spec] load-template-form)
-(reg-event-db :update-template-form [validate-spec] update-template-form)
-(reg-event-fx :save-template-form [alert-message validate-spec] save-template-form)
-(reg-event-db :load-filter-form [validate-spec] load-filter-form)
-(reg-event-db :update-filter-form [validate-spec] update-filter-form)
-(reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
-(reg-event-db :update-active-filter [validate-spec] update-active-filter)
-(reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
-(reg-event-fx :add-new-period [validate-spec] add-new-period)
-(reg-event-fx :add-template-period [validate-spec] add-template-period)
-(reg-event-fx :add-new-template [validate-spec] add-new-template)
-(reg-event-fx :add-new-filter [validate-spec] add-new-filter)
-(reg-event-fx :delete-bucket [validate-spec] delete-bucket)
-(reg-event-fx :delete-period [validate-spec] delete-period)
-(reg-event-fx :delete-template [validate-spec] delete-template)
-(reg-event-fx :delete-filter [validate-spec] delete-filter)
-(reg-event-db :select-period [validate-spec] select-period)
-(reg-event-db :update-period [validate-spec] update-period)
-(reg-event-db :add-period [validate-spec] add-period)
-(reg-event-db :select-next-or-prev-period [validate-spec] select-next-or-prev-period)
-(reg-event-db :update-day-time-navigator [validate-spec] update-day-time-navigator)
-(reg-event-db :tick [validate-spec] tick)
-(reg-event-db :play-from-period [validate-spec] play-from-period)
-(reg-event-db :stop-playing-period [validate-spec] stop-playing-period)
-(reg-event-db :play-from-bucket [validate-spec] play-from-bucket)
-(reg-event-db :play-from-template [validate-spec] play-from-template)
+(reg-event-db :initialize-db [validate-spec persist-secure-store] initialize-db)
+(reg-event-fx :navigate-to [validate-spec persist-secure-store] navigate-to)
+(reg-event-db :load-bucket-form [validate-spec persist-secure-store] load-bucket-form)
+(reg-event-db :update-bucket-form [validate-spec persist-secure-store] update-bucket-form)
+(reg-event-fx :save-bucket-form [alert-message validate-spec persist-secure-store] save-bucket-form)
+(reg-event-db :load-period-form [validate-spec persist-secure-store] load-period-form)
+(reg-event-db :update-period-form [validate-spec persist-secure-store] update-period-form)
+(reg-event-fx :save-period-form [alert-message validate-spec persist-secure-store] save-period-form)
+(reg-event-db :load-template-form [validate-spec persist-secure-store] load-template-form)
+(reg-event-db :update-template-form [validate-spec persist-secure-store] update-template-form)
+(reg-event-fx :save-template-form [alert-message validate-spec persist-secure-store] save-template-form)
+(reg-event-db :load-filter-form [validate-spec persist-secure-store] load-filter-form)
+(reg-event-db :update-filter-form [validate-spec persist-secure-store] update-filter-form)
+(reg-event-fx :save-filter-form [alert-message validate-spec persist-secure-store] save-filter-form)
+(reg-event-db :update-active-filter [validate-spec persist-secure-store] update-active-filter)
+(reg-event-fx :add-new-bucket [validate-spec persist-secure-store] add-new-bucket)
+(reg-event-fx :add-new-period [validate-spec persist-secure-store] add-new-period)
+(reg-event-fx :add-template-period [validate-spec persist-secure-store] add-template-period)
+(reg-event-fx :add-new-template [validate-spec persist-secure-store] add-new-template)
+(reg-event-fx :add-new-filter [validate-spec persist-secure-store] add-new-filter)
+(reg-event-fx :delete-bucket [validate-spec persist-secure-store] delete-bucket)
+(reg-event-fx :delete-period [validate-spec persist-secure-store] delete-period)
+(reg-event-fx :delete-template [validate-spec persist-secure-store] delete-template)
+(reg-event-fx :delete-filter [validate-spec persist-secure-store] delete-filter)
+(reg-event-db :select-period [validate-spec persist-secure-store] select-period)
+(reg-event-db :update-period [validate-spec persist-secure-store] update-period)
+(reg-event-db :add-period [validate-spec persist-secure-store] add-period)
+(reg-event-db :select-next-or-prev-period [validate-spec persist-secure-store] select-next-or-prev-period)
+(reg-event-db :update-day-time-navigator [validate-spec persist-secure-store] update-day-time-navigator)
+(reg-event-db :tick [validate-spec persist-secure-store] tick)
+(reg-event-db :play-from-period [validate-spec persist-secure-store] play-from-period)
+(reg-event-db :stop-playing-period [validate-spec persist-secure-store] stop-playing-period)
+(reg-event-db :play-from-bucket [validate-spec persist-secure-store] play-from-bucket)
+(reg-event-db :play-from-template [validate-spec persist-secure-store] play-from-template)
+(reg-event-db :load-db [validate-spec] load-db)

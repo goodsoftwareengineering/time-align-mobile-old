@@ -5,6 +5,7 @@
               [time-align-mobile.handlers]
               [time-align-mobile.subs]
               [time-align-mobile.navigation :as nav]
+              [cljs.reader :refer [read-string]]
               [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                                  oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
               [time-align-mobile.js-imports :refer [ReactNative
@@ -21,7 +22,8 @@
                                                     image
                                                     touchable-highlight
                                                     gesture-handler
-                                                    drawer-layout]] ))
+                                                    drawer-layout
+                                                    secure-store-get!]] ))
 
 (defn drawer-list []
   [view {:style {:flex 1 :justify-content "center" :align-items "flex-start"}}
@@ -91,7 +93,13 @@
             [view [text "That screen doesn't exist"]])]]))))
 
 (defn init []
-  (dispatch-sync [:initialize-db])
-  ;; Start ticking
-  (js/setInterval #(dispatch [:tick (js/Date.)]) 1000)
-  (ocall expo "registerRootComponent" (r/reactify-component app-root)))
+  (secure-store-get!
+   "app-db"
+   (fn [value]
+     (if (some? value)
+       (let [app-db (read-string value)]
+         (dispatch-sync [:load-db app-db]))
+       (dispatch-sync [:initialize-db]))
+     ;; Start ticking
+     (js/setInterval #(dispatch [:tick (js/Date.)]) 1000)
+     (ocall expo "registerRootComponent" (r/reactify-component app-root)))))

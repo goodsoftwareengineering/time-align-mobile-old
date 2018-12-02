@@ -167,8 +167,8 @@
                                    :padding-bottom   0}
                            :on-press #(dispatch [:select-period id])}
       [view
-       [text bucket-label]
-       [text label]]]]))
+       [text label]
+       [text bucket-label]]]]))
 
 (defn selection-menu-info [dimensions selected-period]
   (let [heading-style    {:background-color "#bfbfbf"}
