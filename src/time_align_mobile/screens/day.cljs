@@ -10,6 +10,7 @@
                                                   animated-view
                                                   mi
                                                   mci
+                                                  fa
                                                   modal
                                                   animated-xy
                                                   pan-responder]]
@@ -104,13 +105,15 @@
                   :align-items    "center"
                   :margin-bottom  4}}
     [text (str now)]]
-   [view {:style {:flex-direction "row"
-                  :align-items    "center"}}
+   [view {:style {:flex-direction  "row"
+                  :align-items     "center"
+                  :justify-content "center"}}
     ;; back
     [touchable-highlight
      {:on-press      #(dispatch [:update-day-time-navigator (back-n-days displayed-day 1)])
       :on-long-press #(dispatch [:update-day-time-navigator (back-n-days displayed-day 7)])}
-     [mi {:name "fast-rewind"}]]
+     [mi {:name "fast-rewind"
+          :size 32 }]]
 
     ;; displayed day
     [view {:style {:justify-content "center"
@@ -122,7 +125,8 @@
     [touchable-highlight
      {:on-press      #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 1)])
       :on-long-press #(dispatch [:update-day-time-navigator (forward-n-days displayed-day 7)])}
-     [mi {:name "fast-forward"}]]]])
+     [mi {:name "fast-forward"
+          :size 32}]]]])
 
 (defn period [{:keys [period dimensions displayed-day period-in-play]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
@@ -214,7 +218,7 @@
     icon
     [text label]]])
 
-(defn selection-menu-buttons [{:keys [dimensions selected-period period-in-play]}]
+(defn selection-menu-buttons [{:keys [dimensions selected-period period-in-play displayed-day]}]
   [view {:style {:background-color "white"
                  :width            "100%"
                  :padding-top      10
@@ -456,7 +460,13 @@
     "play"
     [mi {:name "play-arrow"}]
     #(reset! play-modal-visible true)]
-   ])
+
+   (when (not (or (same-day? (:start selected-period) displayed-day)
+                  (same-day? (:stop selected-period) displayed-day)))
+     [selection-menu-button
+      "jump to selected"
+      [fa {:name "dot-circle-o"}]
+      #(dispatch [:update-day-time-navigator (:start selected-period)])])])
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
   (let [adjusted-start             (bound-start (:start selected-period) displayed-day)
@@ -515,6 +525,7 @@
     ;; buttons
     [selection-menu-buttons {:dimensions      dimensions
                              :selected-period selected-period
+                             :displayed-day   displayed-day
                              :period-in-play  period-in-play}]]
 
    [selection-menu-arrow dimensions selected-period displayed-day]])
