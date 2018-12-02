@@ -468,20 +468,15 @@
 
 (defn tick [db [_ date-time]]
   (let [period-in-play-id (get-in db [:period-in-play-id])]
-
-    ;; TODO remove this
-    (println (str "tick update: " (.toTimeString date-time)))
-
     ;; Update period in play if there is one
     (-> (if (some? period-in-play-id)
-          (do (println "Updating period in play")
-              (transform [:buckets sp/ALL
-                          :periods sp/ALL
-                          #(= (:id %) period-in-play-id)]
+          (transform [:buckets sp/ALL
+                      :periods sp/ALL
+                      #(= (:id %) period-in-play-id)]
 
-                         #(merge % {:stop date-time})
+                     #(merge % {:stop date-time})
 
-                         db))
+                     db)
           db)
         ;; update now regardless
         (assoc-in [:now] date-time))))
