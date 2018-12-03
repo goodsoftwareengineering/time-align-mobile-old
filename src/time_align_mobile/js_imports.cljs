@@ -70,7 +70,30 @@
 
 (def moment-timezone (js/require "moment-timezone"))
 (def moment-tz (oget moment-timezone "tz"))
+
 (def secure-store (oget expo "SecureStore"))
+
+;; (def file-system (oget expo "FileSystem"))
+;; (def file-system-dir (oget file-system "cacheDirectory"))
+;; (def web-browser (oget expo "WebBrowser"))
+
+(def share-api (oget ReactNative "Share"))
+
+(defn share [title message]
+  (ocall share-api "share"
+         (clj->js {:title   title
+                   :message message})))
+
+;; (defn open-browser-async [url]
+;;   (ocall web-browser "openBrowserAsync" url))
+;; (defn write-as-string-async [file-name contents]
+;;   (ocall file-system "writeAsStringAsync" (str file-system-dir file-name) contents))
+;; (defn download-async [uri file-name]
+;;   (ocall file-system "downloadAsync" uri file-name))
+;; ;; https://drive.google.com/file/d/1DdhzlD_HBvrs4pYwx9FCxcMUMnO-qsAh/view?usp=sharing
+;; (defn read-as-string-async [file-name]
+;;   (ocall file-system "readAsStringAsync" file-name))
+
 (defn secure-store-set! [key value ]
   ;; TODO include options and camel->kebab
   (ocall secure-store "setItemAsync" key value))
