@@ -73,11 +73,11 @@
 (def secure-store (oget expo "SecureStore"))
 (defn secure-store-set! [key value ]
   ;; TODO include options and camel->kebab
-  (.setItemAsync secure-store key value))
+  (ocall secure-store "setItemAsync" key value))
 (defn secure-store-get! [key then-fn]
   ;; TODO include options and camel->kebab
-  (-> (.getItemAsync secure-store key)
-      (.then then-fn)))
+  (-> (ocall secure-store "getItemAsync" key)
+      (ocall "then" then-fn)))
 
 (defn get-default-timezone []
   (ocall moment-tz "guess"))

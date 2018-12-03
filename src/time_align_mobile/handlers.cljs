@@ -67,7 +67,7 @@
 
 (defn initialize-db [_ _] app-db)
 
-(defn load-db [_ [_ db]] db)
+(defn load-db [old-db [_ db]] db)
 
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
   (merge {:db (-> db
@@ -571,7 +571,7 @@
          ;; Set it as selected
          (setval [:selected-period] id))))
 
-(reg-event-db :initialize-db [validate-spec persist-secure-store] initialize-db)
+(reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec persist-secure-store] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec persist-secure-store] load-bucket-form)
 (reg-event-db :update-bucket-form [validate-spec persist-secure-store] update-bucket-form)
