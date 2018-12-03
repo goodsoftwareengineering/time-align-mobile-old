@@ -21,3 +21,5 @@ main.js
 env/dev/env/dev\.cljs
 
 env/dev/env/index\.cljs
+
+\.lan-ip
