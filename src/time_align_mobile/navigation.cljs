@@ -10,7 +10,8 @@
             [time-align-mobile.screens.template-form :as template-form-screen]
             [time-align-mobile.screens.template-list :as template-list-screen]
             [time-align-mobile.screens.filter-form :as filter-form-screen]
-            [time-align-mobile.screens.filter-list :as filter-list-screen]))
+            [time-align-mobile.screens.filter-list :as filter-list-screen]
+            [time-align-mobile.screens.port :as port-screen]))
 
 (def bucket-screen {:id       :bucket
                     :label           "bucket"
@@ -96,13 +97,21 @@
                     :icon            {:family "Entypo"
                                       :name   "bar-graph"}})
 
-(def queue-screen {:id       :queue
+(def queue-screen {:id              :queue
                    :label           "queue"
                    :screen          queue-screen/root
                    :in-drawer       true
                    :position-drawer 7
                    :icon            {:family "MaterialIcons"
                                      :name   "queue"}})
+
+(def port-screen {:id              :port
+                  :label           "port"
+                  :screen          port-screen/root
+                  :in-drawer       true
+                  :position-drawer 8
+                  :icon            {:family "MaterialIcons"
+                                    :name   "import-export"}})
 
 ;; https://expo.github.io/vector-icons/
 (def screens-map [bucket-screen
@@ -116,4 +125,5 @@
                   day-screen
                   calendar-screen
                   report-screen
-                  queue-screen])
+                  queue-screen
+                  port-screen])

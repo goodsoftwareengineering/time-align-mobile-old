@@ -1,12 +1,12 @@
 (ns time-align-mobile.handlers
   (:require
     [time-align-mobile.js-imports :refer [secure-store-set! secure-store-get!]]
-    [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx]]
+    [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx reg-fx]]
     [zprint.core :refer [zprint]]
     [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
-    [time-align-mobile.js-imports :refer [alert]]
+    [time-align-mobile.js-imports :refer [alert share]]
     [time-align-mobile.helpers :refer [same-day?]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
@@ -19,7 +19,7 @@
   [spec db]
   (when-not (s/valid? spec db)
     (let [explaination (s/explain-data spec db)]
-      (println (zprint explaination {:map {:force-nl? true}}))
+      (println (zprint explaination {:map {:force-nl? true}})) ;; TODO is this a redundant thing since zprint prints itself?
       ;; (throw (ex-info (str "Spec check failed: " explain-data) explain-data))
       (alert "Failed spec validation" "Check the command line output.")
       true)))
@@ -571,6 +571,15 @@
          ;; Set it as selected
          (setval [:selected-period] id))))
 
+(reg-fx
+ :share
+ (fn [app-db]
+   (share (str "app-db-" (.toJSON (js/Date.))) (with-out-str (zprint app-db {:map {:force-nl? true}})))))
+
+(defn share-app-db [{:keys [db]} [_ _]]
+  {:db db
+   :share db})
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
 (reg-event-fx :navigate-to [validate-spec persist-secure-store] navigate-to)
 (reg-event-db :load-bucket-form [validate-spec persist-secure-store] load-bucket-form)
@@ -606,3 +615,4 @@
 (reg-event-db :play-from-bucket [validate-spec persist-secure-store] play-from-bucket)
 (reg-event-db :play-from-template [validate-spec persist-secure-store] play-from-template)
 (reg-event-db :load-db [validate-spec] load-db)
+(reg-event-fx :share-app-db [validate-spec] share-app-db)
