@@ -60,6 +60,10 @@
 (def keyboard-aware-scroll-view (r/adapt-react-class (oget kasv "KeyboardAwareScrollView")))
 (def platform (oget ReactNative "Platform"))
 
+(def data-font-family (if (= (.-OS platform) "ios")
+                        "Courier"
+                        "monospace"))
+
 (def react-native-color-picker (js/require "react-native-color-picker"))
 (def ColorPicker (oget react-native-color-picker "ColorPicker"))
 (def color-picker (r/adapt-react-class ColorPicker))

@@ -40,7 +40,7 @@
 
 (defn data-comp [form changes update-structured-data]
   [view {:style {:flex           1
-                 :flex-direction "row"
+                 :flex-direction "column"
                  :align-items    "flex-start"}}
    [text {:style (field-label-changeable-style changes :data)} ":data"]
    [structured-data {:data   (:data @form)
