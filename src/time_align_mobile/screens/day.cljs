@@ -564,6 +564,15 @@
                         :width            (:width @dimensions)
                         :background-color "#dedede"}}
 
+          (when (same-day? @now @displayed-day)
+            [view {:style {:height           4
+                           :width            (:width @dimensions)
+                           :background-color "white"
+                           :top              (-> @now
+                                                 (date->y-pos (:height @dimensions))
+                                                 (max 0)
+                                                 (min (:height @dimensions)))}}])
+
           ;; periods
           (doall (->> @periods
                       (filter (fn [{:keys [start stop]}]
