@@ -180,7 +180,7 @@
                           :width            "100%"
                           :padding-top      10
                           :padding-left     4
-                          :max-height       "40%"}}
+                          :max-height       "30%"}}
 
      [heading-sub-comp "uuid"]
      [info-sub-comp (:id selected-period)]
@@ -223,7 +223,7 @@
                  :width            "100%"
                  :padding-top      10
                  :padding-left     4
-                 :height           "60%"
+                 :height           "70%"
                  :flex-direction   "row"
                  :flex-wrap        "wrap"}}
 
