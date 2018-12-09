@@ -19,7 +19,7 @@
   [spec db]
   (when-not (s/valid? spec db)
     (let [explaination (s/explain-data spec db)]
-      (println (zprint explaination {:map {:force-nl? true}})) ;; TODO is this a redundant thing since zprint prints itself?
+      (println (zprint (::clojure.spec.alpha/problems explaination) {:map {:force-nl? true}})) ;; TODO is this a redundant thing since zprint prints itself?
       ;; (throw (ex-info (str "Spec check failed: " explain-data) explain-data))
       (alert "Failed spec validation" "Check the command line output.")
       true)))
