@@ -581,6 +581,49 @@
    ;; [selection-menu-arrow dimensions selected-period displayed-day]
    ])
 
+(defn time-indicators [dimensions displayed-day]
+  (let [six-in-the-morning      (->> displayed-day
+                                     (reset-relative-ms (* 1000 60 60 6)))
+        twelve-in-the-afternoon (->> displayed-day
+                                     (reset-relative-ms (* 1000 60 60 12)))
+        six-in-the-evening      (->> displayed-day
+                                     (reset-relative-ms (* 1000 60 60 18)))
+        color                   "#cbcbcb"
+        container-style         {:position    "absolute"
+                                 :left        0
+                                 :align-items "center"}
+        line-style              {:background-color color
+                                 :height           4
+                                 :width            (:width dimensions)}
+        text-style              {:color color}]
+
+    [view
+     [view {:style (merge container-style
+                          {:top (-> six-in-the-morning
+                                    (date->y-pos (:height dimensions))
+                                    (max 0)
+                                    (min (:height dimensions)))})}
+
+      [view {:style line-style}]
+      [text {:style text-style} "06:00"]]
+
+     [view {:style (merge container-style
+                          {:top (-> twelve-in-the-afternoon
+                                    (date->y-pos (:height dimensions))
+                                    (max 0)
+                                    (min (:height dimensions)))})}
+
+      [view line-style]
+      [text {:style text-style} "12:00"]]
+
+     [view {:style (merge container-style
+                          {:top (-> six-in-the-evening
+                                    (date->y-pos (:height dimensions))
+                                    (max 0)
+                                    (min (:height dimensions)))})}
+      [view line-style]
+      [text {:style text-style} "18:00"]]]))
+
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
         top-bar-height  50
@@ -626,6 +669,8 @@
           [view {:style {:height           (:height @dimensions) ;; this is already adjusted to account for top-bar
                          :width            (:width @dimensions)
                          :background-color "#dedede"}}
+
+           [time-indicators @dimensions @displayed-day]
 
            ;; now indicator
            (when (same-day? @now @displayed-day)
