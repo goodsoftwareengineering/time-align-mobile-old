@@ -141,47 +141,80 @@
      [mi {:name "fast-forward"
           :size 32}]]]])
 
-(defn period [{:keys [period dimensions displayed-day period-in-play]}]
+(defn period [{:keys [period dimensions displayed-day period-in-play selected-period]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
-        adjusted-stop (bound-stop stop displayed-day)
-        adjusted-start (bound-start start displayed-day)]
-    [view {:key   id
-           :style {:position         "absolute"
-                   :top              (-> adjusted-start
-                                         (date->y-pos (:height dimensions))
-                                         (max 0)
-                                         (min (:height dimensions)))
-                   :left             (-> dimensions
-                                         (:width)
-                                         (/ 2)
-                                         (#(if planned
-                                             padding
-                                             (+ % padding) )))
-                   :width            (-> dimensions
-                                         (:width)
-                                         (/ 2)
-                                         (- (* 2 padding)))
-                   :height           (-> adjusted-stop
-                                         (.valueOf)
-                                         (- (.valueOf adjusted-start))
-                                         (duration->height (:height dimensions))
-                                         (max 1)) ;; max 1 to actually see recently played periods
-                   :border-radius    0
-                   :background-color color
-                   :opacity          (if (= (:id period)
-                                            (:id period-in-play))
-                                       0.9
-                                       0.5)}}
-     [touchable-highlight {:style {:width  "100%"
-                                   :height "100%"
-                                   :padding-left     10
-                                   :padding-right    10
-                                   :padding-top      0
-                                   :padding-bottom   0}
-                           :on-press #(dispatch [:select-period id])}
-      [view
-       [text label]
-       [text bucket-label]]]]))
+
+        adjusted-stop   (bound-stop stop displayed-day)
+        adjusted-start  (bound-start start displayed-day)
+        top             (-> adjusted-start
+                            (date->y-pos (:height dimensions))
+                            (max 0)
+                            (min (:height dimensions)))
+        selected-top    (-> top
+                            (- padding)
+                            (max 0)
+                            (min (:height dimensions)))
+        left            (-> dimensions
+                            (:width)
+                            (/ 2)
+                            (#(if planned
+                                padding
+                                (+ % padding) )))
+        selected-left   (-> dimensions
+                            (:width)
+                            (/ 2)
+                            (#(if planned
+                                0
+                                %)))
+        width           (-> dimensions
+                            (:width)
+                            (/ 2)
+                            (- (* 2 padding)))
+        selected-width  (-> width
+                            (+ (* 2 padding)))
+        height          (-> adjusted-stop
+                            (.valueOf)
+                            (- (.valueOf adjusted-start))
+                            (duration->height (:height dimensions))
+                            ;; max 1 to actually see recently played periods
+                            (max 1))
+        selected-height (-> height
+                            (+ (* 2 padding))
+                            (max 1))
+        opacity         (if (= id
+                               (:id period-in-play))
+                          0.9
+                          0.5)]
+
+    [view {:key id}
+
+     (when (= id (:id selected-period))
+       [view {:style {:position         "absolute"
+                      :top              selected-top
+                      :left             selected-left
+                      :width            selected-width
+                      :height           selected-height
+                      :background-color "white"}}])
+
+     [view {:style {:position         "absolute"
+                    :top              top
+                    :left             left
+                    :width            width
+                    :height           height
+                    :border-radius    0
+                    :background-color color
+                    :opacity          opacity}}
+
+      [touchable-highlight {:style    {:width          "100%"
+                                       :height         "100%"
+                                       :padding-left   10
+                                       :padding-right  10
+                                       :padding-top    0
+                                       :padding-bottom 0}
+                            :on-press #(dispatch [:select-period id])}
+       [view
+        [text label]
+        [text bucket-label]]]]]))
 
 (defn selection-menu-info [dimensions selected-period]
   (let [heading-style    {:background-color "#bfbfbf"}
@@ -236,7 +269,7 @@
   [view {:style {:background-color "white"
                  :width            "100%"
                  :padding-top      10
-                 :padding-left     4
+                 :padding-left     padding
                  :height           "100%"
                  :flex-direction   "column"
                  :flex-wrap        "wrap"}}
@@ -545,7 +578,8 @@
                              :displayed-day   displayed-day
                              :period-in-play  period-in-play}]]
 
-   [selection-menu-arrow dimensions selected-period displayed-day]])
+   ;; [selection-menu-arrow dimensions selected-period displayed-day]
+   ])
 
 (defn root [params]
   (let [dimensions      (r/atom {:width nil :height nil})
@@ -605,14 +639,23 @@
 
            ;; periods
            (doall (->> @periods
+
                        (filter (fn [{:keys [start stop]}]
                                  (cond (and (some? start) (some? stop))
                                        (or (same-day? @displayed-day start)
                                            (same-day? @displayed-day stop)))))
-                       (map #(period {:period         %
-                                      :displayed-day  @displayed-day
-                                      :dimensions     @dimensions
-                                      :period-in-play @period-in-play}))))
+                       (sort-by #(cond
+                                   (= (:id %) (:id @period-in-play))  0
+                                   (= (:id %) (:id @selected-period)) 1
+                                   :else                              (.valueOf (:start %))))
+
+                       (reverse)
+
+                       (map #(period {:period          %
+                                      :displayed-day   @displayed-day
+                                      :dimensions      @dimensions
+                                      :selected-period @selected-period
+                                      :period-in-play  @period-in-play}))))
 
            ;; selection menu
            (when (some? @selected-period)
