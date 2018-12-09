@@ -370,7 +370,8 @@
     "copy over"
     [mi {:name "content-copy"}]
     #(dispatch [:add-period {:period    (merge selected-period
-                                               {:planned (not (:planned selected-period))})
+                                               {:planned (not (:planned selected-period))
+                                                :id      (random-uuid)})
                              :bucket-id (:bucket-id selected-period)}])]
 
    [selection-menu-button
@@ -418,7 +419,8 @@
                                                            (:stop)
                                                            (.valueOf)
                                                            (+ (* 24 60 60 1000))
-                                                           (js/Date.))})
+                                                           (js/Date.))
+                                                :id    (random-uuid)})
                              :bucket-id (:bucket-id selected-period)}])]
 
    [selection-menu-button
@@ -436,7 +438,8 @@
                                                            (:stop)
                                                            (.valueOf)
                                                            (- (* 24 60 60 1000))
-                                                           (js/Date.))})
+                                                           (js/Date.))
+                                                :id    (random-uuid)})
                              :bucket-id (:bucket-id selected-period)}])]
 
    [selection-menu-button

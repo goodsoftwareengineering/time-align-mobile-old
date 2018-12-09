@@ -440,8 +440,7 @@
            :periods
            sp/NIL->VECTOR
            sp/AFTER-ELEM]
-          (merge (_clean-period period)
-                 {:id (random-uuid)})
+          (_clean-period period) ;; expected that the period has an id already
           db))
 
 (defn select-next-or-prev-period [db [_ direction]]
