@@ -223,8 +223,9 @@
                         :on-long-press long-press
                         :style         {:background-color "#00ffff"
                                         :border-radius    2
-                                        :padding          4
-                                        :margin           4
+                                        :padding          5
+                                        :margin           1
+                                        :width            "95%"
                                         :align-self       "flex-start"}}
    [view {:style {:flex-direction "row"
                   :align-items    "center"}}
@@ -236,8 +237,8 @@
                  :width            "100%"
                  :padding-top      10
                  :padding-left     4
-                 :height           "70%"
-                 :flex-direction   "row"
+                 :height           "100%"
+                 :flex-direction   "column"
                  :flex-wrap        "wrap"}}
 
    [selection-menu-button
@@ -536,7 +537,7 @@
                                         (+ padding))
                   :background-color "#dcdcdc"}}
 
-    [selection-menu-info dimensions selected-period]
+    ;; [selection-menu-info dimensions selected-period]
 
     ;; buttons
     [selection-menu-buttons {:dimensions      dimensions
