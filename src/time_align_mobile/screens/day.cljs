@@ -58,6 +58,11 @@
       (/ day-ms)
       (* total-height)))
 
+(defn y-pos->ms [y-pos total-height]
+  (-> y-pos
+      (/ total-height)
+      (* day-ms)))
+
 (defn duration->height [duration-ms total-height]
   (-> duration-ms
       (/ day-ms)
@@ -93,6 +98,14 @@
         month (.getMonth date)
         year (.getFullYear date)]
     (js/Date. year month (+ days n))))
+
+(defn reset-relative-ms [ms date]
+  (let [year           (.getFullYear date)
+        month          (.getMonth date)
+        day            (.getDate date)
+        zero-day    (js/Date. year month day 0 0 0)
+        zero-day-ms (.valueOf zero-day)]
+    (js/Date. (+ zero-day-ms ms))))
 
 ;; components
 (defn top-bar [{:keys [top-bar-height dimensions displayed-day now]}]
@@ -560,37 +573,49 @@
                    :now            @now}]
 
          ;; view that stretches to fill what is left of the screen
-         [view {:style {:height           (:height @dimensions) ;; this is already adjusted to accoutn for top-bar
-                        :width            (:width @dimensions)
-                        :background-color "#dedede"}}
+         [touchable-highlight
+          {:on-press (fn [evt]
+                       (let [native-event (oget evt "nativeEvent")
+                             location-y   (oget native-event "locationY")
+                             location-x   (oget native-event "locationX")
+                             page-y       (oget native-event "pageY")
+                             page-x       (oget native-event "pageX")
+                             relative-ms  (y-pos->ms location-y (:height @dimensions))]
+                         (println {:ly   location-y
+                                   :ms   relative-ms
+                                   :date (.toLocaleString (reset-relative-ms relative-ms @displayed-day))})))}
 
-          (when (same-day? @now @displayed-day)
-            [view {:style {:height           4
-                           :width            (:width @dimensions)
-                           :background-color "white"
-                           :top              (-> @now
-                                                 (date->y-pos (:height @dimensions))
-                                                 (max 0)
-                                                 (min (:height @dimensions)))}}])
+          [view {:style {:height           (:height @dimensions) ;; this is already adjusted to account for top-bar
+                         :width            (:width @dimensions)
+                         :background-color "#dedede"}}
 
-          ;; periods
-          (doall (->> @periods
-                      (filter (fn [{:keys [start stop]}]
-                                (cond (and (some? start) (some? stop))
-                                      (or (same-day? @displayed-day start)
-                                          (same-day? @displayed-day stop)))))
-                      (map #(period {:period         %
-                                     :displayed-day  @displayed-day
-                                     :dimensions     @dimensions
-                                     :period-in-play @period-in-play}))))
+           ;; now indicator
+           (when (same-day? @now @displayed-day)
+             [view {:style {:height           4
+                            :width            (:width @dimensions)
+                            :background-color "white"
+                            :top              (-> @now
+                                                  (date->y-pos (:height @dimensions))
+                                                  (max 0)
+                                                  (min (:height @dimensions)))}}])
 
-          ;; selection menu
-          (when (some? @selected-period)
-            [selection-menu {:dimensions      @dimensions
-                             :selected-period @selected-period
-                             :displayed-day   @displayed-day
-                             :period-in-play  @period-in-play}])]
+           ;; periods
+           (doall (->> @periods
+                       (filter (fn [{:keys [start stop]}]
+                                 (cond (and (some? start) (some? stop))
+                                       (or (same-day? @displayed-day start)
+                                           (same-day? @displayed-day stop)))))
+                       (map #(period {:period         %
+                                      :displayed-day  @displayed-day
+                                      :dimensions     @dimensions
+                                      :period-in-play @period-in-play}))))
 
+           ;; selection menu
+           (when (some? @selected-period)
+             [selection-menu {:dimensions      @dimensions
+                              :selected-period @selected-period
+                              :displayed-day   @displayed-day
+                              :period-in-play  @period-in-play}])]]
 
          ;; play modal
          [modal {:animation-type "slide"
