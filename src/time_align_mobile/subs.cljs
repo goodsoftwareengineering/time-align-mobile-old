@@ -1,6 +1,6 @@
 (ns time-align-mobile.subs
   (:require [re-frame.core :refer [reg-sub]]
-            [zprint.core :refer [zprint]]
+            [time-align-mobile.helpers :as helpers]
             [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
 (defn get-navigation [db _]
@@ -24,7 +24,7 @@
                   (select [:buckets sp/ALL #(= (:id %) (:id bucket-form))]
                           db))
             ;; data needs to be coerced to compare to form
-            new-data (with-out-str (zprint (:data bucket) {:map {:force-nl? true}}))
+            new-data (helpers/print-data (:data bucket))
             ;; (.stringify js/JSON
             ;;                      (clj->js (:data bucket))
             ;;                      nil 2)
@@ -61,7 +61,7 @@
                                 :periods sp/ALL #(= (:id %) (:id period-form))]
                                db)
             ;; data needs to be coerced to compare to form
-            new-data (with-out-str (zprint (:data period) {:map {:force-nl? true}}))
+            new-data (helpers/print-data (:data period))
             altered-period (merge period {:data new-data
                                           :bucket-id (:id sub-bucket)
                                           :bucket-color (:color sub-bucket)
@@ -103,7 +103,7 @@
                                                :templates sp/ALL #(= (:id %) (:id template-form))]
                                               db)
             ;; data needs to be coerced to compare to form
-            new-data              (with-out-str (zprint (:data template) {:map {:force-nl? true}}))
+            new-data              (helpers/print-data (:data template))
             altered-template      (merge template {:data         new-data
                                                    :bucket-id    (:id sub-bucket)
                                                    :bucket-color (:color sub-bucket)
@@ -140,13 +140,13 @@
 (defn get-filter-form-changes [db _]
   (let [filter-form (get-in db [:forms :filter-form])]
     (if (some? (:id filter-form))
-      (let [filter (select-one [:filters sp/ALL #(= (:id %) (:id filter-form))]
-                                            db)
+      (let [filter         (select-one [:filters sp/ALL #(= (:id %) (:id filter-form))]
+                                       db)
             ;; data needs to be coerced to compare to form
-            new-predicates (with-out-str (zprint (:predicates filter) {:map {:force-nl? true}}))
-            new-sort (with-out-str (zprint (:sort filter) {:map {:force-nl? true}}))
+            new-predicates (helpers/print-data (:predicates filter))
+            new-sort       (helpers/print-data (:sort filter))
             altered-filter (merge filter {:predicates new-predicates
-                                          :sort new-sort})
+                                          :sort       new-sort})
 
             different-keys (->> (clojure.data/diff filter-form altered-filter)
                                 (first))]

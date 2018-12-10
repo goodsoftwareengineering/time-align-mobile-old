@@ -6,6 +6,7 @@
     [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
+    [time-align-mobile.helpers :as helpers]
     [time-align-mobile.js-imports :refer [alert share]]
     [time-align-mobile.helpers :refer [same-day?]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
@@ -19,7 +20,7 @@
   [spec db]
   (when-not (s/valid? spec db)
     (let [explaination (s/explain-data spec db)]
-      (println (zprint (::clojure.spec.alpha/problems explaination) {:map {:force-nl? true}})) ;; TODO is this a redundant thing since zprint prints itself?
+      (zprint (::clojure.spec.alpha/problems explaination) {:map {:force-nl? true}})
       ;; (throw (ex-info (str "Spec check failed: " explain-data) explain-data))
       (alert "Failed spec validation" "Check the command line output.")
       true)))
@@ -60,7 +61,7 @@
             context)))
 
 ;; -- Helpers ---------------------------------------------------------------
-(defn _clean-period [period]
+(defn clean-period [period]
   (select-keys period (keys period-data-spec)))
 
 ;; -- Handlers --------------------------------------------------------------
@@ -87,7 +88,7 @@
 
 (defn load-bucket-form [db [_ bucket-id]]
   (let [bucket      (select-one [:buckets sp/ALL #(= (:id %) bucket-id)] db)
-        bucket-form (merge bucket {:data (with-out-str (zprint (:data bucket) {:map {:force-nl? true}}))})]
+        bucket-form (merge bucket {:data (helpers/print-data (:data bucket))})]
     (assoc-in db [:forms :bucket-form] bucket-form)))
 
 (defn update-bucket-form [db [_ bucket-form]]
@@ -118,9 +119,7 @@
                              :bucket-color (:color sub-bucket)
                              :bucket-label (:label sub-bucket)}
         period-form         (merge period
-                                   {:data (with-out-str
-                                            (zprint (:data period)
-                                                    {:map {:force-nl? true}}))}
+                                   {:data (helpers/print-data (:data period))}
                                    sub-bucket-remap)]
     (assoc-in db [:forms :period-form] period-form)))
 
@@ -186,9 +185,7 @@
                              :bucket-color (:color sub-bucket)
                              :bucket-label (:label sub-bucket)}
         template-form         (merge template
-                                   {:data (with-out-str
-                                            (zprint (:data template)
-                                                    {:map {:force-nl? true}}))}
+                                   {:data (helpers/print-data (:data template))}
                                    sub-bucket-remap)]
     (assoc-in db [:forms :template-form] template-form)))
 
@@ -247,12 +244,8 @@
   (let [filter     (select-one
                     [:filters sp/ALL #(= (:id %) filter-id)] db)
         filter-form (merge filter
-                           {:predicates (with-out-str
-                                          (zprint (:predicates filter)
-                                                  {:map {:force-nl? true}}))}
-                           {:sort (with-out-str
-                                          (zprint (:sort filter)
-                                                  {:map {:force-nl? true}}))})]
+                           {:predicates (helpers/print-data (:predicates filter))}
+                           {:sort (helpers/print-data (:sort filter))})]
     (assoc-in db [:forms :filter-form] filter-form)))
 
 (defn update-filter-form [db [_ filter-form]]
@@ -347,7 +340,7 @@
                                :last-edited now
                                :start start
                                :stop  stop})
-        period-clean   (_clean-period period)]
+        period-clean   (clean-period period)]
 
     {:db       (setval [:buckets sp/ALL
                         #(= (:id %) (:bucket-id template))
@@ -447,7 +440,7 @@
                   :periods
                   sp/NIL->VECTOR
                   sp/AFTER-ELEM]
-                 (_clean-period period)))))
+                 (clean-period period)))))
 
 (defn select-next-or-prev-period [db [_ direction]]
   (if-let [selected-period-id (get-in db [:selected-period])]
