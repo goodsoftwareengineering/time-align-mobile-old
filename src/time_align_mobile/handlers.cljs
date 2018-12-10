@@ -435,13 +435,19 @@
              db))
 
 (defn add-period [db [_ {:keys [period bucket-id]}]]
-  (setval [:buckets sp/ALL
-           #(= (:id %) bucket-id)
-           :periods
-           sp/NIL->VECTOR
-           sp/AFTER-ELEM]
-          (_clean-period period) ;; expected that the period has an id already
-          db))
+  (let [random-bucket-id (->> db
+                              (select-one [:buckets sp/FIRST])
+                              (:id))
+        bucket-id (if (some? bucket-id)
+                    bucket-id
+                    random-bucket-id)]
+    (->> db
+         (setval [:buckets sp/ALL
+                  #(= (:id %) bucket-id)
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 (_clean-period period)))))
 
 (defn select-next-or-prev-period [db [_ direction]]
   (if-let [selected-period-id (get-in db [:selected-period])]

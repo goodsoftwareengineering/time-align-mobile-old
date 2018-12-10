@@ -655,16 +655,32 @@
 
          ;; view that stretches to fill what is left of the screen
          [touchable-highlight
-          {:on-press (fn [evt]
-                       (let [native-event (oget evt "nativeEvent")
-                             location-y   (oget native-event "locationY")
-                             location-x   (oget native-event "locationX")
-                             page-y       (oget native-event "pageY")
-                             page-x       (oget native-event "pageX")
-                             relative-ms  (y-pos->ms location-y (:height @dimensions))]
-                         (println {:ly   location-y
-                                   :ms   relative-ms
-                                   :date (.toLocaleString (reset-relative-ms relative-ms @displayed-day))})))}
+          {:on-long-press (fn [evt]
+                            (let [now          (js/Date.)
+                                  native-event (oget evt "nativeEvent")
+                                  location-y   (oget native-event "locationY")
+                                  location-x   (oget native-event "locationX")
+                                  planned      (< location-x (-> @dimensions
+                                                                 (:width)
+                                                                 (/ 2)))
+                                  relative-ms  (y-pos->ms location-y (:height @dimensions))
+                                  start        (reset-relative-ms relative-ms @displayed-day)
+                                  id           (random-uuid)]
+                              (dispatch [:add-period
+                                         {:bucket-id nil
+                                          :period    {:id          id
+                                                      :start       start
+                                                      :stop        (-> start
+                                                                       (.valueOf)
+                                                                       (+ (* 1000 60 60 1))
+                                                                       (js/Date.))
+                                                      :planned     planned
+                                                      :created     now
+                                                      :last-edited now
+                                                      :label       ""
+                                                      :data        {}}}])
+                              (dispatch [:navigate-to {:current-screen :period
+                                                       :params {:period-id id}}])))}
 
           [view {:style {:height           (:height @dimensions) ;; this is already adjusted to account for top-bar
                          :width            (:width @dimensions)
