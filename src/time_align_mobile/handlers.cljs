@@ -26,7 +26,7 @@
       true)))
 
 (def validate-spec
-  (if goog.DEBUG
+  (if true ;;goog.DEBUG ;; TODO reinstate this after pre-alpha
     (->interceptor
         :id :validate-spec
         :after (fn [context]
