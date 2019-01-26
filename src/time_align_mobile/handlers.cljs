@@ -572,7 +572,7 @@
 (reg-fx
  :share
  (fn [app-db]
-   (share (str "app-db-" (.toJSON (js/Date.))) (with-out-str (zprint app-db {:map {:force-nl? true}})))))
+   (share (str "app-db-" (.toJSON (js/Date.))) (with-out-str (zprint app-db)))))
 
 (defn share-app-db [{:keys [db]} [_ _]]
   {:db db
