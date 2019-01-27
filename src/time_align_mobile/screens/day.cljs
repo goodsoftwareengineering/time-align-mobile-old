@@ -190,20 +190,25 @@
 
      (when (= id (:id selected-period))
        [view {:style {:position         "absolute"
-                      :top              selected-top
-                      :left             selected-left
-                      :width            selected-width
-                      :height           selected-height
+                      :top              top
+                      :left             left
+                      :width            width
+                      :height           height
+                      :opacity          1
+                      :elevation        8
+                      :border-radius    2
                       :background-color "white"}}])
 
-     [view {:style {:position         "absolute"
-                    :top              top
-                    :left             left
-                    :width            width
-                    :height           height
-                    :border-radius    0
-                    :background-color color
-                    :opacity          opacity}}
+     [view {:style (merge (when (= id (:id selected-period))
+                            {:elevation 9})
+                          {:position         "absolute"
+                           :top              top
+                           :left             left
+                           :width            width
+                           :height           height
+                           :border-radius    2
+                           :background-color color
+                           :opacity          opacity})}
 
       [touchable-highlight {:style    {:width          "100%"
                                        :height         "100%"
