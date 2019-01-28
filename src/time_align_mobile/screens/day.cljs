@@ -29,7 +29,7 @@
   ;; 24 hours in millis
   (* 24 60 60 1000))
 
-(def padding 10)
+(def padding 5)
 
 (def play-modal-visible (r/atom false))
 
@@ -144,47 +144,32 @@
 (defn period [{:keys [period dimensions displayed-day period-in-play selected-period]}]
   (let [{:keys [id start stop planned color label bucket-label]} period
 
-        adjusted-stop   (bound-stop stop displayed-day)
-        adjusted-start  (bound-start start displayed-day)
-        top             (-> adjusted-start
-                            (date->y-pos (:height dimensions))
-                            (max 0)
-                            (min (:height dimensions)))
-        selected-top    (-> top
-                            (- padding)
-                            (max 0)
-                            (min (:height dimensions)))
-        left            (-> dimensions
-                            (:width)
-                            (/ 2)
-                            (#(if planned
-                                padding
-                                (+ % padding) )))
-        selected-left   (-> dimensions
-                            (:width)
-                            (/ 2)
-                            (#(if planned
-                                0
-                                %)))
-        width           (-> dimensions
-                            (:width)
-                            (/ 2)
-                            (- (* 2 padding)))
-        selected-width  (-> width
-                            (+ (* 2 padding)))
-        height          (-> adjusted-stop
-                            (.valueOf)
-                            (- (.valueOf adjusted-start))
-                            (duration->height (:height dimensions))
-                            ;; max 1 to actually see recently played periods
-                            (max 1))
-        selected-height (-> height
-                            (+ (* 2 padding))
-                            (max 1))
-        opacity         (if (= id
-                               (:id period-in-play))
-                          0.9
-                          0.5)]
+        adjusted-stop  (bound-stop stop displayed-day)
+        adjusted-start (bound-start start displayed-day)
+        top            (-> adjusted-start
+                           (date->y-pos (:height dimensions))
+                           (max 0)
+                           (min (:height dimensions)))
+        left           (-> dimensions
+                           (:width)
+                           (/ 2)
+                           (#(if planned
+                               padding
+                               (+ % padding) )))
+        width          (-> dimensions
+                           (:width)
+                           (/ 2)
+                           (- (* 2 padding)))
+        height         (-> adjusted-stop
+                           (.valueOf)
+                           (- (.valueOf adjusted-start))
+                           (duration->height (:height dimensions))
+                           ;; max 1 to actually see recently played periods
+                           (max 1))
+        opacity        (cond
+                         (= id (:id period-in-play))  0.9
+                         (= id (:id selected-period)) 0.7
+                         :else                        0.5)]
 
     [view {:key id}
 
@@ -195,12 +180,12 @@
                       :width            width
                       :height           height
                       :opacity          1
-                      :elevation        8
+                      :elevation        4
                       :border-radius    2
                       :background-color "white"}}])
 
      [view {:style (merge (when (= id (:id selected-period))
-                            {:elevation 9})
+                            {:elevation 5})
                           {:position         "absolute"
                            :top              top
                            :left             left
@@ -259,216 +244,169 @@
 (defn selection-menu-button [label icon on-press long-press]
   [touchable-highlight {:on-press      on-press
                         :on-long-press long-press
-                        :style         {:background-color "#00ffff"
+                        :style         {:background-color "white"
                                         :border-radius    2
-                                        :padding          5
-                                        :margin           1
-                                        :width            "95%"
+                                        :padding          8
+                                        :margin           4
+                                        :width            40
                                         :align-self       "flex-start"}}
-   [view {:style {:flex-direction "row"
-                  :align-items    "center"}}
+   [view {:style {:flex-direction  "row"
+                  :justify-content "center"
+                  :align-items     "center"}}
     icon
-    [text label]]])
+    ;; [text label]
+    ]])
 
 (defn selection-menu-buttons [{:keys [dimensions selected-period period-in-play displayed-day]}]
-  [view {:style {:background-color "white"
-                 :width            "100%"
-                 :padding-top      10
-                 :padding-left     padding
-                 :height           "100%"
-                 :flex-direction   "column"
-                 :flex-wrap        "wrap"}}
+  (let [row-style {:flex-direction  "row"
+                   :justify-content "center"}]
+    [view {:style {:background-color "#b9b9b9"
+                   :width            "100%"
+                   :padding-top      10
+                   :padding-right    padding
+                   :padding-left     padding
+                   :height           "100%"
+                   :flex-direction   "column"
+                   :flex-wrap        "wrap"}}
 
-   [selection-menu-button
-    "cancel"
-    [mi {:name "cancel"}]
-    #(dispatch [:select-period nil])]
+     ;; cancel edit
+     [view row-style
+      [selection-menu-button
+     "cancel"
+       [mci {:name "backburger"}]
+     #(dispatch [:select-period nil])]
+      [selection-menu-button
+     "edit"
+       [mi {:name "edit"}]
+       #(dispatch [:navigate-to {:current-screen :period
+                                 :params         {:period-id (:id selected-period)}}])]]
 
-   [selection-menu-button
-    "edit"
-    [mi {:name "edit"}]
-    #(dispatch [:navigate-to {:current-screen :period
-                              :params         {:period-id (:id selected-period)}}])]
-
-   [selection-menu-button
-    "up"
-    [mi {:name "arrow-upward"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (- (* 5 60 1000)) ;; five minutes
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (- (* 5 60 1000))
-                                                        (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (- (* 60 60 1000)) ;; sixty minutes
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (- (* 60 60 1000))
-                                                        (js/Date.))}}])]
-
-   [selection-menu-button
-    "down"
-    [mi {:name "arrow-downward"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (+ (* 5 60 1000)) ;; five minutes
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (+ (* 5 60 1000))
-                                                        (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (+ (* 60 60 1000)) ;; sixty minutes
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (+ (* 60 60 1000))
-                                                        (js/Date.))}}])]
-   [selection-menu-button
-    "start earlier"
-    [mci {:name "arrow-expand-up"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (- (* 5 60 1000))
-                                                        (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (- (* 60 60 1000))
-                                                        (js/Date.))}}])]
-
-   [selection-menu-button
-    "start later"
-    [mci {:name "arrow-collapse-down"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (+ (* 5 60 1000))
-                                                        (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (+ (* 60 60 1000))
-                                                        (js/Date.))}}])]
-
-   [selection-menu-button
-    "stop later"
-    [mci {:name "arrow-expand-down"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:stop (-> selected-period
-                                                       (:stop)
-                                                       (.valueOf)
-                                                       (+ (* 5 60 1000))
-                                                       (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:stop (-> selected-period
-                                                       (:stop)
-                                                       (.valueOf)
-                                                       (+ (* 60 60 1000))
-                                                       (js/Date.))}}])]
-
-   [selection-menu-button
-    "stop earlier"
-    [mci {:name "arrow-collapse-up"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:stop (-> selected-period
-                                                       (:stop)
-                                                       (.valueOf)
-                                                       (- (* 5 60 1000))
-                                                       (js/Date.))}}])
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:stop (-> selected-period
-                                                       (:stop)
-                                                       (.valueOf)
-                                                       (- (* 60 60 1000))
-                                                       (js/Date.))}}])]
-
-   [selection-menu-button
-    "copy over"
-    [mi {:name "content-copy"}]
-    #(dispatch [:add-period {:period    (merge selected-period
-                                               {:planned (not (:planned selected-period))
-                                                :id      (random-uuid)})
-                             :bucket-id (:bucket-id selected-period)}])]
-
-   [selection-menu-button
-    "forward a day"
-    [mi {:name "fast-forward"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (+ (* 24 60 60 1000))
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (+ (* 24 60 60 1000))
-                                                        (js/Date.))}}])]
-
-   [selection-menu-button
-    "back a day"
-    [mi {:name "fast-rewind"}]
-    #(dispatch [:update-period {:id         (:id selected-period)
-                                :update-map {:start (-> selected-period
-                                                        (:start)
-                                                        (.valueOf)
-                                                        (- (* 24 60 60 1000))
-                                                        (js/Date.))
-                                             :stop  (-> selected-period
-                                                        (:stop)
-                                                        (.valueOf)
-                                                        (- (* 24 60 60 1000))
-                                                        (js/Date.))}}])]
-
-   [selection-menu-button
-    "copy next day"
-    [view
-     [mi {:name "content-copy"}]
-     [mi {:name "arrow-forward"}]]
-    #(dispatch [:add-period {:period    (merge selected-period
-                                               {:start (-> selected-period
+     ;; start-later
+     [view row-style
+      [selection-menu-button
+       "start later"
+       [mci {:name "arrow-collapse-down"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
                                                            (:start)
                                                            (.valueOf)
-                                                           (+ (* 24 60 60 1000))
+                                                           (+ (* 5 60 1000))
+                                                           (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (+ (* 60 60 1000))
+                                                           (js/Date.))}}])]]
+
+     ;; start-earlier
+     [view row-style
+      [selection-menu-button
+       "start earlier"
+       [mci {:name "arrow-expand-up"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (- (* 5 60 1000))
+                                                           (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (- (* 60 60 1000))
+                                                           (js/Date.))}}])]]
+
+     ;; up
+     [view row-style
+      [selection-menu-button
+       "up"
+       [mi {:name "arrow-upward"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (- (* 5 60 1000)) ;; five minutes
                                                            (js/Date.))
                                                 :stop  (-> selected-period
                                                            (:stop)
                                                            (.valueOf)
-                                                           (+ (* 24 60 60 1000))
+                                                           (- (* 5 60 1000))
+                                                           (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (- (* 60 60 1000)) ;; sixty minutes
                                                            (js/Date.))
-                                                :id    (random-uuid)})
-                             :bucket-id (:bucket-id selected-period)}])]
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (- (* 60 60 1000))
+                                                           (js/Date.))}}])]]
 
-   [selection-menu-button
-    "copy previous day"
-    [view
-     [mi {:name "content-copy"}]
-     [mi {:name "arrow-back"}]]
-    #(dispatch [:add-period {:period    (merge selected-period
-                                               {:start (-> selected-period
+     ;; copy-previous-day copy-over copy-next-day
+     [view row-style
+      [selection-menu-button
+       "copy previous day"
+       [view {:flex-direction "row"}
+        [mi {:name "content-copy"}]
+        [mi {:name "arrow-back"}]]
+       #(dispatch [:add-period {:period    (merge selected-period
+                                                  {:start (-> selected-period
+                                                              (:start)
+                                                              (.valueOf)
+                                                              (- (* 24 60 60 1000))
+                                                              (js/Date.))
+                                                   :stop  (-> selected-period
+                                                              (:stop)
+                                                              (.valueOf)
+                                                              (- (* 24 60 60 1000))
+                                                              (js/Date.))
+                                                   :id    (random-uuid)})
+                                :bucket-id (:bucket-id selected-period)}])]
+      [selection-menu-button
+       "copy over"
+       [mi {:name "content-copy"}]
+       #(dispatch [:add-period {:period    (merge selected-period
+                                                  {:planned (not (:planned selected-period))
+                                                   :id      (random-uuid)})
+                                :bucket-id (:bucket-id selected-period)}])]
+      [selection-menu-button
+       "copy next day"
+       [view {:flex-direction "row"}
+        [mi {:name "arrow-forward"}]
+        [mi {:name "content-copy"}]]
+       #(dispatch [:add-period {:period    (merge selected-period
+                                                  {:start (-> selected-period
+                                                              (:start)
+                                                              (.valueOf)
+                                                              (+ (* 24 60 60 1000))
+                                                              (js/Date.))
+                                                   :stop  (-> selected-period
+                                                              (:stop)
+                                                              (.valueOf)
+                                                              (+ (* 24 60 60 1000))
+                                                              (js/Date.))
+                                                   :id    (random-uuid)})
+                                :bucket-id (:bucket-id selected-period)}])]]
+
+     ;; play-from
+     [view row-style
+      [selection-menu-button
+       "play from"
+       [mi {:name "play-circle-outline"}]
+       #(dispatch [:play-from-period  {:id           (:id selected-period)
+                                       :time-started (js/Date.)
+                                       :new-id       (random-uuid)}])]]
+
+     ;; back-a-day forward-a-day
+     [view row-style
+      [selection-menu-button
+       "back a day"
+       [mi {:name "fast-rewind"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
                                                            (:start)
                                                            (.valueOf)
                                                            (- (* 24 60 60 1000))
@@ -477,51 +415,118 @@
                                                            (:stop)
                                                            (.valueOf)
                                                            (- (* 24 60 60 1000))
+                                                           (js/Date.))}}])]
+      [selection-menu-button
+       "forward a day"
+       [mi {:name "fast-forward"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (+ (* 24 60 60 1000))
                                                            (js/Date.))
-                                                :id    (random-uuid)})
-                             :bucket-id (:bucket-id selected-period)}])]
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (+ (* 24 60 60 1000))
+                                                           (js/Date.))}}])]]
 
-   [selection-menu-button
-    "select next"
-    [mci {:name "arrow-down-drop-circle"}]
-    #(dispatch [:select-next-or-prev-period :next])]
+     ;; down
+     [view row-style
+      [selection-menu-button
+       "down"
+       [mi {:name "arrow-downward"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (+ (* 5 60 1000)) ;; five minutes
+                                                           (js/Date.))
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (+ (* 5 60 1000))
+                                                           (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:start (-> selected-period
+                                                           (:start)
+                                                           (.valueOf)
+                                                           (+ (* 60 60 1000)) ;; sixty minutes
+                                                           (js/Date.))
+                                                :stop  (-> selected-period
+                                                           (:stop)
+                                                           (.valueOf)
+                                                           (+ (* 60 60 1000))
+                                                           (js/Date.))}}])]
+      ]
 
-   [selection-menu-button
-    "select prev"
-    [mci {:name  "arrow-down-drop-circle"
-          :style {:transform [{:rotate "180deg"}]}}]
-    #(dispatch [:select-next-or-prev-period :prev])]
+     ;; stop-later
+     [view row-style
+      [selection-menu-button
+       "stop later"
+       [mci {:name "arrow-expand-down"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:stop (-> selected-period
+                                                          (:stop)
+                                                          (.valueOf)
+                                                          (+ (* 5 60 1000))
+                                                          (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:stop (-> selected-period
+                                                          (:stop)
+                                                          (.valueOf)
+                                                          (+ (* 60 60 1000))
+                                                          (js/Date.))}}])]]
 
-   [selection-menu-button
-    "play from"
-    [mi {:name "play-circle-outline"}]
-    #(dispatch [:play-from-period  {:id           (:id selected-period)
-                                    :time-started (js/Date.)
-                                    :new-id       (random-uuid)}])]
+     ;; stop-earlier
+     [view row-style
+      [selection-menu-button
+       "stop earlier"
+       [mci {:name "arrow-collapse-up"}]
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:stop (-> selected-period
+                                                          (:stop)
+                                                          (.valueOf)
+                                                          (- (* 5 60 1000))
+                                                          (js/Date.))}}])
+       #(dispatch [:update-period {:id         (:id selected-period)
+                                   :update-map {:stop (-> selected-period
+                                                          (:stop)
+                                                          (.valueOf)
+                                                          (- (* 60 60 1000))
+                                                          (js/Date.))}}])]]
 
-   (when (some? period-in-play)
-     [selection-menu-button
-      "stop playing"
-      [mi {:name "stop"}]
-      #(dispatch [:stop-playing-period])])
+     ;; select-prev
+     [view row-style
+      [selection-menu-button
+       "select prev"
+       [mci {:name  "arrow-down-drop-circle"
+             :style {:transform [{:rotate "180deg"}]}}]
+       #(dispatch [:select-next-or-prev-period :prev])]]
 
-   (when (some? period-in-play)
-     [selection-menu-button
-      "select playing"
-      [mi {:name "play-circle-filled"}]
-      #(dispatch [:select-period (:id period-in-play)])])
+     ;; select-playing
+     (when (some? period-in-play)
+       [view row-style
+        [selection-menu-button
+         "select playing"
+         [mi {:name "play-circle-filled"}]
+         #(dispatch [:select-period (:id period-in-play)])]])
 
-   [selection-menu-button
-    "play"
-    [mi {:name "play-arrow"}]
-    #(reset! play-modal-visible true)]
+     ;; select-next
+     [view row-style
+      [selection-menu-button
+       "select next"
+       [mci {:name "arrow-down-drop-circle"}]
+       #(dispatch [:select-next-or-prev-period :next])]]
 
-   (when (not (or (same-day? (:start selected-period) displayed-day)
-                  (same-day? (:stop selected-period) displayed-day)))
-     [selection-menu-button
-      "jump to selected"
-      [fa {:name "dot-circle-o"}]
-      #(dispatch [:update-day-time-navigator (:start selected-period)])])])
+     ;; jump-to-selected
+     (when (not (or (same-day? (:start selected-period) displayed-day)
+                    (same-day? (:stop selected-period) displayed-day)))
+       [view row-style
+        [selection-menu-button
+         "jump to selected"
+         [fa {:name "dot-circle-o"}]
+         #(dispatch [:update-day-time-navigator (:start selected-period)])]])]))
 
 (defn selection-menu-arrow [dimensions selected-period displayed-day]
   (let [adjusted-start             (bound-start (:start selected-period) displayed-day)
@@ -559,21 +564,18 @@
                  :height           (:height dimensions)
                  :width            (-> dimensions
                                        (:width)
-                                       (/ 2)
-                                       (+ padding))
+                                       (/ 2))
                  :left             (-> dimensions
                                        (:width)
                                        (/ 2)
-                                       (#(if (:planned selected-period)
-                                           (- % padding)
-                                           0)))}}
+                                       (#(if (:planned selected-period) % 0)))}}
 
    [view {:style {:height           "100%"
                   :width            (-> dimensions
                                         (:width)
                                         (/ 2)
                                         (+ padding))
-                  :background-color "#dcdcdc"}}
+                  :background-color "grey"}}
 
     ;; [selection-menu-info dimensions selected-period]
 
@@ -630,15 +632,16 @@
       [text {:style text-style} "18:00"]]]))
 
 (defn root [params]
-  (let [dimensions      (r/atom {:width nil :height nil})
-        top-bar-height  50
-        periods         (subscribe [:get-periods])
-        displayed-day   (subscribe [:get-day-time-navigator])
-        selected-period (subscribe [:get-selected-period])
-        period-in-play  (subscribe [:get-period-in-play])
-        now             (subscribe [:get-now])
-        buckets         (subscribe [:get-buckets])
-        templates       (subscribe [:get-templates])]
+  (let [dimensions        (r/atom {:width nil :height nil})
+        top-bar-height    50
+        bottom-bar-height 40
+        periods           (subscribe [:get-periods])
+        displayed-day     (subscribe [:get-day-time-navigator])
+        selected-period   (subscribe [:get-selected-period])
+        period-in-play    (subscribe [:get-period-in-play])
+        now               (subscribe [:get-now])
+        buckets           (subscribe [:get-buckets])
+        templates         (subscribe [:get-templates])]
 
     (r/create-class
      {:reagent-render
@@ -650,7 +653,7 @@
                                              (js->clj :keywordize-keys true))]
                               (if (nil? (:height dimensions))
                                 (reset! dimensions {:width  (:width layout)
-                                                    :height (- (:height layout) top-bar-height)}))))}
+                                                    :height (- (:height layout) top-bar-height bottom-bar-height)}))))}
          ;; make our own status bar
          [status-bar {:hidden true}]
          [top-bar {:top-bar-height top-bar-height
@@ -685,7 +688,7 @@
                                                       :label       ""
                                                       :data        {}}}])
                               (dispatch [:navigate-to {:current-screen :period
-                                                       :params {:period-id id}}])))}
+                                                       :params         {:period-id id}}])))}
 
           [view {:style {:height           (:height @dimensions) ;; this is already adjusted to account for top-bar
                          :width            (:width @dimensions)
@@ -729,6 +732,24 @@
                               :selected-period @selected-period
                               :displayed-day   @displayed-day
                               :period-in-play  @period-in-play}])]]
+
+         [view {:height           bottom-bar-height
+                :width            "100%"
+                :flex-direction   "row"
+                :justify-content  "center"
+                :align-items      "center"
+                :background-color "grey"}
+
+          (if (some? @period-in-play)
+            [selection-menu-button
+             "stop playing"
+             [mi {:name "stop"}]
+             #(dispatch [:stop-playing-period])]
+
+            [selection-menu-button
+             "play"
+             [mi {:name "play-arrow"}]
+             #(reset! play-modal-visible true)])]
 
          ;; play modal
          [modal {:animation-type "slide"
