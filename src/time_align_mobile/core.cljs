@@ -101,5 +101,5 @@
        (let [app-db (read-string value)]
          (dispatch [:load-db app-db])))))
   ;; Start ticking
-  (js/setInterval #(dispatch [:tick (js/Date.)]) 1000)
+  (js/setInterval #(dispatch [:tick (js/Date.)]) 5000)
   (ocall expo "registerRootComponent" (r/reactify-component app-root)))
