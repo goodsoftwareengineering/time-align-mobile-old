@@ -1,11 +1,14 @@
 (ns time-align-mobile.handlers
   (:require
-    [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx]]
+    [time-align-mobile.js-imports :refer [secure-store-set! secure-store-get!]]
+    [re-frame.core :refer [reg-event-db ->interceptor reg-event-fx reg-fx]]
     [zprint.core :refer [zprint]]
     [cljs.reader :refer [read-string]]
     [clojure.spec.alpha :as s]
     [time-align-mobile.db :as db :refer [app-db app-db-spec period-data-spec]]
-    [time-align-mobile.js-imports :refer [alert]]
+    [time-align-mobile.helpers :as helpers]
+    [time-align-mobile.js-imports :refer [alert share]]
+    [time-align-mobile.helpers :refer [same-day?]]
     [com.rpl.specter :as sp :refer-macros [select select-one setval transform]]))
 
 ;; -- Interceptors ----------------------------------------------------------
@@ -16,14 +19,14 @@
   "Throw an exception if db doesn't have a valid spec."
   [spec db]
   (when-not (s/valid? spec db)
-    (let [explain-data (s/explain spec db)]
-      (println (zprint explain-data {:map {:force-nl? true}}))
+    (let [explaination (s/explain-data spec db)]
+      (zprint (::clojure.spec.alpha/problems explaination) {:map {:force-nl? true}})
       ;; (throw (ex-info (str "Spec check failed: " explain-data) explain-data))
       (alert "Failed spec validation" "Check the command line output.")
       true)))
 
 (def validate-spec
-  (if goog.DEBUG
+  (if true ;;goog.DEBUG ;; TODO reinstate this after pre-alpha
     (->interceptor
         :id :validate-spec
         :after (fn [context]
@@ -50,9 +53,22 @@
                                            ))
               (setval [:effects :alert] sp/NONE context)))))
 
+(def persist-secure-store
+  (->interceptor
+   :id :persist-secure-store
+   :after (fn [context]
+            (secure-store-set! "app-db" (-> context :effects :db str))
+            context)))
+
+;; -- Helpers ---------------------------------------------------------------
+(defn clean-period [period]
+  (select-keys period (keys period-data-spec)))
+
 ;; -- Handlers --------------------------------------------------------------
 
 (defn initialize-db [_ _] app-db)
+
+(defn load-db [old-db [_ db]] db)
 
 (defn navigate-to [{:keys [db]} [_ {:keys [current-screen params]}]]
   (merge {:db (-> db
@@ -72,7 +88,7 @@
 
 (defn load-bucket-form [db [_ bucket-id]]
   (let [bucket      (select-one [:buckets sp/ALL #(= (:id %) bucket-id)] db)
-        bucket-form (merge bucket {:data (with-out-str (zprint (:data bucket) {:map {:force-nl? true}}))})]
+        bucket-form (merge bucket {:data (helpers/print-data (:data bucket))})]
     (assoc-in db [:forms :bucket-form] bucket-form)))
 
 (defn update-bucket-form [db [_ bucket-form]]
@@ -103,9 +119,7 @@
                              :bucket-color (:color sub-bucket)
                              :bucket-label (:label sub-bucket)}
         period-form         (merge period
-                                   {:data (with-out-str
-                                            (zprint (:data period)
-                                                    {:map {:force-nl? true}}))}
+                                   {:data (helpers/print-data (:data period))}
                                    sub-bucket-remap)]
     (assoc-in db [:forms :period-form] period-form)))
 
@@ -171,9 +185,7 @@
                              :bucket-color (:color sub-bucket)
                              :bucket-label (:label sub-bucket)}
         template-form         (merge template
-                                   {:data (with-out-str
-                                            (zprint (:data template)
-                                                    {:map {:force-nl? true}}))}
+                                   {:data (helpers/print-data (:data template))}
                                    sub-bucket-remap)]
     (assoc-in db [:forms :template-form] template-form)))
 
@@ -232,12 +244,8 @@
   (let [filter     (select-one
                     [:filters sp/ALL #(= (:id %) filter-id)] db)
         filter-form (merge filter
-                           {:predicates (with-out-str
-                                          (zprint (:predicates filter)
-                                                  {:map {:force-nl? true}}))}
-                           {:sort (with-out-str
-                                          (zprint (:sort filter)
-                                                  {:map {:force-nl? true}}))})]
+                           {:predicates (helpers/print-data (:predicates filter))}
+                           {:sort (helpers/print-data (:sort filter))})]
     (assoc-in db [:forms :filter-form] filter-form)))
 
 (defn update-filter-form [db [_ filter-form]]
@@ -332,7 +340,7 @@
                                :last-edited now
                                :start start
                                :stop  stop})
-        period-clean   (select-keys period (keys period-data-spec))]
+        period-clean   (clean-period period)]
 
     {:db       (setval [:buckets sp/ALL
                         #(= (:id %) (:bucket-id template))
@@ -390,7 +398,8 @@
 (defn delete-period [{:keys [db]} [_ id]]
   {:db (->> db
             (setval [:buckets sp/ALL :periods sp/ALL #(= id (:id %))] sp/NONE)
-            (setval [:forms :period-form] nil))
+            (setval [:forms :period-form] nil)
+            (setval [:selected-period] nil))
    ;; TODO pop stack when possible
    :dispatch [:navigate-to {:current-screen :periods}]})
 
@@ -408,27 +417,200 @@
    ;; TODO pop stack when possible
    :dispatch [:navigate-to {:current-screen :filters}]})
 
+(defn select-period [db [_ id]]
+  (assoc-in db [:selected-period] id))
+
+(defn update-period [db [_ {:keys [id update-map]}]]
+  (transform [:buckets sp/ALL
+              :periods sp/ALL
+              #(= id (:id %))]
+             #(merge % update-map)
+             db))
+
+(defn add-period [db [_ {:keys [period bucket-id]}]]
+  (let [random-bucket-id (->> db
+                              (select-one [:buckets sp/FIRST])
+                              (:id))
+        bucket-id (if (some? bucket-id)
+                    bucket-id
+                    random-bucket-id)]
+    (->> db
+         (setval [:buckets sp/ALL
+                  #(= (:id %) bucket-id)
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 (clean-period period)))))
+
+(defn select-next-or-prev-period [db [_ direction]]
+  (if-let [selected-period-id (get-in db [:selected-period])]
+    (let [displayed-day (get-in db [:time-navigators :day])
+          selected-period (select-one [:buckets sp/ALL :periods sp/ALL
+                                       #(= selected-period-id (:id %))] db)
+          sorted-periods (->> db
+                              (select [:buckets sp/ALL :periods sp/ALL])
+                              ;; Next period needs to be on this displayed day
+                              (filter #(and (some? (:start %))
+                                            (some? (:stop %))
+                                            (or (same-day? (:start %) displayed-day)
+                                                (same-day? (:stop %) displayed-day))))
+                              ;; Next period needs to be visible on this track
+                              (filter #(= (:planned selected-period) (:planned %)))
+                              (sort-by #(.valueOf (:start %)))
+                              (#(if (= direction :prev)
+                                  (reverse %)
+                                  %)))
+          next-period    (->> sorted-periods
+                              ;; Since they are sorted, drop them until you get to
+                              ;; the current selected period.
+                              ;; Then take the next one.
+                              (drop-while #(not (= (:id %) selected-period-id)))
+                              (second))]
+      (if (some? next-period)
+        (assoc-in db [:selected-period] (:id next-period))
+        db))
+    db))
+
+(defn update-day-time-navigator [db [_ new-date]]
+  (assoc-in db [:time-navigators :day] new-date))
+
+(defn tick [db [_ date-time]]
+  (let [period-in-play-id (get-in db [:period-in-play-id])]
+    ;; Update period in play if there is one
+    (-> (if (some? period-in-play-id)
+          (transform [:buckets sp/ALL
+                      :periods sp/ALL
+                      #(= (:id %) period-in-play-id)]
+
+                     #(merge % {:stop date-time})
+
+                     db)
+          db)
+        ;; update now regardless
+        (assoc-in [:now] date-time))))
+
+(defn play-from-period [db [_ {:keys [id time-started new-id]}]]
+  (let [[bucket-just-id
+         period-to-play-from] (select-one [:buckets sp/ALL
+                                           (sp/collect-one (sp/submap [:id]))
+                                           :periods sp/ALL
+                                           #(= (:id %) id)] db)
+        new-period            (merge period-to-play-from
+                                     {:id      new-id
+                                      :planned false
+                                      :start   time-started
+                                      :stop    (->> time-started
+                                                    (.valueOf)
+                                                    (+ 1000)
+                                                    (js/Date.))})]
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) (:id bucket-just-id))
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] new-id)
+         ;; Set it as selected
+         (setval [:selected-period] new-id))))
+
+(defn stop-playing-period [db [_ _]]
+  (assoc-in db [:period-in-play-id] nil))
+
+(defn play-from-bucket [db [_ {:keys [bucket-id id now]}]]
+  (let [new-period {:id          id
+                    :planned     false
+                    :start       now
+                    :stop        (->> now
+                                      (.valueOf)
+                                      (+ 1000)
+                                      (js/Date.))
+                    :created     now
+                    :last-edited now
+                    :label       ""
+                    :data        {}}]
+
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) bucket-id)
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] id)
+         ;; Set it as selected
+         (setval [:selected-period] id))))
+
+(defn play-from-template [db [_ {:keys [template id now]}]]
+  (let [new-period (merge template
+                          {:id          id
+                           :planned     false
+                           :start       now
+                           :stop        (->> now
+                                             (.valueOf)
+                                             (+ 1000)
+                                             (js/Date.))
+                           :created     now
+                           :last-edited now})]
+    (->> db
+         ;; Add new period
+         (setval [:buckets sp/ALL
+                  #(= (:id %) (:bucket-id template))
+                  :periods
+                  sp/NIL->VECTOR
+                  sp/AFTER-ELEM]
+                 new-period )
+         ;; Set it as playing
+         (setval [:period-in-play-id] id)
+         ;; Set it as selected
+         (setval [:selected-period] id))))
+
+(reg-fx
+ :share
+ (fn [app-db]
+   (share (str "app-db-" (.toJSON (js/Date.))) (with-out-str (zprint app-db)))))
+
+(defn share-app-db [{:keys [db]} [_ _]]
+  {:db db
+   :share db})
+
 (reg-event-db :initialize-db [validate-spec] initialize-db)
-(reg-event-fx :navigate-to [validate-spec] navigate-to)
-(reg-event-db :load-bucket-form [validate-spec] load-bucket-form)
-(reg-event-db :update-bucket-form [validate-spec] update-bucket-form)
-(reg-event-fx :save-bucket-form [alert-message validate-spec] save-bucket-form)
-(reg-event-db :load-period-form [validate-spec] load-period-form)
-(reg-event-db :update-period-form [validate-spec] update-period-form)
-(reg-event-fx :save-period-form [alert-message validate-spec] save-period-form)
-(reg-event-db :load-template-form [validate-spec] load-template-form)
-(reg-event-db :update-template-form [validate-spec] update-template-form)
-(reg-event-fx :save-template-form [alert-message validate-spec] save-template-form)
-(reg-event-db :load-filter-form [validate-spec] load-filter-form)
-(reg-event-db :update-filter-form [validate-spec] update-filter-form)
-(reg-event-fx :save-filter-form [alert-message validate-spec] save-filter-form)
-(reg-event-db :update-active-filter [validate-spec] update-active-filter)
-(reg-event-fx :add-new-bucket [validate-spec] add-new-bucket)
-(reg-event-fx :add-new-period [validate-spec] add-new-period)
-(reg-event-fx :add-template-period [validate-spec] add-template-period)
-(reg-event-fx :add-new-template [validate-spec] add-new-template)
-(reg-event-fx :add-new-filter [validate-spec] add-new-filter)
-(reg-event-fx :delete-bucket [validate-spec] delete-bucket)
-(reg-event-fx :delete-period [validate-spec] delete-period)
-(reg-event-fx :delete-template [validate-spec] delete-template)
-(reg-event-fx :delete-filter [validate-spec] delete-filter)
+(reg-event-fx :navigate-to [validate-spec persist-secure-store] navigate-to)
+(reg-event-db :load-bucket-form [validate-spec persist-secure-store] load-bucket-form)
+(reg-event-db :update-bucket-form [validate-spec persist-secure-store] update-bucket-form)
+(reg-event-fx :save-bucket-form [alert-message validate-spec persist-secure-store] save-bucket-form)
+(reg-event-db :load-period-form [validate-spec persist-secure-store] load-period-form)
+(reg-event-db :update-period-form [validate-spec persist-secure-store] update-period-form)
+(reg-event-fx :save-period-form [alert-message validate-spec persist-secure-store] save-period-form)
+(reg-event-db :load-template-form [validate-spec persist-secure-store] load-template-form)
+(reg-event-db :update-template-form [validate-spec persist-secure-store] update-template-form)
+(reg-event-fx :save-template-form [alert-message validate-spec persist-secure-store] save-template-form)
+(reg-event-db :load-filter-form [validate-spec persist-secure-store] load-filter-form)
+(reg-event-db :update-filter-form [validate-spec persist-secure-store] update-filter-form)
+(reg-event-fx :save-filter-form [alert-message validate-spec persist-secure-store] save-filter-form)
+(reg-event-db :update-active-filter [validate-spec persist-secure-store] update-active-filter)
+(reg-event-fx :add-new-bucket [validate-spec persist-secure-store] add-new-bucket)
+(reg-event-fx :add-new-period [validate-spec persist-secure-store] add-new-period)
+(reg-event-fx :add-template-period [validate-spec persist-secure-store] add-template-period)
+(reg-event-fx :add-new-template [validate-spec persist-secure-store] add-new-template)
+(reg-event-fx :add-new-filter [validate-spec persist-secure-store] add-new-filter)
+(reg-event-fx :delete-bucket [validate-spec persist-secure-store] delete-bucket)
+(reg-event-fx :delete-period [validate-spec persist-secure-store] delete-period)
+(reg-event-fx :delete-template [validate-spec persist-secure-store] delete-template)
+(reg-event-fx :delete-filter [validate-spec persist-secure-store] delete-filter)
+(reg-event-db :select-period [validate-spec persist-secure-store] select-period)
+(reg-event-db :update-period [validate-spec persist-secure-store] update-period)
+(reg-event-db :add-period [validate-spec persist-secure-store] add-period)
+(reg-event-db :select-next-or-prev-period [validate-spec persist-secure-store] select-next-or-prev-period)
+(reg-event-db :update-day-time-navigator [validate-spec persist-secure-store] update-day-time-navigator)
+(reg-event-db :tick [validate-spec persist-secure-store] tick)
+(reg-event-db :play-from-period [validate-spec persist-secure-store] play-from-period)
+(reg-event-db :stop-playing-period [validate-spec persist-secure-store] stop-playing-period)
+(reg-event-db :play-from-bucket [validate-spec persist-secure-store] play-from-bucket)
+(reg-event-db :play-from-template [validate-spec persist-secure-store] play-from-template)
+(reg-event-db :load-db [validate-spec] load-db)
+(reg-event-fx :share-app-db [validate-spec] share-app-db)

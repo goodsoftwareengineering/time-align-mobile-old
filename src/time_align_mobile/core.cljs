@@ -5,24 +5,25 @@
               [time-align-mobile.handlers]
               [time-align-mobile.subs]
               [time-align-mobile.navigation :as nav]
+              [cljs.reader :refer [read-string]]
+              [oops.core :refer [oget oset! ocall oapply ocall! oapply!
+                                 oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
               [time-align-mobile.js-imports :refer [ReactNative
                                                     expo
                                                     AtExpo
                                                     ei
                                                     en
                                                     fa
+                                                    app-state
                                                     ic
                                                     mi
                                                     text
                                                     view
                                                     image
-                                                    Alert
                                                     touchable-highlight
                                                     gesture-handler
-                                                    drawer-layout]] ))
-
-(defn alert [title]
-  (.alert Alert title))
+                                                    drawer-layout
+                                                    secure-store-get!]] ))
 
 (defn drawer-list []
   [view {:style {:flex 1 :justify-content "center" :align-items "flex-start"}}
@@ -73,22 +74,32 @@
                    label-element]]))))])
 
 (defn app-root []
-  (let [navigation (subscribe [:get-navigation])]
-    (fn []
-      [view {:style {:flex 1}}
-       [drawer-layout
-        {:drawer-width 200
-         :drawer-position "left"
-         :drawer-type "front"
-         :drawer-background-color "#ddd"
-         :render-navigation-view (fn [] (r/as-element (drawer-list)))}
+  (fn []
+    (let [navigation (subscribe [:get-navigation])]
+      (fn []
+        [view {:style {:flex             1
+                       :background-color "#ffffff"}}
+         [drawer-layout
+          {:drawer-width            200
+           :drawer-position         "left"
+           :drawer-type             "front"
+           :drawer-background-color "#ddd"
+           :render-navigation-view  (fn [] (r/as-element (drawer-list)))}
 
-        (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
-                                      (:screen %))
-                                   nav/screens-map)]
-          [screen-comp (:params @navigation)]
-          [view [text "That screen doesn't exist"]])]])))
+          (if-let [screen-comp (some #(if (= (:id %) (:current-screen @navigation))
+                                        (:screen %))
+                                     nav/screens-map)]
+            [screen-comp (:params @navigation)]
+            [view [text "That screen doesn't exist"]])]]))))
 
 (defn init []
   (dispatch-sync [:initialize-db])
+  (secure-store-get!
+   "app-db"
+   (fn [value]
+     (when (some? value)
+       (let [app-db (read-string value)]
+         (dispatch [:load-db app-db])))))
+  ;; Start ticking
+  (js/setInterval #(dispatch [:tick (js/Date.)]) 5000)
   (ocall expo "registerRootComponent" (r/reactify-component app-root)))

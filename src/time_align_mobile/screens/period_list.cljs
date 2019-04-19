@@ -76,8 +76,8 @@
                              ;; passing dispatch the parent bucket id
                              ;; for the period about to be created
                              (dispatch [:add-new-period {:bucket-id (:id item)
-                                                         :id (random-uuid)
-                                                         :now (new js/Date)}]))})))))}]]]
+                                                         :id        (random-uuid)
+                                                         :now       (new js/Date)}]))})))))}]]]
 
      [modal {:animation-type "slide"
              :transparent    false
@@ -99,8 +99,8 @@
                              ;; passing dispatch the parent bucket id
                              ;; for the period about to be created
                              (dispatch [:add-template-period {:template item
-                                                              :id (random-uuid)
-                                                              :now (js/Date.)}]))})))))}]]]
+                                                              :id       (random-uuid)
+                                                              :now      (js/Date.)}]))})))))}]]]
 
      [modal {:animation-type "slide"
              :transparent    false
